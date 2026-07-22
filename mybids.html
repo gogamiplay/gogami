@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GOGAMI - My Bids & Passbook</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding-bottom: 90px; min-height: 100vh; }
+        .app-container { max-width: 480px; margin: 0 auto; background: #0f172a; min-height: 100vh; position: relative; }
+        
+        /* Fast Loader */
+        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .header { background: #1e293b; padding: 14px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); color: #fff; }
+        .back-btn { background: none; border: none; font-size: 22px; color: #fff; cursor: pointer; display: flex; align-items: center; }
+        .logo-text { font-size: 16px; font-weight: 800; letter-spacing: 1px; flex: 1; text-align: center; text-transform: uppercase; margin-right: 22px; color: #3b82f6; }
+        
+        .tab-bar { display: flex; background: #1e293b; margin: 12px; border-radius: 8px; padding: 4px; gap: 4px; border: 1px solid #334155; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #94a3b8; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+        .tab.active { background: #3b82f6; color: #fff; }
+        
+        .bid-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); margin: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+        .bid-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #334155; padding-bottom: 10px; }
+        .market-name { color: #3b82f6; font-size: 15px; font-weight: 700; }
+        
+        .status-badge { font-size: 11px; padding: 4px 10px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-won { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-lost { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        
+        .bid-body { display: flex; flex-direction: column; gap: 8px; }
+        .bid-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+        .bid-label { color: #94a3b8; font-size: 12px; font-weight: 500; }
+        .bid-value { color: #cbd5e1; font-weight: 600; font-size: 13px; }
+        .bid-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; font-size: 11px; color: #64748b; text-align: right; font-weight: 500; }
+        .no-data { text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; font-weight: 500; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 10px 6px 14px 6px; border-top: 1px solid #334155; z-index: 1000; height: 75px; }
+        .nav-item { text-align: center; color: #94a3b8; cursor: pointer; font-size: 13px; flex: 1; font-weight: 600; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+        .nav-item.active { color: #3b82f6; }
+        
+        .nav-item-home { position: relative; top: -20px; background: #3b82f6; color: #fff !important; width: 64px; height: 64px; max-width: 64px; border-radius: 50%; border: 4px solid #0f172a; }
+        .nav-item-home span { font-size: 12px; font-weight: 700; }
+        
+        .hidden { display: none !important; }
+        .error-box { background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 12px; margin: 12px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <button class="back-btn" onclick="location.href='dashboard.html'">←</button>
+        <div class="logo-text">Passbook History</div>
+    </div>
+    
+    <div class="tab-bar">
+        <div class="tab active" onclick="showTab('bids')">My Bids</div>
+        <div class="tab" onclick="showTab('transactions')">Transactions</div>
+        <div class="tab" onclick="showTab('rates')">Game Rates</div>
+    </div>
+    
+    <div id="bidsTab"><div id="bidsList"></div></div>
+    <div id="transactionsTab" class="hidden"><div id="transactionsList"></div></div>
+    
+    <div id="ratesTab" class="hidden">
+        <div class="bid-card">
+            <div class="bid-header"><span class="market-name">🎲 GAME RATES</span></div>
+            <div class="bid-body">
+                <div class="bid-row"><span class="bid-label">Single Digit</span><span class="bid-value" style="color:#10b981; font-weight:700;">10x</span></div>
+                <div class="bid-row"><span class="bid-label">Jodi</span><span class="bid-value" style="color:#10b981; font-weight:700;">100x</span></div>
+                <div class="bid-row"><span class="bid-label">Single Pana</span><span class="bid-value" style="color:#10b981; font-weight:700;">160x</span></div>
+                <div class="bid-row"><span class="bid-label">Double Pana</span><span class="bid-value" style="color:#10b981; font-weight:700;">320x</span></div>
+                <div class="bid-row"><span class="bid-label">Triple Pana</span><span class="bid-value" style="color:#10b981; font-weight:700;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Half Sangam A</span><span class="bid-value" style="color:#10b981; font-weight:700;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Half Sangam B</span><span class="bid-value" style="color:#10b981; font-weight:700;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Full Sangam</span><span class="bid-value" style="color:#10b981; font-weight:700;">10000x</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active"><span>Passbook</span></a>
+        <a href="dashboard.html" class="nav-item"><span>My Bids</span></a>
+        <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
+        <a href="funds.html" class="nav-item"><span>Fund</span></a>
+        <a href="chat.html" class="nav-item"><span>Support</span></a>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        authDomain: "gogami-877be.firebaseapp.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "843686112399",
+        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    function showLoader() { 
+        let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
+        div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+    }
+    function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
+    
+    const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
+    let currentUserId=null;
+    
+    function showTab(tab){
+        document.getElementById('bidsTab').classList.add('hidden');
+        document.getElementById('transactionsTab').classList.add('hidden');
+        document.getElementById('ratesTab').classList.add('hidden');
+        document.getElementById(`${tab}Tab`).classList.remove('hidden');
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        if(event && event.target) { event.target.classList.add('active'); }
+        if(tab==='transactions') loadTransactions();
+        if(tab==='bids') loadBids();
+    }
+    
+    async function loadBids(){
+        let user=auth.currentUser;
+        if(!user){ window.location.href='index.html'; return; }
+        currentUserId=user.uid;
+        let container=document.getElementById('bidsList');
+        container.innerHTML='<div style="text-align:center; padding:40px; color:#64748b; font-size:13px;">Syncing historical data...</div>';
+        try{
+            let allBids=await db.collection('bids').where('userId', '==', currentUserId).get();
+            let bids=[];
+            allBids.forEach(doc=>{ 
+                let b=doc.data(); 
+                let bidDate=b.createdAt?.toDate?b.createdAt.toDate():(b.createdAt?.seconds?new Date(b.createdAt.seconds*1000):new Date(0)); 
+                bids.push({id:doc.id,...b,dateObj:bidDate}); 
+            });
+            
+            if(bids.length===0){ container.innerHTML='<div class="no-data">No bids placed yet</div>'; return; }
+            bids.sort((a,b)=>b.dateObj-a.dateObj);
+            let html='';
+            for(let b of bids){
+                let statusClass='',statusText='';
+                let normalizedStatus = (b.status || 'pending').toLowerCase().trim();
+                
+                if(normalizedStatus==='won' || normalizedStatus==='win'){ statusClass='status-won'; statusText='WON'; }
+                else if(normalizedStatus==='lost' || normalizedStatus==='loss'){ statusClass='status-lost'; statusText='LOST'; }
+                else { statusClass='status-pending'; statusText='PENDING'; }
+                
+                let date=b.dateObj && b.dateObj.getTime()>0 ? b.dateObj.toLocaleString() : 'Pending';
+                let sessionDisplay = b.bidType ? b.bidType.toUpperCase() : 'CLOSE';
+                
+                let gameTypeDisplay = b.gameType || b.type || 'Unknown Game';
+                let winAmount = (statusText==='WON') ? (b.points * (gameRates[gameTypeDisplay]||10)) : 0;
+                
+                html+=`<div class="bid-card">
+                    <div class="bid-header">
+                        <span class="market-name">${escapeHtml(b.market)||'Unknown Market'}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="bid-body">
+                        <div class="bid-row"><span class="bid-label">Game Type</span><span class="bid-value" style="font-weight:700; color:#f8fafc;">${escapeHtml(gameTypeDisplay)}</span></div>
+                        <div class="bid-row"><span class="bid-label">Session</span><span class="bid-value" style="color:#3b82f6; font-weight:700;">${sessionDisplay}</span></div>
+                        <div class="bid-row"><span class="bid-label">Selected Number</span><span class="bid-value" style="color:#ef4444; font-family:monospace; font-size:15px;">${escapeHtml(b.value)}</span></div>
+                        <div class="bid-row"><span class="bid-label">Points Bet</span><span class="bid-value">₹${b.points}</span></div>
+                        ${statusText==='WON'?`<div class="bid-row"><span class="bid-label">Payout Return</span><span class="bid-value" style="color:#10b981; font-size:15px; font-weight:700;">+ ₹${winAmount}</span></div>`:''}
+                    </div>
+                    <div class="bid-footer">Placed: ${date}</div>
+                </div>`;
+            }
+            container.innerHTML=html;
+        }catch(e){ container.innerHTML=`<div class="error-box">❌ Error loading history: ${e.message}</div>`; }
+    }
+    
+    async function loadTransactions(){
+        let user=auth.currentUser;
+        if(!user) return;
+        let container=document.getElementById('transactionsList');
+        container.innerHTML='<div style="text-align:center; padding:40px; color:#64748b; font-size:13px;">Syncing statements...</div>';
+        try{
+            let allTrans=await db.collection('transactions').where('userId', '==', user.uid).get();
+            let transactions=[];
+            allTrans.forEach(doc=>{ 
+                let t=doc.data(); 
+                if((t.type==='credit' || t.type==='debit') && t.description && !t.description.includes('Bid placed')){ 
+                    let tDate=t.date?.toDate?t.date.toDate():(t.date?.seconds?new Date(t.date.seconds*1000):new Date(0)); 
+                    transactions.push({id:doc.id,...t,dateObj:tDate}); 
+                } 
+            });
+            if(transactions.length===0){ container.innerHTML='<div class="no-data">No transactions logged yet</div>'; return; }
+            transactions.sort((a,b)=>b.dateObj-a.dateObj);
+            let html='';
+            for(let t of transactions){
+                let date=t.dateObj && t.dateObj.getTime()>0 ? t.dateObj.toLocaleString() : 'Pending';
+                let isCredit=t.type==='credit';
+                let statusColor=t.status==='Completed'?'#34d399':(t.status==='Rejected'?'#f87171':'#fbbf24');
+                html+=`<div class="bid-card">
+                    <div class="bid-header">
+                        <span class="market-name">${isCredit?'💰 DEPOSIT':'💸 WITHDRAWAL'}</span>
+                        <span style="color:${statusColor}; font-weight:700; font-size:12px; text-transform:uppercase;">${t.status||'Pending'}</span>
+                    </div>
+                    <div class="bid-body">
+                        <div class="bid-row"><span class="bid-label">Statement Amount</span><span class="bid-value" style="color:${isCredit?'#10b981':'#ef4444'}; font-size:16px; font-weight:700;">${isCredit?'+':'-'} ₹${t.amount}</span></div>
+                        <div class="bid-row"><span class="bid-label">Execution Timestamp</span><span class="bid-value">${date}</span></div>
+                        ${t.description?`<div class="bid-row"><span class="bid-label">Memo Note</span><span class="bid-value">${escapeHtml(t.description)}</span></div>`:''}
+                    </div>
+                </div>`;
+            }
+            container.innerHTML=html;
+        }catch(e){ container.innerHTML=`<div class="error-box">❌ Error parsing ledger: ${e.message}</div>`; }
+    }
+    
+    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m; }); }
+    
+    showLoader();
+    auth.onAuthStateChanged(user=>{ if(!user) window.location.href='index.html'; else { loadBids(); hideLoader(); } });
+    window.showTab=showTab;
+</script>
+</body>
+</html>
