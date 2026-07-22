@@ -9,32 +9,36 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding-bottom: 90px; }
-        .app-container { max-width: 480px; margin: 0 auto; background: #0f172a; min-height: 100vh; position: relative; }
+        body { background: #f4f6f9; color: #1e293b; padding-bottom: 90px; }
+        .app-container { max-width: 480px; margin: 0 auto; background: #f4f6f9; min-height: 100vh; position: relative; }
         
-        /* Fast Loader */
         .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
-        .loader-text { font-size: 22px; font-weight: 900; color: #3b82f6; letter-spacing: 2px; }
+        .loader-spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
+        .loader-text { font-size: 24px; font-weight: bold; color: #3b82f6; letter-spacing: 2px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Top Header Panel */
+        /* Fixed Top 30% Panel Container */
         .sticky-top-panel {
             position: fixed; top: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
-            height: 28vh; background: #1e293b; color: #fff; z-index: 1000;
+            height: 30vh; background: #0f172a; color: #fff; z-index: 1000;
             display: flex; flex-direction: column; justify-content: space-between;
-            padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            padding: 14px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .header-action-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 4px; display: flex; align-items: center; }
         
+        /* GOGAMI Animated Color Title */
         .app-title {
-            font-weight: 900; font-size: 20px; letter-spacing: 2px; color: #3b82f6;
+            font-weight: 800; font-size: 18px; letter-spacing: 1.5px;
+            background: linear-gradient(45deg, #3b82f6, #ef4444, #10b981, #f59e0b, #3b82f6);
+            background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: gradientShift 8s ease infinite;
         }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .action-shortcuts { display: flex; gap: 6px; }
         .shortcut-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; }
-        .balance-box { background: #10b981; padding: 6px 12px; border-radius: 6px; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .balance-box { background: #22c55e; padding: 6px 12px; border-radius: 6px; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
         .banner-container { flex: 1; display: flex; align-items: center; justify-content: center; margin: 6px 0; overflow: hidden; border-radius: 6px; }
         .banner-img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
@@ -44,53 +48,55 @@
         .user-meta .phone { font-size: 11px; color: #94a3b8; }
         .funds-header-label { font-size: 12px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Main Content Scroll */
-        .main-scroll-content { margin-top: 28vh; padding: 12px; }
-        .section-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 4px 10px 4px; }
+        /* Scrollable Content Container */
+        .main-scroll-content { margin-top: 30vh; padding: 12px; }
+        .section-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 4px 10px 4px; }
 
-        /* Cards Layout Framework */
-        .fund-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+        /* Android Native Cards Layout Framework */
+        .fund-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
         .fund-row-details { display: flex; justify-content: space-between; align-items: center; }
-        .fund-title { font-size: 15px; font-weight: 700; color: #f8fafc; }
-        .fund-subtitle { font-size: 12px; color: #94a3b8; margin-top: 2px; font-weight: 500; }
+        .fund-title { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .fund-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: 500; }
         
         .fund-action-btn { padding: 10px 24px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; text-decoration: none; text-align: center; }
-        .btn-withdraw-theme { background: #1e293b; border: 1px solid #334155; }
+        .btn-withdraw-theme { background: #0f172a; }
 
+        /* Borderless Form Input Element Overrides */
         .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
         .form-row:last-child { margin-bottom: 0; }
-        .form-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-        .form-input-field { background: #0f172a; border-radius: 8px; padding: 10px 14px; border: 1px solid #334155; }
-        .form-input { width: 100%; padding: 2px 0; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 600; color: #fff; }
+        .form-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .form-input-field { background: #f1f5f9; border-radius: 8px; padding: 10px 14px; }
+        .form-input { width: 100%; padding: 2px 0; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 600; color: #0f172a; }
 
-        /* Transaction History */
+        /* Borderless History List Grid Layout Elements */
         .history-list { display: flex; flex-direction: column; gap: 8px; }
-        .history-item { background: rgba(30, 41, 59, 0.7); border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.08); }
+        .history-item { background: #fff; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
         .history-meta { display: flex; flex-direction: column; gap: 2px; }
-        .history-desc { font-size: 13px; font-weight: 700; color: #f8fafc; }
-        .history-date { font-size: 11px; color: #64748b; font-weight: 500; }
+        .history-desc { font-size: 13px; font-weight: 700; color: #0f172a; }
+        .history-date { font-size: 11px; color: #94a3b8; font-weight: 500; }
         .history-amount { font-size: 15px; font-weight: 700; text-align: right; }
         .amount-credit { color: #10b981; }
         .amount-debit { color: #ef4444; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 10px 6px 14px 6px; border-top: 1px solid #334155; z-index: 1000; height: 75px; }
-        .nav-item { text-align: center; color: #94a3b8; cursor: pointer; font-size: 13px; flex: 1; font-weight: 600; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+        /* Bottom Nav Panel Framework */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #fff; display: flex; justify-content: space-around; align-items: center; padding: 10px 6px 14px 6px; border-top: 1px solid #e2e8f0; z-index: 1000; height: 75px; }
+        .nav-item { text-align: center; color: #64748b; cursor: pointer; font-size: 13px; flex: 1; font-weight: 600; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
         .nav-item.active { color: #3b82f6; }
-        .nav-item-home { position: relative; top: -20px; background: #3b82f6; color: #fff !important; width: 64px; height: 64px; max-width: 64px; border-radius: 50%; border: 4px solid #0f172a; }
+        .nav-item-home { position: relative; top: -20px; background: #3b82f6; color: #fff !important; width: 64px; height: 64px; max-width: 64px; border-radius: 50%; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); border: 4px solid #f4f6f9; }
         .nav-item-home span { font-size: 12px; font-weight: 700; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: #1e293b; border-radius: 16px; padding: 24px; width: 90%; max-width: 340px; border: 1px solid #334155; color: #f8fafc; }
-        .modal-content h3 { color: #3b82f6; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; border-radius: 16px; padding: 24px; width: 90%; max-width: 340px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-content h3 { color: #0f172a; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
         .modal-btn { width: 100%; padding: 11px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 14px; }
-        .close-modal { background: #334155; color: #cbd5e1; }
+        .close-modal { background: #f1f5f9; color: #334155; }
         .logout-btn { background: #ef4444; color: #fff; }
     </style>
 </head>
 <body>
 <div class="app-container">
     
+    <!-- Fixed Top Panel Layout -->
     <div class="sticky-top-panel">
         <div class="header-action-line">
             <button class="menu-btn" onclick="showProfileModal()">☰</button>
@@ -113,6 +119,7 @@
         </div>
     </div>
     
+    <!-- Scrollable Base Layout Frame -->
     <div class="main-scroll-content">
         <div class="section-title">Funding Shortcuts</div>
         
@@ -136,6 +143,7 @@
             </div>
         </div>
 
+        <!-- Bank Details Form Card -->
         <div class="section-title">Bank Account Details</div>
         <div class="fund-card">
             <div class="form-row">
@@ -157,12 +165,14 @@
             <button class="add-btn fund-action-btn" style="width:100%; margin-top:4px;" onclick="saveBankDetails()">Update Bank Details</button>
         </div>
 
+        <!-- Transaction Logs Integration Component -->
         <div class="section-title">Recent Transaction History</div>
         <div class="history-list" id="transactionHistoryList">
-            <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Loading statement entries...</div>
+            <div style="text-align:center; padding:20px; color:#64748b; font-size:13px; font-weight:500;">Loading statement entries...</div>
         </div>
     </div>
     
+    <!-- Pinned Lower Navigation Bar -->
     <div class="bottom-nav">
         <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
         <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
@@ -172,47 +182,54 @@
     </div>
 </div>
 
+<!-- Modal Dialog Boxes -->
 <div id="profileModal" class="modal"><div class="modal-content"><h3>My Profile</h3><div id="profileInfo"></div><button class="modal-btn logout-btn" onclick="logout()">🚪 Logout</button><button class="modal-btn close-modal" onclick="closeProfileModal()">Close</button></div></div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
-        authDomain: "gogami-877be.firebaseapp.com",
-        projectId: "gogami-877be",
-        storageBucket: "gogami-877be.firebasestorage.app",
-        messagingSenderId: "843686112399",
-        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c", 
+        authDomain: "gogami-877be.firebaseapp.com", 
+        projectId: "gogami-877be", 
+        storageBucket: "gogami-877be.firebasestorage.app", 
+        messagingSenderId: "220921167245", 
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     
     let currentUserData = null;
 
     function showLoader() { 
-        let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
-        div.innerHTML = '<div class="loader-spinner"></div><div class="loader-text">GOGAMI</div>'; document.body.appendChild(div); 
+        if(!document.getElementById('pageLoader')) {
+            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
+            div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+        }
     }
     function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
     
     async function loadUserData() {
         const user = auth.currentUser;
         if (!user) { window.location.href = 'index.html'; return; }
-        const doc = await db.collection('users').doc(user.uid).get();
-        if (doc.exists) { 
-            currentUserData = doc.data(); 
-            document.getElementById('userBalance').innerText = currentUserData.balance || 0; 
-            document.getElementById('profileName').innerHTML = currentUserData.name || 'User'; 
-            document.getElementById('profilePhone').innerHTML = currentUserData.phone || ''; 
-            
-            let b = currentUserData.bankDetails;
-            if (b) {
-                document.getElementById('bankAccountHolder').value = b.accountHolder || '';
-                document.getElementById('bankName').value = b.bankName || '';
-                document.getElementById('bankAccountNumber').value = b.accountNumber || '';
-                document.getElementById('bankIfsc').value = b.ifscCode || '';
+        try {
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists) { 
+                currentUserData = doc.data(); 
+                document.getElementById('userBalance').innerText = currentUserData.balance || 0; 
+                document.getElementById('profileName').innerHTML = currentUserData.name || 'User'; 
+                document.getElementById('profilePhone').innerHTML = currentUserData.phone || ''; 
+                
+                let b = currentUserData.bankDetails;
+                if (b) {
+                    document.getElementById('bankAccountHolder').value = b.accountHolder || '';
+                    document.getElementById('bankName').value = b.bankName || '';
+                    document.getElementById('bankAccountNumber').value = b.accountNumber || '';
+                    document.getElementById('bankIfsc').value = b.ifscCode || '';
+                }
+                loadTransactionHistory(user.uid);
             }
-            loadTransactionHistory(user.uid);
-        }
+        } catch(e) { console.error("User context error:", e); }
     }
 
     async function saveBankDetails() {
@@ -227,8 +244,8 @@
             await db.collection('users').doc(auth.currentUser.uid).update({
                 bankDetails: { accountHolder: ah, bankName: bn, accountNumber: an, ifscCode: ifsc }
             });
-            alert('✅ Banking details updated successfully!');
-        } catch(e) { alert('Error updating bank details.'); }
+            alert('✅ Banking registration details updated successfully!');
+        } catch(e) { alert('Error updating data references.'); }
     }
 
     async function loadTransactionHistory(uid) {
@@ -258,18 +275,18 @@
                         </span>
                     </div>`;
             }).join('');
-        } catch(e) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">Failed to load logs.</div>'; }
+        } catch(e) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">Failed to parse logs.</div>'; }
     }
     
     function showBalance() { alert(`💰 Balance: ₹${currentUserData?.balance || 0}`); }
-    function showProfileModal() { if(currentUserData){ document.getElementById('profileInfo').innerHTML = `<div style="text-align:center; margin-bottom:14px;"><div style="font-size:18px; font-weight:700; color:#f8fafc;">${currentUserData.name}</div><div style="color:#94a3b8; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance}</div></div>`; document.getElementById('profileModal').style.display='flex'; } }
+    function showProfileModal() { if(currentUserData){ document.getElementById('profileInfo').innerHTML = `<div style="text-align:center; margin-bottom:14px;"><div style="font-size:18px; font-weight:700; color:#0f172a;">${currentUserData.name}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance}</div></div>`; document.getElementById('profileModal').style.display='flex'; } }
     function closeProfileModal() { document.getElementById('profileModal').style.display='none'; }
     function logout() { auth.signOut().then(() => { sessionStorage.clear(); window.location.href='index.html'; }); }
     
     showLoader();
     auth.onAuthStateChanged(user => { 
-        if(!user) window.location.href='index.html'; 
-        else { loadUserData(); setTimeout(hideLoader, 400); } 
+        if(!user) { window.location.href='index.html'; }
+        else { loadUserData(); setTimeout(hideLoader, 600); } 
     });
 </script>
 </body>
