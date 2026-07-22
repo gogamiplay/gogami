@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GOGAMI - Automated Database Setup</title>
+    <title>GOGAMI - Automated System Setup</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -34,10 +34,10 @@
 <body>
 
 <div class="setup-card">
-    <div class="title">⚡ GOGAMI 1-Click Setup</div>
-    <div class="subtitle">Firestore Collections, Configs & Index Link Generator</div>
+    <div class="title">⚡ GOGAMI System Setup</div>
+    <div class="subtitle">System Configs & Firestore Index Link Generator</div>
 
-    <button id="runBtn" class="btn-setup" onclick="startAutomatedSetup()">Run Auto Setup Now</button>
+    <button id="runBtn" class="btn-setup" onclick="startAutomatedSetup()">Run Setup Now</button>
 
     <div id="linksBox" class="links-box">
         <h4>🔗 Required Composite Index Links (Click to create):</h4>
@@ -93,7 +93,7 @@
         log('Starting GOGAMI Automated Setup...', 'info');
 
         try {
-            // 1. Initialize Settings Document
+            // 1. Initialize System Default Configs
             log('Configuring settings/notice...', 'info');
             await db.collection('settings').doc('notice').set({
                 text: 'Welcome to GOGAMI! Play responsibly and enjoy instant payouts.'
@@ -112,29 +112,11 @@
             });
             log('✓ Server time baseline established', 'success');
 
-            // 2. Initialize Default Markets
-            log('Seeding initial markets...', 'info');
-            const defaultMarkets = [
-                { name: 'TIME BAZAR', openTime: '01:00 PM', closeTime: '02:00 PM', openBidEnd: '13:00', closeBidEnd: '14:00', result: '***-**-***', status: 'open' },
-                { name: 'KALYAN', openTime: '04:00 PM', closeTime: '06:00 PM', openBidEnd: '16:00', closeBidEnd: '18:00', result: '***-**-***', status: 'open' },
-                { name: 'MAIN BAZAR', openTime: '09:30 PM', closeTime: '12:05 AM', openBidEnd: '21:30', closeBidEnd: '23:59', result: '***-**-***', status: 'open' }
-            ];
-
-            for (let m of defaultMarkets) {
-                const querySnap = await db.collection('markets').where('name', '==', m.name).get();
-                if (querySnap.empty) {
-                    await db.collection('markets').add(m);
-                    log(`✓ Market created: ${m.name}`, 'success');
-                } else {
-                    log(`Market already exists: ${m.name}`, 'warning');
-                }
-            }
-
-            // 3. Test Composite Queries to Catch Missing Indexes & Generate Instant Links
+            // 2. Test Composite Queries to Catch Missing Indexes & Generate Instant Links
             log('Testing queries for index requirements...', 'info');
             await testIndexes();
 
-            log('🎉 Setup process completed successfully!', 'success');
+            log('🎉 System setup completed successfully!', 'success');
             btn.innerText = 'Setup Completed!';
             btn.style.background = '#059669';
 
