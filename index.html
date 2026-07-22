@@ -291,14 +291,18 @@
         </div>
     </div>
 
+    <!-- Hidden reCAPTCHA Container -->
+    <div id="recaptcha-container"></div>
+
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+            apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c",
             authDomain: "gogami-877be.firebaseapp.com",
             projectId: "gogami-877be",
             storageBucket: "gogami-877be.firebasestorage.app",
-            messagingSenderId: "843686112399",
-            appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+            messagingSenderId: "220921167245",
+            appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+            measurementId: "G-2Q572T3D8J"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -327,13 +331,13 @@
             const el = document.getElementById(elementId); 
             if (el) { 
                 el.innerText = message; 
-                setTimeout(() => el.innerText = '', 4000); 
+                setTimeout(() => el.innerText = '', 5000); 
             } 
         }
         
         function initRecaptcha() { 
             if (!recaptchaVerifier) { 
-                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { 
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 
                     'size': 'invisible',
                     'callback': (response) => {} 
                 }); 
@@ -375,8 +379,10 @@
                     showError(errorId, error.message); 
                     btnElement.disabled = false; 
                     btnElement.innerText = 'Login with OTP';
-                    if (recaptchaVerifier) {
-                        recaptchaVerifier.render().then(widgetId => { grecaptcha.reset(widgetId); });
+                    if (window.grecaptcha && recaptchaVerifier) {
+                        recaptchaVerifier.render().then(widgetId => {
+                            grecaptcha.reset(widgetId);
+                        });
                     }
                 });
             } catch (e) {
