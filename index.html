@@ -22,18 +22,18 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #e0e8f5;
+            background-color: #0a192f;
             overflow: hidden;
         }
 
-        /* App-like Splash / Loading Screen */
+        /* Android App Style Splash / Loading Screen */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #0a192f 0%, #1e3a8a 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -43,16 +43,16 @@
         }
 
         .splash-logo {
-            width: 130px;
+            width: 140px;
             height: auto;
             animation: logoPulse 1.8s infinite ease-in-out;
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+            filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
         }
 
         @keyframes logoPulse {
-            0% { transform: scale(0.95); opacity: 0.8; }
+            0% { transform: scale(0.95); opacity: 0.85; }
             50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.85; }
         }
 
         .spinner {
@@ -60,7 +60,7 @@
             width: 32px;
             height: 32px;
             border: 3.5px solid rgba(255, 255, 255, 0.2);
-            border-top: 3.5px solid #ffffff;
+            border-top: 3.5px solid #60a5fa;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -70,117 +70,104 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Mobile View App Container */
+        /* Full Screen Blue Container */
         .app-container {
             width: 100%;
             max-width: 420px;
             height: 100vh;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
-            overflow: hidden;
-        }
-
-        /* Top Header Area with Blue Accent */
-        .top-header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            padding: 40px 20px 30px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-bottom-left-radius: 28px;
-            border-bottom-right-radius: 28px;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
-        }
-
-        .brand-logo {
-            width: 110px;
-            height: auto;
-            margin-bottom: 8px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-        }
-
-        .tagline {
-            font-size: 11px;
-            color: #dbeafe;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        /* Main Form Area (Clean White & Blue UI) */
-        .main-content {
-            flex: 1;
-            padding: 30px 24px;
+            background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: #ffffff;
+            padding: 24px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
         }
 
+        /* Brand Logo Layout */
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .brand-logo {
+            width: 130px;
+            height: auto;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        .tagline {
+            font-size: 11px;
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: 700;
+        }
+
+        /* Form Area - Full Blue Transparent Minimalist UI */
         .screen { 
             width: 100%; 
             display: flex; 
             flex-direction: column; 
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 24px 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            align-items: center;
         }
         
         .hidden { display: none !important; }
 
         .input-field {
-            background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 13px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 14px 18px;
             width: 100%;
-            color: #0f172a;
+            color: #ffffff;
             font-size: 15px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             outline: none;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             text-align: center;
             font-weight: 600;
             letter-spacing: 1px;
+            backdrop-filter: blur(8px);
         }
 
         .input-field:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+            border-color: #60a5fa;
+            background: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
         }
 
         .input-field::placeholder { color: #94a3b8; font-weight: 500; letter-spacing: 0; }
 
         .btn {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            border: none;
-            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
             color: #ffffff;
             font-weight: 700;
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
-            transition: all 0.15s ease;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
         }
 
         .btn:active { 
-            transform: scale(0.98); 
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+            transform: scale(0.97); 
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
         }
 
-        .welcome-text { color: #334155; font-size: 14px; margin-bottom: 12px; text-align: center; font-weight: 600; }
-        .timer { color: #d97706; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; font-family: monospace; }
-        .error-text { color: #ef4444; font-size: 12px; text-align: center; margin-top: 8px; font-weight: 600; }
+        .welcome-text { color: #e2e8f0; font-size: 14px; margin-bottom: 14px; text-align: center; font-weight: 600; }
+        .timer { color: #f59e0b; font-size: 13px; font-weight: 700; margin-bottom: 14px; text-align: center; font-family: monospace; }
+        .error-text { color: #f87171; font-size: 12px; text-align: center; margin-top: 10px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -192,32 +179,30 @@
     </div>
 
     <div class="app-container">
-        <div class="top-header">
+        <div class="brand-section">
             <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
             <div class="tagline">Official Platform</div>
         </div>
 
-        <div class="main-content">
-            <div id="phoneScreen" class="screen">
-                <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-                <button class="btn" id="sendOtpBtn">Login with OTP</button>
-                <div id="phoneError" class="error-text"></div>
-            </div>
+        <div id="phoneScreen" class="screen">
+            <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+            <button class="btn" id="sendOtpBtn">Login with OTP</button>
+            <div id="phoneError" class="error-text"></div>
+        </div>
 
-            <div id="otpScreen" class="screen hidden">
-                <div class="welcome-text">Enter OTP sent to your mobile</div>
-                <div class="timer" id="timer">Second Remaining 60</div>
-                <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-                <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
-                <div id="otpError" class="error-text"></div>
-            </div>
+        <div id="otpScreen" class="screen hidden">
+            <div class="welcome-text">Enter OTP sent to your mobile</div>
+            <div class="timer" id="timer">Second Remaining 60</div>
+            <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+            <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
+            <div id="otpError" class="error-text"></div>
+        </div>
 
-            <div id="registerScreen" class="screen hidden">
-                <div class="welcome-text">Complete Your Profile</div>
-                <input type="text" id="regName" class="input-field" placeholder="Full Name">
-                <button class="btn" id="registerBtn">Create Account & Login</button>
-                <div id="regError" class="error-text"></div>
-            </div>
+        <div id="registerScreen" class="screen hidden">
+            <div class="welcome-text">Complete Your Profile</div>
+            <input type="text" id="regName" class="input-field" placeholder="Full Name">
+            <button class="btn" id="registerBtn">Create Account & Login</button>
+            <div id="regError" class="error-text"></div>
         </div>
     </div>
 
