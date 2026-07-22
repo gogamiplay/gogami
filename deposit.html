@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GOGAMI - Deposit Funds</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding-bottom: 100px; min-height: 100vh; }
+        
+        /* Fast Splash Loader Screen */
+        .splash-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s ease; }
+        .splash-logo { font-size: 32px; font-weight: 900; letter-spacing: 4px; background: linear-gradient(45deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        .app-container { max-width: 480px; margin: 0 auto; background: #0f172a; min-height: 100vh; padding: 16px; position: relative; }
+        
+        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 20px 0; }
+        .back-btn { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+        .app-title { font-weight: 800; font-size: 20px; letter-spacing: 2px; color: #3b82f6; }
+        .balance-pill { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; color: #10b981; font-weight: 700; font-size: 14px; }
+
+        .deposit-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .deposit-title { color: #f8fafc; font-size: 18px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+        
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+        .amount-btn { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 6px; text-align: center; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+        .amount-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+        
+        .custom-amount, .utr-input-box { background: #0f172a; border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid #334155; }
+        .custom-amount input, .utr-input-box input { width: 100%; background: transparent; border: none; outline: none; font-size: 15px; font-weight: 600; color: #fff; text-align: center; }
+        
+        .generate-btn, .paid-btn { width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; text-transform: uppercase; }
+        .paid-btn { background: #10b981; margin-top: 10px; }
+        
+        .qr-section { background: #0f172a; border-radius: 12px; padding: 20px; text-align: center; margin-top: 18px; display: none; border: 1px solid #334155; }
+        #qrcode { display: flex; justify-content: center; margin: 12px 0; padding: 10px; background: #fff; border-radius: 8px; width: fit-content; margin: 0 auto; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 10px 6px 14px 6px; border-top: 1px solid #334155; z-index: 1000; height: 70px; }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600; text-decoration: none; }
+        .nav-item.active { color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+<!-- Fast GOGAMI Splash Screen -->
+<div class="splash-overlay" id="splashScreen">
+    <div class="splash-logo">GOGAMI</div>
+    <div style="font-size:12px; color:#64748b; margin-top:8px;">Loading Secure Console...</div>
+</div>
+
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="window.location.href='dashboard.html'">←</button>
+        <span class="app-title">GOGAMI</span>
+        <div class="balance-pill">₹<span id="userBalance">0</span></div>
+    </div>
+
+    <div class="deposit-card">
+        <div class="deposit-title">Deposit Console</div>
+        <div class="amount-grid">
+            <div class="amount-btn" onclick="selectAmount(200)">+ ₹200</div>
+            <div class="amount-btn active" onclick="selectAmount(500)">+ ₹500</div>
+            <div class="amount-btn" onclick="selectAmount(1000)">+ ₹1000</div>
+        </div>
+        <div class="custom-amount">
+            <input type="number" id="customAmount" placeholder="Enter custom value (Min ₹200)">
+        </div>
+        
+        <button class="generate-btn" id="generateBtn" onclick="generateQR()">Proceed to Payment QR</button>
+
+        <div class="qr-section" id="qrSection">
+            <div id="qrcode"></div>
+            <p style="font-size:14px; font-weight:700; color:#e2e8f0; margin-top:8px;">Amount Due: ₹<span id="qrAmount">0</span></p>
+            
+            <!-- UTR Input Module -->
+            <div class="utr-input-box" style="margin-top:15px;">
+                <input type="text" id="utrNumber" maxlength="12" placeholder="Enter 12-Digit UTR / Ref No.">
+            </div>
+            
+            <button class="paid-btn" id="paidBtn" onclick="confirmPayment()">Submit UTR & Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        authDomain: "gogami-877be.firebaseapp.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "843686112399",
+        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null, currentUserData = null, selectedAmount = 500, upiId = "gogami@axl";
+
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        currentUser = user;
+        const doc = await db.collection('users').doc(user.uid).get();
+        if(doc.exists) {
+            currentUserData = doc.data();
+            document.getElementById('userBalance').innerText = currentUserData.balance || 0;
+        }
+        // Hide Splash Screen Fast
+        document.getElementById('splashScreen').style.opacity = '0';
+        setTimeout(() => document.getElementById('splashScreen').style.display = 'none', 300);
+    });
+
+    function selectAmount(amt){
+        selectedAmount = amt;
+        document.getElementById('customAmount').value = '';
+    }
+
+    function getAmount(){
+        let custom = parseInt(document.getElementById('customAmount').value);
+        return (custom && custom >= 200) ? custom : selectedAmount;
+    }
+
+    function generateQR(){
+        let amt = getAmount();
+        let upiString = `upi://pay?pa=${upiId}&pn=GOGAMI&am=${amt}&cu=INR`;
+        document.getElementById('qrcode').innerHTML = '';
+        new QRCode(document.getElementById("qrcode"), { text: upiString, width: 170, height: 170 });
+        document.getElementById('qrAmount').innerText = amt;
+        document.getElementById('qrSection').style.display = 'block';
+        document.getElementById('generateBtn').style.display = 'none';
+    }
+
+    async function confirmPayment(){
+        let amt = getAmount();
+        let utr = document.getElementById('utrNumber').value.trim();
+        
+        if(!utr || utr.length < 6) {
+            alert("⚠️ Please enter a valid UTR / Reference Number.");
+            return;
+        }
+
+        try {
+            await db.collection('transactions').add({
+                userId: currentUser.uid,
+                userMobile: currentUserData?.phone || '',
+                type: 'credit',
+                amount: amt,
+                status: 'Pending',
+                utr: utr,
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                description: 'Deposit Request via UTR: ' + utr
+            });
+            alert("✅ Deposit request & UTR submitted successfully! Admin verification pending.");
+            window.location.href = 'dashboard.html';
+        } catch(e) {
+            alert("Error: " + e.message);
+        }
+    }
+</script>
+</body>
+</html>
