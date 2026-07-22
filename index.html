@@ -78,38 +78,78 @@
             background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 24px;
             position: relative;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
-        /* Brand Logo Layout */
+        /* Top Sliding Notice / Ticker Marquee */
+        .ticker-container {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 30;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: tickerScroll 20s linear infinite;
+        }
+
+        @keyframes tickerScroll {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Main Content Layout (Positioned Upwards) */
+        .main-content {
+            flex: 1;
+            width: 100%;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        /* Brand Logo Layout (Compact & Shifted Up) */
         .brand-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 35px;
+            margin-top: 10px;
+            margin-bottom: 20px;
         }
 
         .brand-logo {
-            width: 130px;
+            width: 115px;
             height: auto;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+            margin-bottom: 6px;
+            filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.3));
         }
 
         .tagline {
-            font-size: 11px;
+            font-size: 10px;
             color: #93c5fd;
             text-transform: uppercase;
-            letter-spacing: 2.5px;
+            letter-spacing: 2px;
             font-weight: 700;
         }
 
-        /* Form Area - Full Blue Transparent Minimalist UI */
+        /* Form Area */
         .screen { 
             width: 100%; 
             display: flex; 
@@ -123,11 +163,11 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1.5px solid rgba(255, 255, 255, 0.18);
             border-radius: 14px;
-            padding: 14px 18px;
+            padding: 12px 18px;
             width: 100%;
             color: #ffffff;
             font-size: 15px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             outline: none;
             transition: all 0.25s ease;
             text-align: center;
@@ -146,7 +186,7 @@
 
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 13px;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 14px;
@@ -165,9 +205,32 @@
             box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
         }
 
-        .welcome-text { color: #e2e8f0; font-size: 14px; margin-bottom: 14px; text-align: center; font-weight: 600; }
-        .timer { color: #f59e0b; font-size: 13px; font-weight: 700; margin-bottom: 14px; text-align: center; font-family: monospace; }
-        .error-text { color: #f87171; font-size: 12px; text-align: center; margin-top: 10px; font-weight: 600; }
+        /* Bottom Description Card Box */
+        .description-card {
+            width: 100%;
+            margin-top: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 16px;
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .description-card h4 {
+            color: #60a5fa;
+            font-size: 13px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .welcome-text { color: #e2e8f0; font-size: 14px; margin-bottom: 12px; text-align: center; font-weight: 600; }
+        .timer { color: #f59e0b; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; font-family: monospace; }
+        .error-text { color: #f87171; font-size: 12px; text-align: center; margin-top: 8px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -179,30 +242,43 @@
     </div>
 
     <div class="app-container">
-        <div class="brand-section">
-            <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
-            <div class="tagline">Official Platform</div>
+        <!-- Top Sliding Notice Marquee -->
+        <div class="ticker-container">
+            <div class="ticker-text" id="marqueeText">Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App</div>
         </div>
 
-        <div id="phoneScreen" class="screen">
-            <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-            <button class="btn" id="sendOtpBtn">Login with OTP</button>
-            <div id="phoneError" class="error-text"></div>
-        </div>
+        <div class="main-content">
+            <div class="brand-section">
+                <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
+                <div class="tagline">Official Platform</div>
+            </div>
 
-        <div id="otpScreen" class="screen hidden">
-            <div class="welcome-text">Enter OTP sent to your mobile</div>
-            <div class="timer" id="timer">Second Remaining 60</div>
-            <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-            <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
-            <div id="otpError" class="error-text"></div>
-        </div>
+            <div id="phoneScreen" class="screen">
+                <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                <button class="btn" id="sendOtpBtn">Login with OTP</button>
+                <div id="phoneError" class="error-text"></div>
+            </div>
 
-        <div id="registerScreen" class="screen hidden">
-            <div class="welcome-text">Complete Your Profile</div>
-            <input type="text" id="regName" class="input-field" placeholder="Full Name">
-            <button class="btn" id="registerBtn">Create Account & Login</button>
-            <div id="regError" class="error-text"></div>
+            <div id="otpScreen" class="screen hidden">
+                <div class="welcome-text">Enter OTP sent to your mobile</div>
+                <div class="timer" id="timer">Second Remaining 60</div>
+                <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
+                <div id="otpError" class="error-text"></div>
+            </div>
+
+            <div id="registerScreen" class="screen hidden">
+                <div class="welcome-text">Complete Your Profile</div>
+                <input type="text" id="regName" class="input-field" placeholder="Full Name">
+                <button class="btn" id="registerBtn">Create Account & Login</button>
+                <div id="regError" class="error-text"></div>
+            </div>
+
+            <!-- Description Box at Bottom -->
+            <div class="description-card" id="descriptionBox">
+                <h4>Information</h4>
+                <p>Welcome to GOGAMI Official Platform. Fast and Secure experience guaranteed.</p>
+            </div>
         </div>
     </div>
 
