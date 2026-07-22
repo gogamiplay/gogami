@@ -18,14 +18,15 @@
         .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Compact Premium Support Bar Layout */
         .chat-header {
-            background: #1e293b;
+            background: #0f172a;
             padding: 0 16px;
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #1e293b;
             flex-shrink: 0;
             z-index: 1000;
         }
@@ -45,9 +46,9 @@
             flex-direction: column;
         }
         .chat-title {
-            color: #3b82f6;
+            color: #f8fafc;
             font-size: 15px;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: 0.5px;
         }
         .status {
@@ -57,6 +58,7 @@
             margin-top: 1px;
         }
 
+        /* Message Stream Elements Section */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -86,7 +88,6 @@
             background: #1e293b;
             color: #f1f5f9;
             align-self: flex-start;
-            border: 1px solid #334155;
         }
         .message-time {
             font-size: 10px;
@@ -105,8 +106,7 @@
         }
         
         .welcome-msg {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
+            background: #1e293b;
             border-radius: 12px;
             padding: 20px 16px;
             text-align: center;
@@ -135,6 +135,7 @@
             font-weight: 500;
         }
 
+        /* Borderless Active Chat Console Input Panel */
         .chat-input-area {
             background: #1e293b;
             padding: 10px 14px;
@@ -143,7 +144,6 @@
             flex-shrink: 0;
             align-items: center;
             min-height: 64px;
-            border-top: 1px solid #334155;
         }
         .image-btn {
             background: #334155;
@@ -167,7 +167,6 @@
             display: flex;
             align-items: center;
             height: 42px;
-            border: 1px solid #334155;
         }
         .chat-input {
             width: 100%;
@@ -178,10 +177,10 @@
             font-size: 14px;
             font-weight: 500;
         }
-        .chat-input::placeholder { color: #64748b; }
+        .chat-input::placeholder { color: #475569; }
         
         .send-btn {
-            background: #10b981;
+            background: #22c55e;
             border: none;
             border-radius: 8px;
             height: 42px;
@@ -194,8 +193,9 @@
             text-transform: uppercase;
             flex-shrink: 0;
         }
-        .send-btn:active { background: #059669; }
+        .send-btn:active { background: #16a34a; }
 
+        /* Media Modal View Stack Overlay */
         .image-modal {
             display: none;
             position: fixed;
@@ -253,22 +253,26 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
-            authDomain: "gogami-877be.firebaseapp.com",
-            projectId: "gogami-877be",
-            storageBucket: "gogami-877be.firebasestorage.app",
-            messagingSenderId: "843686112399",
-            appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c", 
+            authDomain: "gogami-877be.firebaseapp.com", 
+            projectId: "gogami-877be", 
+            storageBucket: "gogami-877be.firebasestorage.app", 
+            messagingSenderId: "220921167245", 
+            appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+            measurementId: "G-2Q572T3D8J"
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         function showLoader() {
-            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
-            div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div);
+            if (!document.getElementById('pageLoader')) {
+                let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
+                div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div);
+            }
         }
         function hideLoader() { let el = document.getElementById('pageLoader'); if (el) el.remove(); }
 
@@ -322,20 +326,21 @@
                 });
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-            });
+            }, err => {});
 
             db.collection('chats').doc(chatRoomId).onSnapshot((doc) => {
                 if (doc.exists) {
-                    document.getElementById('typingIndicator').style.display = doc.data().adminTyping ? 'block' : 'none';
+                    let typingEl = document.getElementById('typingIndicator');
+                    if (typingEl) typingEl.style.display = doc.data().adminTyping ? 'block' : 'none';
                     if (doc.data().adminUnread === true) {
                         db.collection('chats').doc(chatRoomId).update({ adminUnread: false }).catch(() => {});
                     }
                 }
-            });
+            }, err => {});
         }
 
         async function sendMessage() {
-            if (!chatRoomId) { alert("Establishing connection..."); return; }
+            if (!chatRoomId) { alert("Please wait, establishing secure connection..."); return; }
             const input = document.getElementById('messageInput');
             const text = input.value.trim(); if (!text) return;
             input.value = '';
@@ -345,14 +350,14 @@
                     senderId: currentUser.uid, senderName: currentUserData?.name || 'User', text: text, type: 'text', timestamp: firebase.firestore.FieldValue.serverTimestamp(), isUser: true
                 });
                 await db.collection('chats').doc(chatRoomId).set({ lastMessage: text, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(), unread: true }, { merge: true });
-            } catch (e) { alert("Message sending error: " + e.message); }
+            } catch (e) { alert("Message error: " + e.message); }
         }
 
         async function sendImage(input) {
-            if (!chatRoomId) { alert("Establishing connection..."); return; }
+            if (!chatRoomId) { alert("Please wait, establishing secure connection..."); return; }
             const file = input.files[0]; if (!file) return;
-            if (!file.type.startsWith('image/')) { alert('Please select a valid image'); return; }
-            if (file.size > 5 * 1024 * 1024) { alert('Image size must be under 5MB'); return; }
+            if (!file.type.startsWith('image/')) { alert('Select standard image formats'); return; }
+            if (file.size > 5 * 1024 * 1024) { alert('File size must be under 5MB'); return; }
 
             const btn = document.querySelector('.image-btn');
             btn.disabled = true; btn.innerHTML = '..';
@@ -367,7 +372,7 @@
                     senderId: currentUser.uid, senderName: currentUserData?.name || 'User', imageUrl: imageUrl, type: 'image', timestamp: firebase.firestore.FieldValue.serverTimestamp(), isUser: true
                 });
                 await db.collection('chats').doc(chatRoomId).set({ lastMessage: '📷 Media Attachment', lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(), unread: true }, { merge: true });
-            } catch (e) { alert("Upload error occurred"); } 
+            } catch (e) { alert("Upload failed."); } 
             finally { btn.disabled = false; btn.innerHTML = '📷'; input.value = ''; }
         }
 
