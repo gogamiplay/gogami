@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GOGAMI - Withdraw Funds</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding-bottom: 100px; min-height: 100vh; }
+        .app-container { max-width: 480px; margin: 0 auto; padding: 16px; }
+        
+        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 20px 0; }
+        .back-btn-top { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+        .app-title { font-weight: 800; font-size: 20px; letter-spacing: 2px; color: #3b82f6; }
+        .balance-pill { background: #1e293b; border: 1px solid #334155; padding: 6px 14px; border-radius: 20px; color: #10b981; font-weight: 700; font-size: 14px; }
+
+        .withdraw-card { background: #1e293b; border-radius: 16px; padding: 20px; border: 1px solid #334155; }
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+        .amount-btn { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px 6px; text-align: center; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+        .amount-btn.active { background: #3b82f6; color: #fff; }
+        
+        .custom-amount { background: #0f172a; border-radius: 10px; padding: 14px; margin-bottom: 18px; border: 1px solid #334155; }
+        .custom-amount input { width: 100%; background: transparent; border: none; outline: none; font-size: 16px; font-weight: 700; color: #fff; text-align: center; }
+
+        .bank-info { background: #0f172a; border-radius: 10px; padding: 14px; margin-bottom: 18px; border: 1px solid #334155; }
+        .withdraw-btn { width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; }
+        
+        .terms-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .terms-content { background: #1e293b; border-radius: 16px; padding: 24px; width: 90%; max-width: 360px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn-top" onclick="goBack()">←</button>
+        <span class="app-title">GOGAMI</span>
+        <div class="balance-pill" onclick="alert('Balance: ₹' + (currentUserData?.balance||0))">₹<span id="userBalance">0</span></div>
+    </div>
+
+    <div class="withdraw-card">
+        <div style="color:#f8fafc; font-size:18px; font-weight:700; margin-bottom:16px; text-align:center;">Withdraw Cash</div>
+        <div class="amount-grid">
+            <div class="amount-btn" onclick="selectAmount(500)">₹500</div>
+            <div class="amount-btn" onclick="selectAmount(1000)">₹1000</div>
+            <div class="amount-btn" onclick="selectAmount(2000)">₹2000</div>
+        </div>
+        <div class="custom-amount">
+            <input type="number" id="withdrawAmount" placeholder="Enter custom amount (Min ₹500)">
+        </div>
+        <div class="bank-info">
+            <h4 style="color:#94a3b8; font-size:13px; margin-bottom:10px;">🏦 Active Bank Destination</h4>
+            <div id="bankInfoContent">Loading account details...</div>
+        </div>
+        <button class="withdraw-btn" id="withdrawBtn" onclick="showTermsPopup()">Submit Cashout Request</button>
+    </div>
+</div>
+
+<div id="termsPopup" class="terms-popup">
+    <div class="terms-content">
+        <h2 style="color:#f8fafc; text-align:center; margin-bottom:14px; font-size:18px;">🌸 PROCESSING POLICY</h2>
+        <div style="color:#cbd5e1; font-size:13px; line-height:1.6; margin-bottom:18px;">
+            <ul>
+                <li>Minimum settlement withdrawal: ₹500</li><li>Processing time: 10-60 minutes</li><li>Available 24/7</li>
+            </ul>
+        </div>
+        <button style="width:100%; padding:12px; background:#22c55e; border:none; border-radius:8px; color:#fff; font-weight:700;" onclick="acceptTermsAndWithdraw()">I Agree, Continue</button>
+        <button style="width:100%; padding:10px; background:#334155; border:none; border-radius:8px; color:#cbd5e1; font-weight:700; margin-top:8px;" onclick="closeTermsPopup()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        authDomain: "gogami-877be.firebaseapp.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "843686112399",
+        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null, currentUserData = null, selectedAmount = 500, pendingBankDetails = null;
+
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        currentUser = user;
+        const doc = await db.collection('users').doc(user.uid).get();
+        if(doc.exists) {
+            currentUserData = doc.data();
+            document.getElementById('userBalance').innerText = currentUserData.balance || 0;
+            pendingBankDetails = currentUserData.bankDetails || null;
+            loadBankDetails();
+        }
+    });
+
+    function loadBankDetails() {
+        let container = document.getElementById('bankInfoContent');
+        if(pendingBankDetails && pendingBankDetails.accountNumber) {
+            container.innerHTML = `<div>Bank: ${pendingBankDetails.bankName}</div><div>Account: ${pendingBankDetails.accountNumber}</div>`;
+        } else {
+            container.innerHTML = `<div style="color:#ef4444;">No bank details bound!</div>`;
+        }
+    }
+
+    function selectAmount(amt) { selectedAmount = amt; document.getElementById('withdrawAmount').value = ''; }
+    function getAmount() { let c = parseInt(document.getElementById('withdrawAmount').value); return (c && c >= 500) ? c : selectedAmount; }
+
+    async function showTermsPopup() {
+        let amt = getAmount();
+        if(amt < 500) { alert("Minimum ₹500 required"); return; }
+        if(amt > (currentUserData?.balance || 0)) { alert("Insufficient Balance!"); return; }
+        if(!pendingBankDetails) { alert("Please add bank details first!"); return; }
+        
+        document.getElementById('termsPopup').style.display = 'flex';
+    }
+
+    function closeTermsPopup() { document.getElementById('termsPopup').style.display = 'none'; }
+
+    async function acceptTermsAndWithdraw() {
+        document.getElementById('termsPopup').style.display = 'none';
+        let amt = getAmount();
+        
+        try {
+            await db.collection('withdrawRequests').add({
+                userId: currentUser.uid,
+                amount: amt,
+                bankDetails: pendingBankDetails,
+                status: 'Pending',
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await db.collection('transactions').add({
+                userId: currentUser.uid,
+                type: 'debit',
+                amount: amt,
+                status: 'Pending',
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                description: 'Withdrawal Request'
+            });
+            alert("✅ Withdrawal Request Sent!");
+            window.location.href = 'dashboard.html';
+        } catch(e) { alert("Error: " + e.message); }
+    }
+
+    function goBack() { window.location.href = 'dashboard.html'; }
+</script>
+</body>
+</html>
