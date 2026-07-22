@@ -3,214 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOGAMI - Login & Register</title>
+    <title>GOGAMI - Official</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0a192f;
+            overflow: hidden;
+        }
+
+        /* Android App Style Splash / Loading Screen */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a192f 0%, #1e3a8a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .splash-logo {
+            width: 140px;
+            height: auto;
+            animation: logoPulse 1.8s infinite ease-in-out;
+            filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(0.95); opacity: 0.85; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.85; }
+        }
+
+        .spinner {
+            margin-top: 25px;
+            width: 32px;
+            height: 32px;
+            border: 3.5px solid rgba(255, 255, 255, 0.2);
+            border-top: 3.5px solid #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full Screen Blue Container */
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Top Sliding Notice Marquee */
+        .ticker-container {
+            width: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 7px 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 30;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            white-space: nowrap;
+            height: 32px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: tickerScroll 20s linear infinite;
+        }
+
+        @keyframes tickerScroll {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            flex: 1;
+            width: 100%;
+            padding: 30px 24px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .center-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        /* Brand Logo Layout */
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-logo {
+            width: 125px;
+            height: auto;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .tagline {
+            font-size: 10px;
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        /* Form Area */
+        .screen { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+        }
         
-        body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; }
-        .app-container { width: 100%; max-width: 420px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-radius: 20px; padding: 28px 22px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.35); position: relative; }
-        
-        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .splash-logo { font-size: 32px; font-weight: 900; letter-spacing: 4px; color: #3b82f6; animation: pulse 1.2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-        .brand-header { text-align: center; margin-bottom: 24px; }
-        .brand-title { font-size: 28px; font-weight: 900; letter-spacing: 3px; color: #3b82f6; }
-        .brand-subtitle { font-size: 13px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
-
-        .auth-tab-bar { display: flex; background: #0f172a; border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid #334155; }
-        .auth-tab { flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #94a3b8; cursor: pointer; text-transform: uppercase; transition: all 0.2s ease; }
-        .auth-tab.active { background: #3b82f6; color: #fff; }
-
-        .form-group { margin-bottom: 14px; }
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-        .form-input { width: 100%; padding: 12px 14px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; font-size: 14px; color: #fff; font-weight: 600; outline: none; }
-        .form-input:focus { border-color: #3b82f6; }
-        .form-input::placeholder { color: #475569; font-weight: 500; }
-
-        .auth-btn { width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 14px; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); margin-top: 8px; }
-        .auth-btn:active { background: #2563eb; }
-
-        .forgot-link { display: block; text-align: right; font-size: 12px; color: #93c5fd; font-weight: 600; text-decoration: none; margin-top: -6px; margin-bottom: 14px; cursor: pointer; }
-
-        .msg-box { padding: 12px; border-radius: 8px; text-align: center; margin-top: 14px; font-size: 13px; font-weight: 600; display: none; }
-        .msg-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .msg-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-
         .hidden { display: none !important; }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 13px 18px;
+            width: 100%;
+            color: #ffffff;
+            font-size: 15px;
+            margin-bottom: 14px;
+            outline: none;
+            transition: all 0.25s ease;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1px;
+            backdrop-filter: blur(8px);
+        }
+
+        .input-field:focus {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        .input-field::placeholder { color: #94a3b8; font-weight: 500; letter-spacing: 0; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn:active { 
+            transform: scale(0.97); 
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .description-card {
+            width: 100%;
+            margin-top: auto;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .description-card h4 {
+            color: #38bdf8;
+            font-size: 13px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .welcome-text { color: #e2e8f0; font-size: 14px; margin-bottom: 12px; text-align: center; font-weight: 600; }
+        .timer { color: #f59e0b; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; font-family: monospace; }
+        .error-text { color: #f87171; font-size: 12px; text-align: center; margin-top: 8px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="brand-header">
-        <div class="brand-title">GOGAMI</div>
-        <div class="brand-subtitle">Official Trading Portal</div>
+    <!-- Android App Style Splash Screen -->
+    <div id="splashScreen">
+        <img src="https://i.imgur.com/SfJzcbI.png" alt="Gogami Logo" class="splash-logo">
+        <div class="spinner"></div>
     </div>
 
-    <div class="auth-tab-bar">
-        <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</div>
-        <div class="auth-tab" id="tabRegister" onclick="switchTab('register')">Register</div>
+    <div class="app-container">
+        <!-- Top Sliding Notice Marquee -->
+        <div class="ticker-container">
+            <div class="ticker-text" id="marqueeText">Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App</div>
+        </div>
+
+        <div class="main-content">
+            <div class="center-wrapper">
+                <div class="brand-section">
+                    <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
+                    <div class="tagline">Official Platform</div>
+                </div>
+
+                <div id="phoneScreen" class="screen">
+                    <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                    <button class="btn" id="sendOtpBtn">Login with OTP</button>
+                    <div id="phoneError" class="error-text"></div>
+                </div>
+
+                <div id="otpScreen" class="screen hidden">
+                    <div class="welcome-text">Enter OTP sent to your mobile</div>
+                    <div class="timer" id="timer">Second Remaining 60</div>
+                    <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                    <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
+                    <div id="otpError" class="error-text"></div>
+                </div>
+
+                <div id="registerScreen" class="screen hidden">
+                    <div class="welcome-text">Complete Your Profile</div>
+                    <input type="text" id="regName" class="input-field" placeholder="Full Name">
+                    <button class="btn" id="registerBtn">Create Account & Login</button>
+                    <div id="regError" class="error-text"></div>
+                </div>
+            </div>
+
+            <!-- Description Box Fixed at the Very Bottom -->
+            <div class="description-card" id="descriptionBox">
+                <h4>Information</h4>
+                <p>Welcome to GOGAMI Official Platform. Fast and Secure experience guaranteed.</p>
+            </div>
+        </div>
     </div>
 
-    <!-- LOGIN FORM -->
-    <div id="loginForm">
-        <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" id="loginPhone" class="form-input" placeholder="Enter 10-digit number" maxlength="10">
-        </div>
-        <div class="form-group">
-            <label class="form-label">4-Digit MPIN / Password</label>
-            <input type="password" id="loginPin" class="form-input" placeholder="Enter MPIN" maxlength="6">
-        </div>
-        <span class="forgot-link" onclick="handleForgotPin()">Forgot MPIN?</span>
-        <button class="auth-btn" onclick="executeLogin()">Log In</button>
-    </div>
-
-    <!-- REGISTER FORM -->
-    <div id="registerForm" class="hidden">
-        <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" id="regName" class="form-input" placeholder="Enter your full name">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" id="regPhone" class="form-input" placeholder="Enter 10-digit number" maxlength="10">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Set 4-Digit MPIN</label>
-            <input type="password" id="regPin" class="form-input" placeholder="Create 4-digit MPIN" maxlength="4">
-        </div>
-        <button class="auth-btn" onclick="executeRegister()">Create Account</button>
-    </div>
-
-    <div id="authMsg" class="msg-box"></div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
-        authDomain: "gogami-877be.firebaseapp.com",
-        projectId: "gogami-877be",
-        storageBucket: "gogami-877be.firebasestorage.app",
-        messagingSenderId: "843686112399",
-        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    function showLoader() {
-        let div = document.createElement('div');
-        div.className = 'loader-overlay';
-        div.id = 'pageLoader';
-        div.innerHTML = '<div class="splash-logo">GOGAMI</div>';
-        document.body.appendChild(div);
-    }
-    function hideLoader() {
-        let el = document.getElementById('pageLoader');
-        if(el) el.remove();
-    }
-
-    function switchTab(type) {
-        document.getElementById('authMsg').style.display = 'none';
-        if(type === 'login') {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('tabLogin').classList.add('active');
-            document.getElementById('tabRegister').classList.remove('active');
-        } else {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
-            document.getElementById('tabLogin').classList.remove('active');
-            document.getElementById('tabRegister').classList.add('active');
-        }
-    }
-
-    function showMsg(msg, type) {
-        let box = document.getElementById('authMsg');
-        box.innerText = msg;
-        box.className = `msg-box msg-${type}`;
-        box.style.display = 'block';
-    }
-
-    async function executeLogin() {
-        let phone = document.getElementById('loginPhone').value.trim();
-        let pin = document.getElementById('loginPin').value.trim();
-
-        if(!phone || phone.length !== 10) { showMsg('Please enter valid 10-digit phone number', 'error'); return; }
-        if(!pin) { showMsg('Please enter your MPIN', 'error'); return; }
-
-        let email = `${phone}@gogami.com`;
-        showLoader();
-
-        try {
-            let res = await auth.signInWithEmailAndPassword(email, pin);
-            await db.collection('users').doc(res.user.uid).update({
-                isOnline: true,
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            window.location.href = 'dashboard.html';
-        } catch(e) {
-            hideLoader();
-            showMsg('Invalid credentials or user does not exist', 'error');
-        }
-    }
-
-    async function executeRegister() {
-        let name = document.getElementById('regName').value.trim();
-        let phone = document.getElementById('regPhone').value.trim();
-        let pin = document.getElementById('regPin').value.trim();
-
-        if(!name) { showMsg('Please enter your name', 'error'); return; }
-        if(!phone || phone.length !== 10) { showMsg('Please enter valid 10-digit phone number', 'error'); return; }
-        if(!pin || pin.length !== 4) { showMsg('MPIN must be exactly 4 digits', 'error'); return; }
-
-        let email = `${phone}@gogami.com`;
-        showLoader();
-
-        try {
-            let userCheck = await db.collection('users').where('phone', '==', phone).get();
-            if(!userCheck.empty) {
-                hideLoader();
-                showMsg('Mobile number already registered! Please log in.', 'error');
-                return;
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+            authDomain: "gogami-877be.firebaseapp.com",
+            projectId: "gogami-877be",
+            storageBucket: "gogami-877be.firebasestorage.app",
+            messagingSenderId: "843686112399",
+            appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        
+        let confirmationResult = null, currentPhone = null, countdown = 0, timerInterval = null, recaptchaVerifier = null;
+        
+        function hideSplashScreen() {
+            const splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
             }
+        }
 
-            let res = await auth.createUserWithEmailAndPassword(email, pin);
-            await db.collection('users').doc(res.user.uid).set({
-                uid: res.user.uid,
-                name: name,
-                phone: phone,
-                pin: pin,
-                balance: 0,
-                isOnline: true,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        function showScreen(screen) {
+            document.getElementById('phoneScreen').className = 'screen hidden';
+            document.getElementById('otpScreen').className = 'screen hidden';
+            document.getElementById('registerScreen').className = 'screen hidden';
+            screen.className = 'screen';
+        }
+        
+        function showError(elementId, message) { const el = document.getElementById(elementId); if (el) { el.innerText = message; setTimeout(() => el.innerText = '', 4000); } }
+        
+        function initRecaptcha() { 
+            if (!recaptchaVerifier) { 
+                const container = document.createElement('div'); 
+                container.id = 'recaptcha-container'; 
+                container.style.position = 'absolute'; 
+                container.style.left = '-9999px'; 
+                document.body.appendChild(container); 
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' }); 
+            } 
+            return recaptchaVerifier; 
+        }
+        
+        function startTimer(seconds, timerElementId) { 
+            countdown = seconds; 
+            if (timerInterval) clearInterval(timerInterval); 
+            timerInterval = setInterval(() => { if (countdown <= 1) clearInterval(timerInterval); const timerEl = document.getElementById(timerElementId); if (timerEl && countdown > 0) timerEl.innerText = `Second Remaining ${countdown}`; countdown--; }, 1000); 
+        }
+
+        document.getElementById('sendOtpBtn').onclick = function() {
+            const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
+            if (!phone || phone.length !== 10) { showError('phoneError', 'Enter a valid 10-digit mobile number'); return; }
+            currentPhone = '+91' + phone;
+            sendVerificationPhone(currentPhone, this, 'phoneError');
+        };
+
+        function sendVerificationPhone(phoneNumber, btnElement, errorId) {
+            btnElement.disabled = true; btnElement.innerText = 'Sending...';
+            const verifier = initRecaptcha();
+            auth.signInWithPhoneNumber(phoneNumber, verifier).then(confirmation => { 
+                confirmationResult = confirmation; 
+                showScreen(document.getElementById('otpScreen')); 
+                startTimer(60, 'timer'); 
+                btnElement.disabled = false; 
+                btnElement.innerText = 'Login with OTP'; 
+            }).catch(error => { showError(errorId, error.message); btnElement.disabled = false; });
+        }
+        
+        document.getElementById('verifyOtpBtn').onclick = function() {
+            const code = document.getElementById('otpCode').value;
+            if (!code || code.length !== 6) { showError('otpError', 'Enter 6-digit OTP'); return; }
+            const btn = this; btn.disabled = true; btn.innerText = 'Verifying...';
+            
+            confirmationResult.confirm(code).then(result => { 
+                const user = result.user; 
+                db.collection('users').doc(user.uid).get().then(doc => { 
+                    if (doc.exists) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        showScreen(document.getElementById('registerScreen'));
+                        btn.disabled = false; btn.innerText = 'VERIFY OTP';
+                    }
+                }).catch(() => { showScreen(document.getElementById('registerScreen')); btn.disabled = false; }); 
+            }).catch(error => { showError('otpError', 'Invalid OTP'); btn.disabled = false; });
+        };
+        
+        document.getElementById('registerBtn').onclick = function() {
+            const name = document.getElementById('regName').value.trim();
+            if (!name) { showError('regError', 'Enter your name'); return; } 
+            
+            const user = auth.currentUser; if (!user) { showError('regError', 'Session expired'); return; }
+            const btn = this; btn.disabled = true; btn.innerText = 'Creating Account...';
+            
+            db.collection('users').doc(user.uid).set({ 
+                uid: user.uid, 
+                phone: user.phoneNumber, 
+                name: name, 
+                balance: 0, 
+                role: 'user', 
+                createdAt: new Date() 
+            }).then(() => { 
+                window.location.href = 'dashboard.html'; 
+            }).catch(error => { 
+                showError('regError', error.message); 
+                btn.disabled = false; btn.innerText = 'Create Account & Login'; 
             });
+        };
 
-            window.location.href = 'dashboard.html';
-        } catch(e) {
-            hideLoader();
-            showMsg('Registration failed: ' + e.message, 'error');
-        }
-    }
-
-    function handleForgotPin() {
-        alert("Please contact Live Support or Admin to reset your MPIN.");
-    }
-
-    showLoader();
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            window.location.href = 'dashboard.html';
-        } else {
-            hideLoader();
-        }
-    });
-</script>
+        auth.onAuthStateChanged(user => { 
+            if (user) { 
+                db.collection('users').doc(user.uid).get().then(doc => { 
+                    if (doc.exists) { 
+                        window.location.href = 'dashboard.html'; 
+                    } else { 
+                        showScreen(document.getElementById('registerScreen')); 
+                        hideSplashScreen();
+                    } 
+                }).catch(() => {
+                    showScreen(document.getElementById('phoneScreen'));
+                    hideSplashScreen();
+                }); 
+            } else { 
+                showScreen(document.getElementById('phoneScreen')); 
+                hideSplashScreen();
+            } 
+        });
+    </script>
 </body>
 </html>
