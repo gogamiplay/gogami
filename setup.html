@@ -1,68 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOGAMI - Initial Setup Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOGAMI - System Setup & Initialize</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .setup-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; width: 100%; max-width: 440px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: center; }
-        .logo { font-size: 28px; font-weight: 900; letter-spacing: 3px; background: linear-gradient(45deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .status { margin-top: 15px; font-size: 13px; color: #94a3b8; line-height: 1.5; text-align: left; background: #0f172a; padding: 12px; border-radius: 10px; max-height: 150px; overflow-y: auto; font-family: monospace; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 28px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .title { font-size: 22px; font-weight: 800; color: #3b82f6; text-align: center; margin-bottom: 8px; letter-spacing: 1px; }
+        .subtitle { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { font-size: 12px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+        input:focus { border-color: #3b82f6; }
+        .btn { width: 100%; padding: 12px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 8px; transition: background 0.2s; }
+        .btn:hover { background: #2563eb; }
+        .status-log { margin-top: 18px; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; display: none; }
+        .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
 </head>
 <body>
-    <div class="setup-card">
-        <div class="logo">GOGAMI</div>
-        <p style="color:#94a3b8; font-size:14px;">Database Auto-Initialization</p>
-        <button class="btn" onclick="runSetup()">Initialize Firestore Collections</button>
-        <div class="status" id="statusLog">Ready to initialize...</div>
+
+<div class="setup-card">
+    <div class="title">GOGAMI SETUP</div>
+    <div class="subtitle">Database & Admin Credential Initializer</div>
+
+    <div class="form-group">
+        <label>Admin Mobile / ID</label>
+        <input type="text" id="adminIdInput" value="admin" placeholder="Enter Admin Username">
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
-            authDomain: "gogami-877be.firebaseapp.com",
-            projectId: "gogami-877be",
-            storageBucket: "gogami-877be.firebasestorage.app",
-            messagingSenderId: "843686112399",
-            appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    <div class="form-group">
+        <label>Admin Password Set</label>
+        <input type="password" id="adminPassInput" value="123456" placeholder="Enter Admin Password">
+    </div>
 
-        function log(msg) {
-            const el = document.getElementById('statusLog');
-            el.innerHTML += '<br>> ' + msg;
-            el.scrollTop = el.scrollHeight;
+    <div class="form-group">
+        <label>Default Payment UPI ID</label>
+        <input type="text" id="upiIdInput" value="gogami@axl" placeholder="e.g. gogami@axl">
+    </div>
+
+    <button class="btn" onclick="runSystemSetup()">Run Initial Setup</button>
+    <div id="statusLog" class="status-log"></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        authDomain: "gogami-877be.firebaseapp.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "843686112399",
+        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function runSystemSetup() {
+        const log = document.getElementById('statusLog');
+        const adminId = document.getElementById('adminIdInput').value.trim();
+        const adminPass = document.getElementById('adminPassInput').value.trim();
+        const upiId = document.getElementById('upiIdInput').value.trim();
+
+        if(!adminId || !adminPass || !upiId) {
+            showLog("⚠️ Please fill all fields.", "error");
+            return;
         }
 
-        async function runSetup() {
-            log("Initializing GOGAMI DB...");
-            try {
-                await db.collection('settings').doc('upi').set({ upiId: 'gogami@axl' }, { merge: true });
-                log("✔ UPI Settings set.");
+        try {
+            showLog("Initializing Database...", "success");
 
-                await db.collection('settings').doc('notice').set({ text: 'Welcome to GOGAMI! Fast & Secure Gaming Platform.' }, { merge: true });
-                log("✔ Notice Board initialized.");
+            // 1. Setup Admin Credentials
+            await db.collection('settings').doc('admin').set({
+                username: adminId,
+                password: adminPass,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-                await db.collection('settings').doc('rates').set({
-                    'Single Digit': 10, 'Jodi': 100, 'Single Pana': 160,
-                    'Double Pana': 320, 'Triple Pana': 1000, 'Half Sangam A': 1000,
-                    'Half Sangam B': 1000, 'Full Sangam': 10000
-                }, { merge: true });
-                log("✔ Game Rates initialized.");
+            // 2. Setup Notice Board
+            await db.collection('settings').doc('notice').set({
+                text: "Welcome to GOGAMI Trading Platform! Fast deposits & Instant withdrawals available."
+            });
 
-                log("🚀 Setup Finished Successfully!");
-            } catch(e) {
-                log("❌ Setup Error: " + e.message);
-            }
+            // 3. Setup UPI Gateway
+            await db.collection('settings').doc('upi').set({
+                upiId: upiId
+            });
+
+            // 4. Setup Servertime Placeholder
+            await db.collection('settings').doc('servertime').set({
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showLog(`✅ Database Setup Complete!\nAdmin Password: ${adminPass}`, "success");
+        } catch (e) {
+            showLog("❌ Error: " + e.message, "error");
         }
-    </script>
+    }
+
+    function showLog(msg, type) {
+        const log = document.getElementById('statusLog');
+        log.style.display = 'block';
+        log.innerText = msg;
+        log.className = `status-log status-${type}`;
+    }
+</script>
 </body>
 </html>
