@@ -323,16 +323,20 @@
             screen.className = 'screen';
         }
         
-        function showError(elementId, message) { const el = document.getElementById(elementId); if (el) { el.innerText = message; setTimeout(() => el.innerText = '', 4000); } }
+        function showError(elementId, message) { 
+            const el = document.getElementById(elementId); 
+            if (el) { 
+                el.innerText = message; 
+                setTimeout(() => el.innerText = '', 4000); 
+            } 
+        }
         
         function initRecaptcha() { 
             if (!recaptchaVerifier) { 
-                const container = document.createElement('div'); 
-                container.id = 'recaptcha-container'; 
-                container.style.position = 'absolute'; 
-                container.style.left = '-9999px'; 
-                document.body.appendChild(container); 
-                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' }); 
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { 
+                    'size': 'invisible',
+                    'callback': (response) => {} 
+                }); 
             } 
             return recaptchaVerifier; 
         }
@@ -340,7 +344,12 @@
         function startTimer(seconds, timerElementId) { 
             countdown = seconds; 
             if (timerInterval) clearInterval(timerInterval); 
-            timerInterval = setInterval(() => { if (countdown <= 1) clearInterval(timerInterval); const timerEl = document.getElementById(timerElementId); if (timerEl && countdown > 0) timerEl.innerText = `Second Remaining ${countdown}`; countdown--; }, 1000); 
+            timerInterval = setInterval(() => { 
+                if (countdown <= 1) clearInterval(timerInterval); 
+                const timerEl = document.getElementById(timerElementId); 
+                if (timerEl && countdown > 0) timerEl.innerText = `Second Remaining ${countdown}`; 
+                countdown--; 
+            }, 1000); 
         }
 
         document.getElementById('sendOtpBtn').onclick = function() {
@@ -351,15 +360,30 @@
         };
 
         function sendVerificationPhone(phoneNumber, btnElement, errorId) {
-            btnElement.disabled = true; btnElement.innerText = 'Sending...';
-            const verifier = initRecaptcha();
-            auth.signInWithPhoneNumber(phoneNumber, verifier).then(confirmation => { 
-                confirmationResult = confirmation; 
-                showScreen(document.getElementById('otpScreen')); 
-                startTimer(60, 'timer'); 
-                btnElement.disabled = false; 
-                btnElement.innerText = 'Login with OTP'; 
-            }).catch(error => { showError(errorId, error.message); btnElement.disabled = false; });
+            btnElement.disabled = true; 
+            btnElement.innerText = 'Sending...';
+            
+            try {
+                const verifier = initRecaptcha();
+                auth.signInWithPhoneNumber(phoneNumber, verifier).then(confirmation => { 
+                    confirmationResult = confirmation; 
+                    showScreen(document.getElementById('otpScreen')); 
+                    startTimer(60, 'timer'); 
+                    btnElement.disabled = false; 
+                    btnElement.innerText = 'Login with OTP'; 
+                }).catch(error => { 
+                    showError(errorId, error.message); 
+                    btnElement.disabled = false; 
+                    btnElement.innerText = 'Login with OTP';
+                    if (recaptchaVerifier) {
+                        recaptchaVerifier.render().then(widgetId => { grecaptcha.reset(widgetId); });
+                    }
+                });
+            } catch (e) {
+                showError(errorId, e.message);
+                btnElement.disabled = false;
+                btnElement.innerText = 'Login with OTP';
+            }
         }
         
         document.getElementById('verifyOtpBtn').onclick = function() {
@@ -377,7 +401,7 @@
                         btn.disabled = false; btn.innerText = 'VERIFY OTP';
                     }
                 }).catch(() => { showScreen(document.getElementById('registerScreen')); btn.disabled = false; }); 
-            }).catch(error => { showError('otpError', 'Invalid OTP'); btn.disabled = false; });
+            }).catch(error => { showError('otpError', 'Invalid OTP'); btn.disabled = false; btn.innerText = 'VERIFY OTP'; });
         };
         
         document.getElementById('registerBtn').onclick = function() {
