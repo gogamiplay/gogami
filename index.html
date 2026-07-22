@@ -22,125 +22,127 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #030712;
+            background-color: #e0e8f5;
             overflow: hidden;
+        }
+
+        /* App-like Splash / Loading Screen */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .splash-logo {
+            width: 130px;
+            height: auto;
+            animation: logoPulse 1.8s infinite ease-in-out;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .spinner {
+            margin-top: 25px;
+            width: 32px;
+            height: 32px;
+            border: 3.5px solid rgba(255, 255, 255, 0.2);
+            border-top: 3.5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Mobile View App Container */
         .app-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             height: 100vh;
-            background: #0b0f19;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-            border-left: 1px solid rgba(255, 255, 255, 0.05);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15);
             overflow: hidden;
         }
 
-        /* Continuous Sliding Notice Top Marquee */
-        .ticker-container {
-            width: 100%;
-            background: #0f172a;
-            color: #38bdf8;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 7px 0;
-            overflow: hidden;
-            position: relative;
-            z-index: 30;
-            border-bottom: 1px solid #1e293b;
-            white-space: nowrap;
-            height: 32px;
+        /* Top Header Area with Blue Accent */
+        .top-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 40px 20px 30px 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
         }
 
-        .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: tickerScroll 20s linear infinite;
+        .brand-logo {
+            width: 110px;
+            height: auto;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
         }
 
-        @keyframes tickerScroll {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
+        .tagline {
+            font-size: 11px;
+            color: #dbeafe;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
 
-        /* Top Half - App Header & Login Panel */
-        .top-half {
-            padding: 24px 20px 20px 20px;
-            background: linear-gradient(180deg, #111827 0%, #0b0f19 100%);
+        /* Main Form Area (Clean White & Blue UI) */
+        .main-content {
+            flex: 1;
+            padding: 30px 24px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            position: relative;
-            z-index: 10;
+            background: #ffffff;
         }
 
-        /* High-Visibility Modern Branding Layout */
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .logo-text {
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 5s ease infinite;
-            filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.3));
-        }
-
-        @keyframes gradientShift {
-            0% { filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3)); }
-            50% { filter: drop-shadow(0 4px 12px rgba(236, 72, 153, 0.3)); }
-            100% { filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3)); }
-        }
-
-        .tagline {
-            font-size: 10px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 700;
-            margin-top: -2px;
-        }
-
-        /* Mobile Card Form Elements Stack */
         .screen { 
             width: 100%; 
             display: flex; 
             flex-direction: column; 
-            background: rgba(17, 24, 39, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 16px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         }
         
         .hidden { display: none !important; }
 
         .input-field {
-            background: #030712;
-            border: 1px solid #1f2937;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 13px 16px;
             width: 100%;
-            color: #ffffff;
-            font-size: 14px;
-            margin-bottom: 12px;
+            color: #0f172a;
+            font-size: 15px;
+            margin-bottom: 14px;
             outline: none;
             transition: all 0.2s ease;
             text-align: center;
@@ -149,110 +151,53 @@
         }
 
         .input-field:focus {
-            border-color: #8b5cf6;
-            box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
         }
 
-        .input-field::placeholder { color: #4b5563; font-weight: 500; letter-spacing: 0; }
+        .input-field::placeholder { color: #94a3b8; font-weight: 500; letter-spacing: 0; }
 
         .btn {
             width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             border: none;
             border-radius: 12px;
             color: #ffffff;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
             transition: all 0.15s ease;
         }
 
         .btn:active { 
-            transform: scale(0.97); 
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+            transform: scale(0.98); 
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
         }
 
-        .welcome-text { color: #f3f4f6; font-size: 13px; margin-bottom: 10px; text-align: center; font-weight: 600; }
-        .timer { color: #fbbf24; font-size: 12px; font-weight: 700; margin-bottom: 10px; text-align: center; font-family: monospace; }
-        .error-text { color: #f87171; font-size: 11px; text-align: center; margin-top: 6px; font-weight: 700; }
-
-        /* Modern Joint Divider */
-        .professional-divider {
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        }
-
-        /* Lower Real-Time Results Section */
-        .bottom-half {
-            flex: 1;
-            background: #0b0f19;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .marquee-wrapper {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .marquee-content {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 14px;
-            animation: scrollUp 20s linear infinite;
-        }
-
-        .marquee-wrapper:hover .marquee-content { animation-play-state: paused; }
-
-        @keyframes scrollUp {
-            0% { transform: translateY(0%); }
-            100% { transform: translateY(-50%); }
-        }
-
-        .market-card {
-            background: #111827;
-            border-left: 4px solid #8b5cf6;
-            border-radius: 12px;
-            padding: 14px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            border-right: 1px solid rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .market-name { font-size: 13px; font-weight: 700; color: #f9fafb; text-transform: uppercase; letter-spacing: 0.5px; }
-        .market-time { font-size: 11px; color: #6b7280; margin-top: 3px; font-weight: 600; }
-        .market-number { font-size: 16px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; font-family: monospace; }
+        .welcome-text { color: #334155; font-size: 14px; margin-bottom: 12px; text-align: center; font-weight: 600; }
+        .timer { color: #d97706; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; font-family: monospace; }
+        .error-text { color: #ef4444; font-size: 12px; text-align: center; margin-top: 8px; font-weight: 600; }
     </style>
 </head>
 <body>
 
+    <!-- Android App Style Splash Screen -->
+    <div id="splashScreen">
+        <img src="https://i.imgur.com/SfJzcbI.png" alt="Gogami Logo" class="splash-logo">
+        <div class="spinner"></div>
+    </div>
+
     <div class="app-container">
-        <div class="ticker-container">
-            <div class="ticker-text">Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Welcome to GOGAMI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App</div>
+        <div class="top-header">
+            <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
+            <div class="tagline">Official Platform</div>
         </div>
 
-        <div class="top-half">
-            <div class="logo-container">
-                <div class="logo-text">GOGAMI</div>
-                <div class="tagline">Official Satta Matka Platform</div>
-            </div>
-            
+        <div class="main-content">
             <div id="phoneScreen" class="screen">
                 <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
                 <button class="btn" id="sendOtpBtn">Login with OTP</button>
@@ -272,16 +217,6 @@
                 <input type="text" id="regName" class="input-field" placeholder="Full Name">
                 <button class="btn" id="registerBtn">Create Account & Login</button>
                 <div id="regError" class="error-text"></div>
-            </div>
-        </div>
-
-        <div class="professional-divider"></div>
-
-        <div class="bottom-half">
-            <div class="marquee-wrapper">
-                <div class="marquee-content" id="liveMarqueeResultsContainer">
-                    <div style="text-align:center; padding-top:40px; color:#6b7280; font-size:13px; font-weight:600;">Streaming live panel records...</div>
-                </div>
             </div>
         </div>
     </div>
@@ -304,6 +239,14 @@
         
         let confirmationResult = null, currentPhone = null, countdown = 0, timerInterval = null, recaptchaVerifier = null;
         
+        function hideSplashScreen() {
+            const splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
+            }
+        }
+
         function showScreen(screen) {
             document.getElementById('phoneScreen').className = 'screen hidden';
             document.getElementById('otpScreen').className = 'screen hidden';
@@ -331,36 +274,6 @@
             timerInterval = setInterval(() => { if (countdown <= 1) clearInterval(timerInterval); const timerEl = document.getElementById(timerElementId); if (timerEl && countdown > 0) timerEl.innerText = `Second Remaining ${countdown}`; countdown--; }, 1000); 
         }
 
-        function formatTimeTo12Hour(t) {
-            if (!t) return '--:--'; let [h, m] = t.split(':'); let hr = parseInt(h);
-            let ampm = hr >= 12 ? 'PM' : 'AM'; hr = hr % 12 || 12;
-            return `${hr.toString().padStart(2, '0')}:${m} ${ampm}`;
-        }
-        
-        function listenToLiveResults() {
-            db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
-                const container = document.getElementById('liveMarqueeResultsContainer');
-                if (snapshot.empty) { container.innerHTML = '<div style="text-align:center; padding-top:40px; color:#6b7280;">No active entries found.</div>'; return; }
-                
-                let cardsHtml = snapshot.docs.map(doc => {
-                    let m = doc.data();
-                    let op = m.openPana || '***', od = m.openDigit || '*', cp = m.closePana || '***', cd = m.closeDigit || '*';
-                    let liveCombination = `${op}-${od}${cd}-${cp}`;
-                    
-                    return `
-                        <div class="market-card">
-                            <div>
-                                <div class="market-name">${m.name || 'Market'}</div>
-                                <div class="market-time">${formatTimeTo12Hour(m.openBidEnd)} - ${formatTimeTo12Hour(m.closeBidEnd)}</div>
-                            </div>
-                            <div class="market-number">${liveCombination}</div>
-                        </div>`;
-                }).join('');
-                
-                container.innerHTML = cardsHtml + cardsHtml;
-            });
-        }
-        
         document.getElementById('sendOtpBtn').onclick = function() {
             const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
             if (!phone || phone.length !== 10) { showError('phoneError', 'Enter a valid 10-digit mobile number'); return; }
@@ -419,8 +332,6 @@
                 btn.disabled = false; btn.innerText = 'Create Account & Login'; 
             });
         };
-        
-        listenToLiveResults();
 
         auth.onAuthStateChanged(user => { 
             if (user) { 
@@ -429,10 +340,15 @@
                         window.location.href = 'dashboard.html'; 
                     } else { 
                         showScreen(document.getElementById('registerScreen')); 
+                        hideSplashScreen();
                     } 
-                }).catch(() => showScreen(document.getElementById('phoneScreen'))); 
+                }).catch(() => {
+                    showScreen(document.getElementById('phoneScreen'));
+                    hideSplashScreen();
+                }); 
             } else { 
                 showScreen(document.getElementById('phoneScreen')); 
+                hideSplashScreen();
             } 
         });
     </script>
