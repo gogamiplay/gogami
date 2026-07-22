@@ -175,7 +175,7 @@
 
     <div class="marquee-notice-banner" id="noticeContainerElement" onclick="triggerNoticePopup()">
         <div class="marquee-scroll-container">
-            <div class="notice-msg-text" id="dashboardNoticeTextField">Loading notice updates...</div>
+            <div class="notice-msg-text" id="dashboardNoticeTextField">Welcome to GOGAMI Platform!</div>
         </div>
     </div>
     
@@ -236,12 +236,13 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c",
         authDomain: "gogami-877be.firebaseapp.com",
         projectId: "gogami-877be",
         storageBucket: "gogami-877be.firebasestorage.app",
-        messagingSenderId: "843686112399",
-        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+        messagingSenderId: "220921167245",
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
@@ -250,13 +251,15 @@
     let hasAlertedForCurrentMessage = false;
 
     function showPageLoader() { 
-        let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'dashboardMainLoaderNode'; 
-        div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+        if(!document.getElementById('dashboardMainLoaderNode')){
+            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'dashboardMainLoaderNode'; 
+            div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+        }
     }
     function hidePageLoader() { let el = document.getElementById('dashboardMainLoaderNode'); if(el) el.remove(); }
     
-    async function syncUserContext() {
-        const user = auth.currentUser; if (!user) { window.location.href = 'index.html'; return; }
+    function syncUserContext(user) {
+        if (!user) return;
         
         db.collection('chats').doc(`chat_${user.uid}`).onSnapshot(doc => {
             const dot = document.getElementById('chatAlertDot');
@@ -273,23 +276,27 @@
                 if (alertPopup) alertPopup.style.display = 'none';
                 hasAlertedForCurrentMessage = false;
             }
-        });
+        }, err => console.log("Chat error suppressed."));
 
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if (doc.exists) {
                 currentUserData = doc.data();
-                document.getElementById('userWalletBalance').innerText = currentUserData.balance || 0;
-                document.getElementById('drawerLabelBalance').innerText = currentUserData.balance || 0;
-                document.getElementById('drawerLabelName').innerText = currentUserData.name || 'User Account';
-                document.getElementById('drawerLabelPhone').innerText = currentUserData.phone ? `📞 ${currentUserData.phone}` : '';
+                if(document.getElementById('userWalletBalance')) document.getElementById('userWalletBalance').innerText = currentUserData.balance || 0;
+                if(document.getElementById('drawerLabelBalance')) document.getElementById('drawerLabelBalance').innerText = currentUserData.balance || 0;
+                if(document.getElementById('drawerLabelName')) document.getElementById('drawerLabelName').innerText = currentUserData.name || 'User Account';
+                if(document.getElementById('drawerLabelPhone')) document.getElementById('drawerLabelPhone').innerText = currentUserData.phone ? `📞 ${currentUserData.phone}` : '';
                 
                 if(currentUserData.bankDetails) {
-                    document.getElementById('bankHolderNameField').value = currentUserData.bankDetails.accountHolder || '';
-                    document.getElementById('bankTitleField').value = currentUserData.bankDetails.bankName || '';
-                    document.getElementById('bankNumberField').value = currentUserData.bankDetails.accountNumber || '';
-                    document.getElementById('bankIfscField').value = currentUserData.bankDetails.ifscCode || '';
+                    if(document.getElementById('bankHolderNameField')) document.getElementById('bankHolderNameField').value = currentUserData.bankDetails.accountHolder || '';
+                    if(document.getElementById('bankTitleField')) document.getElementById('bankTitleField').value = currentUserData.bankDetails.bankName || '';
+                    if(document.getElementById('bankNumberField')) document.getElementById('bankNumberField').value = currentUserData.bankDetails.accountNumber || '';
+                    if(document.getElementById('bankIfscField')) document.getElementById('bankIfscField').value = currentUserData.bankDetails.ifscCode || '';
                 }
             }
+            hidePageLoader();
+        }, err => {
+            console.log("User doc error suppressed.");
+            hidePageLoader();
         });
     }
 
@@ -317,12 +324,13 @@
         }
     }
 
-    async function syncMarketFeeds() {
+    function syncMarketFeeds() {
         const now = new Date();
         const curMin = now.getHours() * 60 + now.getMinutes();
         
         db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
             const container = document.getElementById('marketListElementContainer');
+            if(!container) return;
             if (snapshot.empty) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b;">No active markets.</div>'; return; }
             
             container.innerHTML = snapshot.docs.map(doc => {
@@ -352,7 +360,7 @@
                         </div>
                     </div>`;
             }).join('');
-        });
+        }, err => console.log("Markets error suppressed."));
     }
 
     function navigateTradingSuite(mid, name, statusParam) {
@@ -394,6 +402,8 @@
             db.collection('users').doc(auth.currentUser.uid).update({ isOnline: false })
             .then(() => {
                 auth.signOut().then(() => { sessionStorage.clear(); window.location.href = 'index.html'; });
+            }).catch(() => {
+                auth.signOut().then(() => { sessionStorage.clear(); window.location.href = 'index.html'; });
             });
         } else {
             window.location.href = 'index.html';
@@ -410,15 +420,16 @@
     }
     
     db.collection('settings').doc('notice').onSnapshot(doc => {
-        document.getElementById('dashboardNoticeTextField').innerText = doc.exists ? doc.data().text : 'Welcome to GOGAMI Platform!';
-    });
+        const noticeEl = document.getElementById('dashboardNoticeTextField');
+        if(noticeEl) noticeEl.innerText = doc.exists ? doc.data().text : 'Welcome to GOGAMI Platform!';
+    }, err => console.log("Notice error suppressed."));
 
     document.addEventListener('visibilitychange', () => { 
         if (document.hidden) {
             clearOnlineStatusSync();
         } else {
             if (auth.currentUser) {
-                db.collection('users').doc(auth.currentUser.uid).update({ isOnline: true, lastActive: firebase.firestore.FieldValue.serverTimestamp() });
+                db.collection('users').doc(auth.currentUser.uid).update({ isOnline: true, lastActive: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
             }
         }
     });
@@ -426,7 +437,7 @@
     window.addEventListener('beforeunload', clearOnlineStatusSync);
 
     showPageLoader();
-    auth.onAuthStateChanged(async (user) => {
+    auth.onAuthStateChanged((user) => {
         if (!user) {
             window.location.href = 'index.html';
         } else {
@@ -435,9 +446,9 @@
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(e => console.log("Init offline trace caught."));
 
-            syncUserContext();
+            syncUserContext(user);
             syncMarketFeeds();
-            setTimeout(hidePageLoader, 400);
+            setTimeout(hidePageLoader, 800);
         }
     });
 </script>
