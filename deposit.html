@@ -174,29 +174,63 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     
+    let currentUser = null, currentUserData = null, selectedAmount = 500, currentTransactionId = null, timerInterval = null, upiId = "gogami@axl", pendingAmount = 0;
+
+    function showLoader() { 
+        if(!document.getElementById('pageLoader')) {
+            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+        }
+    }
+    function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
+
     function updateLastActive() {
         if (auth.currentUser) {
             db.collection('users').doc(auth.currentUser.uid).update({
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(e => console.log("Last active check failure logs emitted."));
+            }).catch(e => {});
         }
     }
-    setInterval(updateLastActive, 30000);
-    updateLastActive();
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateLastActive(); });
-    ['click', 'touchstart', 'scroll'].forEach(ev => document.addEventListener(ev, () => updateLastActive()));
-    
-    let currentUser=null, currentUserData=null, selectedAmount=500, currentTransactionId=null, timerInterval=null, upiId="gogami@axl", pendingAmount=0;
     
     showLoader();
-    auth.onAuthStateChanged(async (user) => { if (!user) window.location.href='index.html'; else { currentUser=user; await loadUserData(); await loadPaymentSettings(); updateAmount(); hideLoader(); } });
-    
-    function showLoader() { let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); }
-    function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
-    
-    async function loadUserData(){ let doc=await db.collection('users').doc(currentUser.uid).get(); if(doc.exists){ currentUserData=doc.data(); document.getElementById('userBalance').innerText=currentUserData.balance||0; } }
-    async function loadPaymentSettings(){ let upiDoc=await db.collection('settings').doc('upi').get(); if(upiDoc.exists && upiDoc.data().upiId) upiId=upiDoc.data().upiId; }
+    auth.onAuthStateChanged(async (user) => { 
+        if (!user) {
+            window.location.href = 'index.html'; 
+        } else { 
+            currentUser = user; 
+            updateLastActive();
+            setInterval(updateLastActive, 30000);
+            
+            try {
+                await loadUserData(); 
+                await loadPaymentSettings(); 
+            } catch(e) {
+                console.log("Error loading data", e);
+            }
+            
+            updateAmount(); 
+            hideLoader(); 
+        } 
+    });
+
+    async function loadUserData(){ 
+        if(!currentUser) return;
+        let doc = await db.collection('users').doc(currentUser.uid).get(); 
+        if(doc.exists){ 
+            currentUserData = doc.data(); 
+            let balEl = document.getElementById('userBalance');
+            if(balEl) balEl.innerText = currentUserData.balance || 0; 
+        } 
+    }
+
+    async function loadPaymentSettings(){ 
+        try {
+            let upiDoc = await db.collection('settings').doc('upi').get(); 
+            if(upiDoc.exists && upiDoc.data().upiId) upiId = upiDoc.data().upiId; 
+        } catch(e) {}
+    }
+
     function showBalance(){ alert(`💰 Balance: ₹${currentUserData?.balance||0}`); }
     
     function selectAmount(amt){ selectedAmount=amt; document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('active')); if(event && event.target) event.target.classList.add('active'); document.getElementById('customAmount').value=''; updateAmount(); document.getElementById('qrSection').style.display='none'; document.getElementById('generateBtn').style.display='block'; }
@@ -240,7 +274,7 @@
         if(!amt){ showMessage('Please generate QR first','error'); return; }
         let btn=document.getElementById('paidBtn'); btn.disabled=true; btn.innerText='Processing...';
         try{
-            await db.collection('transactions').add({ userId:currentUser.uid, userMobile:currentUserData.phone, type:'credit', amount:amt, requestedAmount:amt, bonusAmount:0, status:'Pending', date:firebase.firestore.FieldValue.serverTimestamp(), upiId:upiId, utr:'Manual Payment' });
+            await db.collection('transactions').add({ userId:currentUser.uid, userMobile:currentUserData?.phone || '', type:'credit', amount:amt, requestedAmount:amt, bonusAmount:0, status:'Pending', date:firebase.firestore.FieldValue.serverTimestamp(), upiId:upiId, utr:'Manual Payment' });
             showMessage('✅ Payment confirmation sent! Admin will verify shortly.','success');
             if(timerInterval) clearInterval(timerInterval);
             setTimeout(()=>{ window.location.href='dashboard.html'; },3000);
@@ -265,7 +299,11 @@
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
     function goBack() { window.location.href = 'dashboard.html'; }
     
-    db.collection('settings').doc('notice').onSnapshot(doc=>{ document.getElementById('noticeText').innerHTML=doc.exists?doc.data().text:'Welcome to GOGAMI!'; });
+    db.collection('settings').doc('notice').onSnapshot(doc=>{ 
+        let el = document.getElementById('noticeText');
+        if(el) el.innerHTML=doc.exists?doc.data().text:'Welcome to GOGAMI!'; 
+    }, e => {});
+
     window.selectAmount=selectAmount; window.showBalance=showBalance; window.showProfileModal=showProfileModal; window.closeProfileModal=closeProfileModal; window.showGameRatesModal=showGameRatesModal; window.closeGameRatesModal=closeGameRatesModal; window.showChangePinModal=showChangePinModal; window.closeChangePinModal=closeChangePinModal; window.updatePin=updatePin; window.showBankModal=showBankModal; window.closeBankModal=closeBankModal; window.saveBankDetails=saveBankDetails; window.closeNotice=closeNotice; window.confirmPayment=confirmPayment; window.goBack=goBack;
 </script>
 </body>
