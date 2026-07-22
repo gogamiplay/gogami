@@ -1,113 +1,188 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOGAMI - System Setup & Initialize</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GOGAMI - Automated Database Setup</title>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 28px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .title { font-size: 22px; font-weight: 800; color: #3b82f6; text-align: center; margin-bottom: 8px; letter-spacing: 1px; }
-        .subtitle { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 24px; }
-        .form-group { margin-bottom: 16px; }
-        label { font-size: 12px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-bottom: 6px; }
-        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
-        input:focus { border-color: #3b82f6; }
-        .btn { width: 100%; padding: 12px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 8px; transition: background 0.2s; }
-        .btn:hover { background: #2563eb; }
-        .status-log { margin-top: 18px; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; display: none; }
-        .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .status-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        body { background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; max-width: 520px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .title { font-size: 22px; font-weight: 800; color: #3b82f6; text-align: center; margin-bottom: 6px; }
+        .subtitle { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; }
+        
+        .btn-setup { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+        .btn-setup:hover { background: #059669; }
+        .btn-setup:disabled { background: #475569; cursor: not-allowed; }
+
+        .log-container { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-top: 20px; max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 12px; display: none; }
+        .log-line { margin-bottom: 6px; }
+        .log-success { color: #34d399; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #fbbf24; }
+        .log-error { color: #f87171; }
+
+        .links-box { margin-top: 16px; padding: 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; display: none; }
+        .links-box h4 { color: #93c5fd; font-size: 13px; margin-bottom: 8px; }
+        .index-link { display: block; color: #34d399; word-break: break-all; font-size: 11px; margin-bottom: 6px; text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="setup-card">
-    <div class="title">GOGAMI SETUP</div>
-    <div class="subtitle">Database & Admin Credential Initializer</div>
+    <div class="title">⚡ GOGAMI 1-Click Setup</div>
+    <div class="subtitle">Firestore Collections, Configs & Index Link Generator</div>
 
-    <div class="form-group">
-        <label>Admin Mobile / ID</label>
-        <input type="text" id="adminIdInput" value="admin" placeholder="Enter Admin Username">
+    <button id="runBtn" class="btn-setup" onclick="startAutomatedSetup()">Run Auto Setup Now</button>
+
+    <div id="linksBox" class="links-box">
+        <h4>🔗 Required Composite Index Links (Click to create):</h4>
+        <div id="indexLinksContainer"></div>
     </div>
 
-    <div class="form-group">
-        <label>Admin Password Set</label>
-        <input type="password" id="adminPassInput" value="123456" placeholder="Enter Admin Password">
-    </div>
-
-    <div class="form-group">
-        <label>Default Payment UPI ID</label>
-        <input type="text" id="upiIdInput" value="gogami@axl" placeholder="e.g. gogami@axl">
-    </div>
-
-    <button class="btn" onclick="runSystemSetup()">Run Initial Setup</button>
-    <div id="statusLog" class="status-log"></div>
+    <div id="logBox" class="log-container"></div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
-        authDomain: "gogami-877be.firebaseapp.com",
-        projectId: "gogami-877be",
-        storageBucket: "gogami-877be.firebasestorage.app",
-        messagingSenderId: "843686112399",
-        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+    // Firebase Configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c", 
+        authDomain: "gogami-877be.firebaseapp.com", 
+        projectId: "gogami-877be", 
+        storageBucket: "gogami-877be.firebasestorage.app", 
+        messagingSenderId: "220921167245", 
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
+    
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
 
-    async function runSystemSetup() {
-        const log = document.getElementById('statusLog');
-        const adminId = document.getElementById('adminIdInput').value.trim();
-        const adminPass = document.getElementById('adminPassInput').value.trim();
-        const upiId = document.getElementById('upiIdInput').value.trim();
+    function log(msg, type = 'info') {
+        const box = document.getElementById('logBox');
+        box.style.display = 'block';
+        const line = document.createElement('div');
+        line.className = `log-line log-${type}`;
+        line.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        box.appendChild(line);
+        box.scrollTop = box.scrollHeight;
+    }
 
-        if(!adminId || !adminPass || !upiId) {
-            showLog("⚠️ Please fill all fields.", "error");
-            return;
-        }
+    function addIndexLink(url, label) {
+        const container = document.getElementById('linksBox');
+        const list = document.getElementById('indexLinksContainer');
+        container.style.display = 'block';
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.className = 'index-link';
+        a.innerText = `👉 Create Index for: ${label}`;
+        list.appendChild(a);
+    }
+
+    async function startAutomatedSetup() {
+        const btn = document.getElementById('runBtn');
+        btn.disabled = true;
+        btn.innerText = 'Setting up Database...';
+        
+        log('Starting GOGAMI Automated Setup...', 'info');
 
         try {
-            showLog("Initializing Database...", "success");
-
-            // 1. Setup Admin Credentials
-            await db.collection('settings').doc('admin').set({
-                username: adminId,
-                password: adminPass,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            // 2. Setup Notice Board
+            // 1. Initialize Settings Document
+            log('Configuring settings/notice...', 'info');
             await db.collection('settings').doc('notice').set({
-                text: "Welcome to GOGAMI Trading Platform! Fast deposits & Instant withdrawals available."
-            });
+                text: 'Welcome to GOGAMI! Play responsibly and enjoy instant payouts.'
+            }, { merge: true });
+            log('✓ Notice configuration updated', 'success');
 
-            // 3. Setup UPI Gateway
+            log('Configuring settings/upi...', 'info');
             await db.collection('settings').doc('upi').set({
-                upiId: upiId
-            });
+                upiId: 'gogami@axl'
+            }, { merge: true });
+            log('✓ Payment UPI ID initialized (gogami@axl)', 'success');
 
-            // 4. Setup Servertime Placeholder
+            log('Configuring settings/servertime...', 'info');
             await db.collection('settings').doc('servertime').set({
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
+            log('✓ Server time baseline established', 'success');
 
-            showLog(`✅ Database Setup Complete!\nAdmin Password: ${adminPass}`, "success");
+            // 2. Initialize Default Markets
+            log('Seeding initial markets...', 'info');
+            const defaultMarkets = [
+                { name: 'TIME BAZAR', openTime: '01:00 PM', closeTime: '02:00 PM', openBidEnd: '13:00', closeBidEnd: '14:00', result: '***-**-***', status: 'open' },
+                { name: 'KALYAN', openTime: '04:00 PM', closeTime: '06:00 PM', openBidEnd: '16:00', closeBidEnd: '18:00', result: '***-**-***', status: 'open' },
+                { name: 'MAIN BAZAR', openTime: '09:30 PM', closeTime: '12:05 AM', openBidEnd: '21:30', closeBidEnd: '23:59', result: '***-**-***', status: 'open' }
+            ];
+
+            for (let m of defaultMarkets) {
+                const querySnap = await db.collection('markets').where('name', '==', m.name).get();
+                if (querySnap.empty) {
+                    await db.collection('markets').add(m);
+                    log(`✓ Market created: ${m.name}`, 'success');
+                } else {
+                    log(`Market already exists: ${m.name}`, 'warning');
+                }
+            }
+
+            // 3. Test Composite Queries to Catch Missing Indexes & Generate Instant Links
+            log('Testing queries for index requirements...', 'info');
+            await testIndexes();
+
+            log('🎉 Setup process completed successfully!', 'success');
+            btn.innerText = 'Setup Completed!';
+            btn.style.background = '#059669';
+
         } catch (e) {
-            showLog("❌ Error: " + e.message, "error");
+            log(`Error during setup: ${e.message}`, 'error');
+            btn.disabled = false;
+            btn.innerText = 'Retry Setup';
         }
     }
 
-    function showLog(msg, type) {
-        const log = document.getElementById('statusLog');
-        log.style.display = 'block';
-        log.innerText = msg;
-        log.className = `status-log status-${type}`;
+    async function testIndexes() {
+        const dummyUid = "setup_check_dummy_uid";
+
+        // Query 1: Transactions by userId + order by date
+        try {
+            await db.collection('transactions').where('userId', '==', dummyUid).orderBy('date', 'desc').limit(1).get();
+            log('✓ Index active: transactions (userId + date)', 'success');
+        } catch(e) {
+            parseIndexError(e.message, 'Transactions History');
+        }
+
+        // Query 2: Bids by userId + order by createdAt
+        try {
+            await db.collection('bids').where('userId', '==', dummyUid).orderBy('createdAt', 'desc').limit(1).get();
+            log('✓ Index active: bids (userId + createdAt)', 'success');
+        } catch(e) {
+            parseIndexError(e.message, 'Bids History');
+        }
+
+        // Query 3: Withdraw Requests by userId + status
+        try {
+            await db.collection('withdrawRequests').where('userId', '==', dummyUid).where('status', '==', 'Pending').limit(1).get();
+            log('✓ Index active: withdrawRequests (userId + status)', 'success');
+        } catch(e) {
+            parseIndexError(e.message, 'Withdraw Requests Pending Check');
+        }
+    }
+
+    function parseIndexError(errMsg, label) {
+        if (errMsg.includes('https://console.firebase.google.com')) {
+            const urlMatch = errMsg.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
+            if (urlMatch && urlMatch[0]) {
+                log(`⚠️ Index needed for ${label}. Link generated below.`, 'warning');
+                addIndexLink(urlMatch[0], label);
+            }
+        } else {
+            log(`Query note for ${label}: ${errMsg}`, 'info');
+        }
     }
 </script>
 </body>
