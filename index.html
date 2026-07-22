@@ -84,20 +84,20 @@
             overflow: hidden;
         }
 
-        /* Top Sliding Notice / Ticker Marquee */
+        /* Top Sliding Notice Marquee with New Cyan Color */
         .ticker-container {
             width: 100%;
-            background: rgba(15, 23, 42, 0.9);
-            color: #fbbf24;
+            background: rgba(10, 25, 47, 0.95);
+            color: #38bdf8;
             font-size: 11px;
             font-weight: 700;
-            padding: 6px 0;
+            padding: 7px 0;
             overflow: hidden;
             position: relative;
             z-index: 30;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
             white-space: nowrap;
-            height: 30px;
+            height: 32px;
             display: flex;
             align-items: center;
         }
@@ -113,31 +113,38 @@
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
-        /* Main Content Layout (Positioned Upwards) */
+        /* Main Content Layout with Balanced Spacing */
         .main-content {
             flex: 1;
             width: 100%;
-            padding: 20px 24px;
+            padding: 30px 24px 20px 24px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
             overflow-y: auto;
         }
 
-        /* Brand Logo Layout (Compact & Shifted Up) */
+        .center-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        /* Brand Logo Layout */
         .brand-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .brand-logo {
-            width: 115px;
+            width: 125px;
             height: auto;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.3));
         }
 
@@ -163,11 +170,11 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1.5px solid rgba(255, 255, 255, 0.18);
             border-radius: 14px;
-            padding: 12px 18px;
+            padding: 13px 18px;
             width: 100%;
             color: #ffffff;
             font-size: 15px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             outline: none;
             transition: all 0.25s ease;
             text-align: center;
@@ -177,16 +184,16 @@
         }
 
         .input-field:focus {
-            border-color: #60a5fa;
+            border-color: #38bdf8;
             background: rgba(255, 255, 255, 0.14);
-            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
 
         .input-field::placeholder { color: #94a3b8; font-weight: 500; letter-spacing: 0; }
 
         .btn {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 14px;
@@ -205,14 +212,15 @@
             box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
         }
 
-        /* Bottom Description Card Box */
+        /* Bottom Description Card Fixed at Very Bottom */
         .description-card {
             width: 100%;
-            margin-top: 25px;
+            margin-top: auto;
+            margin-bottom: 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
-            padding: 16px;
+            padding: 14px 16px;
             color: #cbd5e1;
             font-size: 12px;
             line-height: 1.5;
@@ -221,9 +229,9 @@
         }
 
         .description-card h4 {
-            color: #60a5fa;
+            color: #38bdf8;
             font-size: 13px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -248,33 +256,35 @@
         </div>
 
         <div class="main-content">
-            <div class="brand-section">
-                <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
-                <div class="tagline">Official Platform</div>
+            <div class="center-wrapper">
+                <div class="brand-section">
+                    <img src="https://i.imgur.com/SfJzcbI.png" alt="GOGAMI" class="brand-logo">
+                    <div class="tagline">Official Platform</div>
+                </div>
+
+                <div id="phoneScreen" class="screen">
+                    <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                    <button class="btn" id="sendOtpBtn">Login with OTP</button>
+                    <div id="phoneError" class="error-text"></div>
+                </div>
+
+                <div id="otpScreen" class="screen hidden">
+                    <div class="welcome-text">Enter OTP sent to your mobile</div>
+                    <div class="timer" id="timer">Second Remaining 60</div>
+                    <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
+                    <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
+                    <div id="otpError" class="error-text"></div>
+                </div>
+
+                <div id="registerScreen" class="screen hidden">
+                    <div class="welcome-text">Complete Your Profile</div>
+                    <input type="text" id="regName" class="input-field" placeholder="Full Name">
+                    <button class="btn" id="registerBtn">Create Account & Login</button>
+                    <div id="regError" class="error-text"></div>
+                </div>
             </div>
 
-            <div id="phoneScreen" class="screen">
-                <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-                <button class="btn" id="sendOtpBtn">Login with OTP</button>
-                <div id="phoneError" class="error-text"></div>
-            </div>
-
-            <div id="otpScreen" class="screen hidden">
-                <div class="welcome-text">Enter OTP sent to your mobile</div>
-                <div class="timer" id="timer">Second Remaining 60</div>
-                <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
-                <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
-                <div id="otpError" class="error-text"></div>
-            </div>
-
-            <div id="registerScreen" class="screen hidden">
-                <div class="welcome-text">Complete Your Profile</div>
-                <input type="text" id="regName" class="input-field" placeholder="Full Name">
-                <button class="btn" id="registerBtn">Create Account & Login</button>
-                <div id="regError" class="error-text"></div>
-            </div>
-
-            <!-- Description Box at Bottom -->
+            <!-- Description Box Fixed at the Very Bottom -->
             <div class="description-card" id="descriptionBox">
                 <h4>Information</h4>
                 <p>Welcome to GOGAMI Official Platform. Fast and Secure experience guaranteed.</p>
