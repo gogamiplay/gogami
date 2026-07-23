@@ -4,48 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOGAMI - Supabase Setup Helper</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ⚡ Fast & Reliable CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: monospace; background: #0f172a; color: #38bdf8; padding: 20px; line-height: 1.6; }
         .box { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
-        button { background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
-        #logs { background: #000; color: #4ade80; padding: 10px; margin-top: 15px; border-radius: 6px; min-height: 150px; font-size: 12px; }
+        button { background: #10b981; color: white; border: none; padding: 14px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; font-size: 16px; }
+        #logs { background: #000; color: #4ade80; padding: 12px; margin-top: 15px; border-radius: 6px; min-height: 150px; font-size: 13px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="box">
     <h2>🚀 Supabase Automated Initializer</h2>
-    <p>यह टूल आपके Firebase Collections के अनुसार Supabase में ज़रूरी टेबल स्ट्रक्चर तैयार करने के लिए रिकॉर्ड्स इनीशियलाइज़ करेगा।</p>
-    <button onclick="runDatabaseInit()">Setup Database Infrastructure</button>
-    <div id="logs">> Click button to start setup...</div>
+    <p>Click the button below to start table initialization.</p>
+    <button id="setupBtn" onclick="runDatabaseInit()">Setup Database Infrastructure</button>
+    <div id="logs">> Checking system...</div>
 </div>
 
 <script>
-    const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let dbClient;
+
+    window.onload = function() {
+        if (typeof supabase === 'undefined') {
+            document.getElementById('logs').innerHTML += "<br><span style='color:red;'>❌ Error: Supabase Script Failed to Load! Check Internet or CDN.</span>";
+        } else {
+            const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
+            const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
+            dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            document.getElementById('logs').innerHTML = "> ✅ Supabase Connected Successfully!<br>> Ready to click button.";
+        }
+    };
 
     function log(msg) {
         document.getElementById('logs').innerHTML += "<br>> " + msg;
     }
 
     async function runDatabaseInit() {
-        log("Checking connection & setting up collections...");
+        if (!dbClient) {
+            alert("Supabase is not initialized. Check internet connection.");
+            return;
+        }
+
+        log("Setting up settings & collections...");
 
         try {
             // 1. Setup default UPI ID
-            await supabase.from('settings').upsert({ id: 'upi', value: 'gogami@axl' });
+            await dbClient.from('settings').upsert({ id: 'upi', value: 'gogami@axl' });
             log("✅ 'settings' Collection initialized with default UPI.");
 
             // 2. Setup Notice
-            await supabase.from('settings').upsert({ id: 'notice', text: 'Welcome to GOGAMI Game Panel' });
+            await dbClient.from('settings').upsert({ id: 'notice', text: 'Welcome to GOGAMI Game Panel' });
             log("✅ Notice Settings initialized.");
 
             // 3. Dummy Market Test Record
-            const { data: marketCheck } = await supabase.from('markets').select('id').limit(1);
-            if (!marketCheck || marketCheck.length === 0) {
-                await supabase.from('markets').insert([{
+            const { data: marketCheck, error: mErr } = await dbClient.from('markets').select('id').limit(1);
+            
+            if (mErr) {
+                log("❌ Error fetching markets: " + mErr.message);
+            } else if (!marketCheck || marketCheck.length === 0) {
+                await dbClient.from('markets').insert([{
                     name: 'KALYAN NIGHT',
                     numbers: '120-3*-***',
                     open_bid_end: '21:00',
@@ -60,8 +78,7 @@
             }
 
             log("-----------------------------------------");
-            log("🎉 Setup process triggered successfully!");
-            log("You can now open admin.html safely.");
+            log("🎉 Setup completed! Open admin.html now.");
 
         } catch (e) {
             log("❌ Setup Error: " + e.message);
