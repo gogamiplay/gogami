@@ -429,7 +429,62 @@
     async function rejectWithdraw(id){ if(confirm('Reject this withdrawal?')){ await db.collection('withdrawRequests').doc(id).update({status:'Rejected'}); alert('Withdrawal rejected!'); loadWithdrawals(); } }
     async function deleteWithdrawalRecord(id){ if(confirm('Permanently delete record?')){ await db.collection('withdrawRequests').doc(id).delete(); alert('Deleted!'); loadWithdrawals(); } }
     
-    async function updateBalance(uid,action){ let amt=prompt(`Enter amount to ${action==='add'?'ADD':'REMOVE'}:`); if(!amt||isNaN(amt)||parseInt(amt)<=0){ alert('Enter valid amount'); return; } let amtNum=parseInt(amt); let user=await db.collection('users').doc(uid).get(); let curr=user.data().balance||0; let newBal,type,desc; if(action==='add'){ newBal=curr+amtNum; type='credit'; desc=`Admin added ₹${amtNum}`; }else{ if(amtNum>curr){ alert(`Cannot remove ₹${amtNum}. User has ₹${curr}`); return; } newBal=curr-amtNum; type='debit'; desc=`Admin removed ₹${amtNum}`; } if(confirm(`${action==='add'?'Add':'Remove'} ₹${amtNum}?`)){ await db.collection('users').doc(uid).update({balance:newBal}); await db.collection('transactions').add({userId:uid,type:type,amount:amtNum,status:'Completed',description:desc,date:new Date()}); alert(`₹${amtNum} ${action==='add'?'added':'removed'}!`); } }
+    // 🟢 FIXED UPDATE BALANCE FUNCTION
+    async function updateBalance(uid, action) {
+        let amt = prompt(`Enter amount to ${action === 'add' ? 'ADD' : 'REMOVE'}:`);
+        if (!amt || isNaN(amt) || parseInt(amt) <= 0) {
+            alert('Enter valid amount');
+            return;
+        }
+
+        let amtNum = parseInt(amt);
+        
+        try {
+            let userDocRef = db.collection('users').doc(uid);
+            let userSnap = await userDocRef.get();
+
+            let curr = 0;
+            if (userSnap.exists && userSnap.data() && userSnap.data().balance !== undefined) {
+                curr = Number(userSnap.data().balance) || 0;
+            }
+
+            let newBal, type, desc;
+
+            if (action === 'add') {
+                newBal = curr + amtNum;
+                type = 'credit';
+                desc = `Admin added ₹${amtNum}`;
+            } else {
+                if (amtNum > curr) {
+                    alert(`Cannot remove ₹${amtNum}. User has ₹${curr}`);
+                    return;
+                }
+                newBal = curr - amtNum;
+                type = 'debit';
+                desc = `Admin removed ₹${amtNum}`;
+            }
+
+            if (confirm(`${action === 'add' ? 'Add' : 'Remove'} ₹${amtNum}?`)) {
+                await userDocRef.set({ balance: newBal }, { merge: true });
+                
+                await db.collection('transactions').add({
+                    userId: uid,
+                    type: type,
+                    amount: amtNum,
+                    status: 'Completed',
+                    description: desc,
+                    date: new Date()
+                });
+
+                alert(`₹${amtNum} ${action === 'add' ? 'added' : 'removed'} successfully!`);
+                refreshTodayBidsForUsers();
+            }
+        } catch (e) {
+            console.error("Error updating balance:", e);
+            alert("Failed to update balance: " + e.message);
+        }
+    }
+    
     async function toggleBlockUser(uid,name,isBlocked){ let action=isBlocked?'unblock':'block'; if(confirm(`${action.toUpperCase()} user "${name}"?`)){ await db.collection('users').doc(uid).update({blocked:!isBlocked}); alert(`User ${action}ed!`); } }
     async function clearUserBids(uid,name){ if(confirm(`Clear ALL bid history for "${name}"?`)){ let bids=await db.collection('bids').where('userId','==',uid).get(); let batch=db.batch(); bids.forEach(d=>batch.delete(d.ref)); await batch.commit(); alert(`Cleared ${bids.size} bids`); } }
     async function clearUserTransactions(uid,name){ if(confirm(`Clear ALL transaction history for "${name}"?`)){ let trans=await db.collection('transactions').where('userId','==',uid).get(); let batch=db.batch(); trans.forEach(d=>batch.delete(d.ref)); await batch.commit(); alert(`Cleared ${trans.size} transactions`); } }
