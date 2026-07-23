@@ -3,90 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GOGAMI - Admin Panel</title>
+    <title>GOGAMI - Complete Admin Control Panel</title>
     <!-- Supabase JS SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        h1, h2 { color: #3b82f6; margin-bottom: 12px; }
-        .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #334155; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-        input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; }
-        button { background: #3b82f6; font-weight: bold; cursor: pointer; border: none; }
+        h1 { color: #3b82f6; margin-bottom: 20px; text-align: center; font-size: 24px; font-weight: 800; }
+        h2 { color: #38bdf8; font-size: 16px; margin-bottom: 12px; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+        .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        input, select, button { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; outline: none; }
+        input:focus, select:focus { border-color: #3b82f6; }
+        button { background: #3b82f6; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s; }
         button:hover { background: #2563eb; }
+        .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; display: inline-block; margin: 2px; }
         .btn-danger { background: #ef4444; }
         .btn-danger:hover { background: #dc2626; }
         .btn-success { background: #10b981; }
         .btn-success:hover { background: #059669; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
-        th { background: #0f172a; color: #94a3b8; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .badge-pending { background: #f59e0b20; color: #f59e0b; }
-        .badge-success { background: #10b98120; color: #10b981; }
-        .badge-danger { background: #ef444420; color: #ef4444; }
+        .btn-warning { background: #f59e0b; color: #0f172a; }
+        .btn-warning:hover { background: #d97706; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 12px; }
+        th { background: #0f172a; color: #94a3b8; text-transform: uppercase; font-size: 11px; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .table-responsive { overflow-x: auto; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 999; justify-content: center; align-items: center; }
+        .modal-content { background: #1e293b; padding: 20px; border-radius: 12px; max-width: 400px; width: 90%; border: 1px solid #334155; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🌸 GOGAMI Admin Panel</h1>
 
-    <!-- Notice & Settings Section -->
+<div class="container">
+    <h1>👑 GOGAMI ADMIN PANEL</h1>
+
+    <!-- 1. SETTINGS & NOTICE -->
     <div class="card">
-        <h2>📢 Platform Settings & Notice</h2>
+        <h2>📢 Platform Settings & Notice Bar</h2>
         <div class="grid">
             <div>
-                <label>UPI ID for Deposits</label>
+                <label style="font-size: 11px; color: #94a3b8;">UPI ID for Deposits</label>
                 <input type="text" id="upiInput" placeholder="e.g. gogami@axl">
-                <button onclick="saveUpi()">Save UPI ID</button>
+                <button onclick="saveUpi()" style="margin-top: 6px;">Save UPI ID</button>
             </div>
             <div>
-                <label>Global Notice Bar</label>
+                <label style="font-size: 11px; color: #94a3b8;">Global Notice Text</label>
                 <input type="text" id="noticeInput" placeholder="Welcome Notice Text">
-                <button onclick="saveNotice()">Update Notice</button>
+                <button onclick="saveNotice()" style="margin-top: 6px;">Update Notice</button>
             </div>
         </div>
     </div>
 
-    <!-- Add/Manage Markets -->
+    <!-- 2. RESULT DECLARATION CONSOLE -->
+    <div class="card">
+        <h2>🎯 Result Declaration Console</h2>
+        <div class="grid">
+            <select id="resultMarketSelect">
+                <option value="">Select Market</option>
+            </select>
+            <input type="text" id="openPanaInput" placeholder="Open Pana (e.g. 123)">
+            <input type="text" id="openDigitInput" placeholder="Open Digit (e.g. 6)">
+            <input type="text" id="closePanaInput" placeholder="Close Pana (e.g. 456)">
+            <input type="text" id="closeDigitInput" placeholder="Close Digit (e.g. 5)">
+        </div>
+        <button class="btn-success" onclick="declareResult()">Declare & Publish Result</button>
+    </div>
+
+    <!-- 3. MARKET MANAGEMENT -->
     <div class="card">
         <h2>🎰 Market Management</h2>
         <div class="grid">
             <input type="text" id="mName" placeholder="Market Name (e.g. KALYAN NIGHT)">
             <input type="number" id="mSerial" placeholder="Serial No. (e.g. 1)">
-            <input type="text" id="mOpenEnd" placeholder="Open Bid End Time (e.g. 09:00 PM)">
-            <input type="text" id="mCloseEnd" placeholder="Close Bid End Time (e.g. 11:00 PM)">
+            <input type="text" id="mOpenEnd" placeholder="Open Bid End (e.g. 09:00 PM)">
+            <input type="text" id="mCloseEnd" placeholder="Close Bid End (e.g. 11:00 PM)">
         </div>
         <button onclick="addMarket()">Add New Market</button>
-        <div style="overflow-x: auto; margin-top: 15px;">
+        
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
                         <th>Serial</th>
                         <th>Market Name</th>
-                        <th>Result Number</th>
+                        <th>Display Result</th>
+                        <th>Open / Close End</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="marketsList"><tr><td colspan="5">Loading markets...</td></tr></tbody>
+                <tbody id="marketsList"><tr><td colspan="6">Loading markets...</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Deposit Requests -->
+    <!-- 4. USER MANAGEMENT (BALANCE ADD/DEDUCT & BLOCK) -->
+    <div class="card">
+        <h2>👥 User Management & Wallet Control</h2>
+        <input type="text" id="userSearchInput" placeholder="Search user by Name or Phone..." onkeyup="filterUsers()" style="margin-bottom: 12px;">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name</th>
+                        <th>Phone</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersList"><tr><td colspan="5">Loading users...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. DEPOSIT REQUESTS -->
     <div class="card">
         <h2>💰 Deposit Requests (Credits)</h2>
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
                         <th>Date</th>
                         <th>User ID</th>
                         <th>Amount</th>
-                        <th>UTR / Reference</th>
+                        <th>UTR Number</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -96,10 +142,10 @@
         </div>
     </div>
 
-    <!-- Withdrawal Requests -->
+    <!-- 6. WITHDRAWAL REQUESTS -->
     <div class="card">
         <h2>💸 Withdrawal Requests (Debits)</h2>
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -117,19 +163,36 @@
     </div>
 </div>
 
+<!-- Balance Edit Modal -->
+<div class="modal" id="balanceModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 12px;" id="modalUserTitle">Update Wallet Balance</h3>
+        <input type="number" id="modalAmountInput" placeholder="Enter Amount">
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn-success" onclick="modifyUserBalance('add')">+ Add</button>
+            <button class="btn-danger" onclick="modifyUserBalance('deduct')">- Deduct</button>
+        </div>
+        <button class="btn-warning" onclick="closeBalanceModal()" style="margin-top: 8px;">Cancel</button>
+    </div>
+</div>
+
 <script>
     const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Initializations
+    let allUsers = [];
+    let activeSelectedUserId = null;
+
     window.onload = () => {
         loadSettings();
         loadMarkets();
+        loadUsers();
         loadDeposits();
         loadWithdrawals();
     };
 
+    // --- 1. SETTINGS & NOTICE ---
     async function loadSettings() {
         const { data: upi } = await supabaseClient.from('settings').select('value').eq('id', 'upi').single();
         if (upi) document.getElementById('upiInput').value = upi.value || '';
@@ -141,31 +204,47 @@
     async function saveUpi() {
         const val = document.getElementById('upiInput').value.trim();
         await supabaseClient.from('settings').upsert({ id: 'upi', value: val });
-        alert('UPI ID Updated!');
+        alert('✅ UPI ID Saved Successfully!');
     }
 
     async function saveNotice() {
         const txt = document.getElementById('noticeInput').value.trim();
         await supabaseClient.from('settings').upsert({ id: 'notice', text: txt });
-        alert('Notice Text Updated!');
+        alert('✅ Notice Updated Successfully!');
     }
 
+    // --- 2. MARKETS & RESULT DECLARATION ---
     async function loadMarkets() {
         const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
-        let tbody = document.getElementById('marketsList');
-        if (!markets || markets.length === 0) { tbody.innerHTML = '<tr><td colspan="5">No markets found</td></tr>'; return; }
         
-        tbody.innerHTML = markets.map(m => `
-            <tr>
-                <td>${m.serial_no || '-'}</td>
-                <td><strong>${m.name}</strong></td>
-                <td>${m.numbers || '***-**-***'}</td>
-                <td><span class="badge badge-success">${m.status || 'open'}</span></td>
-                <td>
-                    <button class="btn-danger" style="width:auto; padding: 4px 8px;" onclick="deleteMarket('${m.id}')">Delete</button>
-                </td>
-            </tr>
-        `).join('');
+        let selectEl = document.getElementById('resultMarketSelect');
+        selectEl.innerHTML = '<option value="">Select Market</option>';
+        
+        let tbody = document.getElementById('marketsList');
+        if (!markets || markets.length === 0) { 
+            tbody.innerHTML = '<tr><td colspan="6">No markets found</td></tr>'; 
+            return; 
+        }
+
+        tbody.innerHTML = '';
+        markets.forEach(m => {
+            selectEl.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+            
+            let displayNum = `${m.open_pana || '***'}-${m.open_digit || '*'}${m.close_digit || '*'}-${m.close_pana || '***'}`;
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td>${m.serial_no || '-'}</td>
+                    <td><strong>${m.name}</strong></td>
+                    <td><strong style="color:#38bdf8; font-family:monospace;">${displayNum}</strong></td>
+                    <td>${m.open_bid_end || '-'} / ${m.close_bid_end || '-'}</td>
+                    <td><span class="badge badge-success">${m.status || 'open'}</span></td>
+                    <td>
+                        <button class="btn-sm btn-danger" onclick="deleteMarket('${m.id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
     }
 
     async function addMarket() {
@@ -178,16 +257,138 @@
         await supabaseClient.from('markets').insert([{
             name, serial_no: serial, open_bid_end: openEnd, close_bid_end: closeEnd, status: 'open'
         }]);
-        alert('Market Created!');
+        alert('✅ Market Created!');
         loadMarkets();
     }
 
     async function deleteMarket(id) {
-        if(!confirm('Delete this market?')) return;
+        if(!confirm('Delete this market permanently?')) return;
         await supabaseClient.from('markets').delete().eq('id', id);
         loadMarkets();
     }
 
+    async function declareResult() {
+        const marketId = document.getElementById('resultMarketSelect').value;
+        const openPana = document.getElementById('openPanaInput').value.trim();
+        const openDigit = document.getElementById('openDigitInput').value.trim();
+        const closePana = document.getElementById('closePanaInput').value.trim();
+        const closeDigit = document.getElementById('closeDigitInput').value.trim();
+
+        if(!marketId) return alert('Please select a market');
+
+        let updateObj = {};
+        if(openPana) updateObj.open_pana = openPana;
+        if(openDigit) updateObj.open_digit = openDigit;
+        if(closePana) updateObj.close_pana = closePana;
+        if(closeDigit) updateObj.close_digit = closeDigit;
+        
+        if(openDigit && closeDigit) {
+            updateObj.jodi = `${openDigit}${closeDigit}`;
+        }
+
+        let combinedString = `${updateObj.open_pana || '***'}-${updateObj.open_digit || '*'}${updateObj.close_digit || '*'}-${updateObj.close_pana || '***'}`;
+        updateObj.numbers = combinedString;
+
+        const { error } = await supabaseClient.from('markets').update(updateObj).eq('id', marketId);
+        if(!error) {
+            alert('🎉 Result Declared & Published!');
+            loadMarkets();
+        } else {
+            alert('Error declaring result: ' + error.message);
+        }
+    }
+
+    // --- 3. USER MANAGEMENT & BALANCE CONTROL ---
+    async function loadUsers() {
+        const { data: users } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
+        allUsers = users || [];
+        renderUsers(allUsers);
+    }
+
+    function renderUsers(users) {
+        let tbody = document.getElementById('usersList');
+        if(!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">No users found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td><strong>${u.name || 'Unnamed'}</strong></td>
+                <td>${u.phone || 'N/A'}</td>
+                <td><strong style="color:#10b981;">₹${(u.balance || 0).toLocaleString()}</strong></td>
+                <td>
+                    <span class="badge ${u.blocked ? 'badge-danger' : 'badge-success'}">
+                        ${u.blocked ? 'BLOCKED' : 'ACTIVE'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-sm btn-success" onclick="openBalanceModal('${u.id}', '${u.name}')">Edit Balance</button>
+                    <button class="btn-sm ${u.blocked ? 'btn-success' : 'btn-warning'}" onclick="toggleUserBlock('${u.id}', ${u.blocked})">
+                        ${u.blocked ? 'Unblock' : 'Block'}
+                    </button>
+                    <button class="btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filterUsers() {
+        let q = document.getElementById('userSearchInput').value.toLowerCase();
+        let filtered = allUsers.filter(u => (u.name || '').toLowerCase().includes(q) || (u.phone || '').includes(q));
+        renderUsers(filtered);
+    }
+
+    function openBalanceModal(userId, userName) {
+        activeSelectedUserId = userId;
+        document.getElementById('modalUserTitle').innerText = `Update Wallet: ${userName}`;
+        document.getElementById('modalAmountInput').value = '';
+        document.getElementById('balanceModal').style.display = 'flex';
+    }
+
+    function closeBalanceModal() {
+        document.getElementById('balanceModal').style.display = 'none';
+        activeSelectedUserId = null;
+    }
+
+    async function modifyUserBalance(type) {
+        const amt = parseFloat(document.getElementById('modalAmountInput').value);
+        if(!amt || amt <= 0) return alert('Enter a valid amount');
+
+        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', activeSelectedUserId).single();
+        let currentBal = user?.balance || 0;
+        let newBal = type === 'add' ? (currentBal + amt) : (currentBal - amt);
+
+        if(newBal < 0) newBal = 0;
+
+        await supabaseClient.from('users').update({ balance: newBal }).eq('id', activeSelectedUserId);
+        
+        // Record Administrative Transaction
+        await supabaseClient.from('transactions').insert([{
+            user_id: activeSelectedUserId,
+            type: type === 'add' ? 'credit' : 'debit',
+            amount: amt,
+            status: 'Completed',
+            description: `Admin ${type === 'add' ? 'Added' : 'Deducted'} Funds`
+        }]);
+
+        alert(`✅ Balance ${type === 'add' ? 'added' : 'deducted'} successfully!`);
+        closeBalanceModal();
+        loadUsers();
+    }
+
+    async function toggleUserBlock(userId, currentBlockedStatus) {
+        await supabaseClient.from('users').update({ blocked: !currentBlockedStatus }).eq('id', userId);
+        loadUsers();
+    }
+
+    async function deleteUser(userId) {
+        if(!confirm('Are you sure you want to delete this user?')) return;
+        await supabaseClient.from('users').delete().eq('id', userId);
+        loadUsers();
+    }
+
+    // --- 4. DEPOSIT APPROVALS ---
     async function loadDeposits() {
         const { data: deposits } = await supabaseClient.from('transactions').select('*').eq('type', 'credit').order('created_at', { ascending: false });
         let tbody = document.getElementById('depositList');
@@ -197,13 +398,13 @@
             <tr>
                 <td>${new Date(d.created_at).toLocaleString()}</td>
                 <td>${d.user_id}</td>
-                <td>₹${d.amount}</td>
+                <td><strong>₹${d.amount}</strong></td>
                 <td>${d.utr || 'N/A'}</td>
                 <td><span class="badge badge-${d.status === 'Completed' ? 'success' : (d.status === 'Rejected' ? 'danger' : 'pending')}">${d.status}</span></td>
                 <td>
                     ${d.status === 'Pending' ? `
-                        <button class="btn-success" style="width:auto; padding:4px 8px;" onclick="approveDeposit('${d.id}', '${d.user_id}', ${d.amount})">Approve</button>
-                        <button class="btn-danger" style="width:auto; padding:4px 8px;" onclick="rejectDeposit('${d.id}')">Reject</button>
+                        <button class="btn-sm btn-success" onclick="approveDeposit('${d.id}', '${d.user_id}', ${d.amount})">Approve</button>
+                        <button class="btn-sm btn-danger" onclick="rejectDeposit('${d.id}')">Reject</button>
                     ` : '-'}
                 </td>
             </tr>
@@ -213,14 +414,13 @@
     async function approveDeposit(txId, userId, amount) {
         await supabaseClient.from('transactions').update({ status: 'Completed' }).eq('id', txId);
         
-        // Fetch current user balance
         const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
         const currentBal = user?.balance || 0;
         
-        // Credit Balance
         await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
-        alert('Deposit Approved & Balance Credited!');
+        alert('✅ Deposit Approved & Balance Credited!');
         loadDeposits();
+        loadUsers();
     }
 
     async function rejectDeposit(txId) {
@@ -228,6 +428,7 @@
         loadDeposits();
     }
 
+    // --- 5. WITHDRAWAL APPROVALS ---
     async function loadWithdrawals() {
         const { data: withdrawals } = await supabaseClient.from('withdraw_requests').select('*').order('created_at', { ascending: false });
         let tbody = document.getElementById('withdrawList');
@@ -239,13 +440,13 @@
             <tr>
                 <td>${new Date(w.created_at).toLocaleString()}</td>
                 <td>${w.user_id}</td>
-                <td>₹${w.amount}</td>
+                <td><strong>₹${w.amount}</strong></td>
                 <td>${bank.bankName || ''} - ${bank.accountNumber || ''}</td>
                 <td><span class="badge badge-${w.status === 'Completed' ? 'success' : (w.status === 'Rejected' ? 'danger' : 'pending')}">${w.status}</span></td>
                 <td>
                     ${w.status === 'Pending' ? `
-                        <button class="btn-success" style="width:auto; padding:4px 8px;" onclick="approveWithdrawal('${w.id}')">Complete</button>
-                        <button class="btn-danger" style="width:auto; padding:4px 8px;" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
+                        <button class="btn-sm btn-success" onclick="approveWithdrawal('${w.id}')">Complete</button>
+                        <button class="btn-sm btn-danger" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
                     ` : '-'}
                 </td>
             </tr>`;
@@ -254,20 +455,20 @@
 
     async function approveWithdrawal(wId) {
         await supabaseClient.from('withdraw_requests').update({ status: 'Completed' }).eq('id', wId);
-        alert('Withdrawal marked as completed!');
+        alert('✅ Withdrawal marked as completed!');
         loadWithdrawals();
     }
 
     async function rejectWithdrawal(wId, userId, amount) {
         await supabaseClient.from('withdraw_requests').update({ status: 'Rejected' }).eq('id', wId);
         
-        // Refund Balance back to user
         const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
         const currentBal = user?.balance || 0;
         await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
         
-        alert('Withdrawal Rejected & Amount Refunded to User!');
+        alert('✅ Withdrawal Rejected & Amount Refunded!');
         loadWithdrawals();
+        loadUsers();
     }
 </script>
 </body>
