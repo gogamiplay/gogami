@@ -26,6 +26,7 @@
         .login-card button { width: 100%; padding: 12px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .admin-panel { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
+        
         .mobile-header { background: #1e293b; padding: 14px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .sidebar { background: #1e293b; border-bottom: 1px solid #334155; display: flex; overflow-x: auto; white-space: nowrap; padding: 8px; gap: 8px; -webkit-overflow-scrolling: touch; }
         .sidebar-item { padding: 10px 14px; color: #94a3b8; cursor: pointer; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: #0f172a; border: 1px solid #334155; }
@@ -38,26 +39,59 @@
         
         input, select, textarea { padding: 10px; margin: 4px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; width: 100%; color: #fff; font-size: 13px; font-weight: 500; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
+        label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-top: 6px; }
         
         button { background: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; margin: 4px 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .market-item, .user-item, .request-item { background: #1a2238; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid #334155; }
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .market-header-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; font-size: 13px; }
+        .market-detail-row { display: none; background: #1e293b; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
+        .market-detail-row.open { display: block; }
+        .market-serial { font-family: monospace; color: #3b82f6; font-weight: 700; cursor: pointer; }
+        
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
         .status-open { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
         .status-closed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .status-holiday { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
         
         .btn-success { background: #10b981; }
         .btn-danger { background: #ef4444; }
+        .btn-warning { background: #f59e0b; color: #0f172a; }
+        .btn-reset { background: #475569; }
+        .btn-info { background: #0ea5e9; }
+        .btn-delete { background: #7f1d1d; color: #fca5a5; }
         .hidden { display: none !important; }
         
-        .user-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; }
+        .results-container { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+        .result-card { background: #0f172a; border-radius: 8px; padding: 8px 12px; text-align: center; border: 1px solid #334155; flex: 1; min-width: 90px; }
+        .result-pana { font-size: 18px; font-weight: 700; color: #3b82f6; font-family: monospace; }
+        .jodi-display { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+        .jodi-display strong { color: #f59e0b; font-size: 14px; font-family: monospace; }
+        
+        .request-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #0f172a; padding: 4px; border-radius: 8px; border: 1px solid #334155; }
+        .request-tab { flex: 1; padding: 8px; cursor: pointer; border-radius: 6px; background: transparent; font-size: 11px; font-weight: 700; text-align: center; color: #94a3b8; text-transform: uppercase; }
+        .request-tab.active { background: #3b82f6; color: #fff; }
+        
+        .search-container { display: flex; gap: 6px; margin-bottom: 12px; }
+        .sort-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; padding: 10px; background: #0f172a; border-radius: 8px; align-items: center; border: 1px solid #334155; font-size: 12px; color: #94a3b8; }
+        
+        .today-bidder-badge { background: #3b82f6; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 700; }
+        .bid-highlight { border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.02); }
+        .user-count { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; }
+        .user-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; display: inline-block; }
         .status-online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
         .status-offline { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-
+        .last-login { font-size: 10px; color: #64748b; margin-top: 4px; }
+        
+        .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
+        .bank-details-box { background: #0f172a; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11px; border: 1px dashed #334155; color: #cbd5e1; }
+        
         @media (min-width: 768px) {
             .admin-panel { flex-direction: row; }
             .mobile-header { display: none; }
-            .sidebar { width: 240px; min-height: 100vh; flex-direction: column; position: fixed; }
+            .sidebar { width: 240px; min-height: 100vh; flex-direction: column; position: fixed; white-space: normal; }
+            .sidebar-item { display: flex; justify-content: space-between; width: 100%; border-radius: 0; border: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
             .main-content { margin-left: 240px; padding: 24px; }
         }
     </style>
@@ -67,9 +101,9 @@
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
         <span class="app-title-animated">GOGAMI ADMIN</span>
-        <input type="password" id="adminPass" placeholder="Enter Password">
+        <input type="password" id="adminPass" placeholder="Enter Control Password">
         <button onclick="login()">Sign In</button>
-        <div id="loginError" style="color:#f87171; margin-top:12px; font-size:13px;"></div>
+        <div id="loginError" style="color:#f87171; margin-top:12px; font-size:13px; font-weight:600;"></div>
     </div>
 </div>
 
@@ -81,35 +115,129 @@
 
     <div class="sidebar">
         <div class="sidebar-item active" onclick="showSection('markets')">🎮 Markets</div>
-        <div class="sidebar-item" onclick="showSection('users')">👥 Users</div>
-        <div class="sidebar-item" onclick="showSection('deposits')">💰 Deposits</div>
+        <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
+        <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
+        <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
+        <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
+        <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
+        <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat <span id="chatBadge" class="notification-badge" style="display:none;">0</span></div>
     </div>
 
     <div class="main-content">
+        <!-- Markets Section -->
         <div id="marketsSection">
             <div class="card">
                 <h3>➕ Add New Market</h3>
                 <input type="text" id="marketNameInput" placeholder="Market Name">
                 <input type="text" id="marketNumbersInput" placeholder="Numbers (e.g., 440-8*-***)">
+                <div><label>🟢 Open Bid End Time:</label> <input type="time" id="openBidEnd" step="60"></div>
+                <div><label>🟡 Close Bid End Time:</label> <input type="time" id="closeBidEnd" step="60"></div>
+                <div><label>🔴 Market Closed Time:</label> <input type="time" id="closedTime" step="60"></div>
+                <select id="marketStatus">
+                    <option value="open">🟢 OPEN</option>
+                    <option value="close">🟡 CLOSE</option>
+                    <option value="closed">🔴 CLOSED</option>
+                    <option value="holiday">🎪 HOLIDAY</option>
+                </select>
                 <button onclick="addMarket()">Add Market</button>
+                <button onclick="deleteAllMarkets()" class="btn-danger">🗑️ Delete All</button>
+                <button onclick="resetAllMarketsResults()" class="btn-warning">🔄 Reset All Results</button>
             </div>
             <div class="card">
                 <h3>📋 Manage Markets</h3>
                 <div id="marketsList">Loading...</div>
             </div>
         </div>
-
+        
+        <!-- Users Section -->
         <div id="usersSection" class="hidden">
             <div class="card">
-                <h3>👥 Users Management</h3>
+                <h3>👥 Users Management 
+                    <button onclick="deleteAllUsers()" class="btn-delete delete-all-btn" style="float:right;">🗑️ DELETE ALL</button>
+                </h3>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search name or phone...">
+                    <button onclick="searchUsers()" class="btn-info">Search</button>
+                    <button onclick="clearSearch()" class="btn-reset">Clear</button>
+                </div>
+                <div class="sort-bar">
+                    <label>Sort By:</label>
+                    <select id="sortUsersSelect" onchange="applyUserSort()">
+                        <option value="todayBidders">📈 Today Bidders</option>
+                        <option value="newest">🕒 Newest First</option>
+                        <option value="balanceHigh">💰 Balance High-Low</option>
+                        <option value="balanceLow">💰 Balance Low-High</option>
+                        <option value="lastActive">⏰ Last Active</option>
+                    </select>
+                    <button onclick="refreshTodayBidsForUsers()" class="btn-info">🔄 Refresh</button>
+                </div>
+                <div id="userCount" class="user-count"></div>
                 <div id="usersList">Loading...</div>
             </div>
         </div>
-
+        
+        <!-- Deposits Section -->
         <div id="depositsSection" class="hidden">
             <div class="card">
                 <h3>💰 Deposit Requests</h3>
+                <div class="request-tabs">
+                    <div class="request-tab active" onclick="showDepositTab('pending')">⏳ Pending</div>
+                    <div class="request-tab" onclick="showDepositTab('completed')">✅ Completed</div>
+                    <div class="request-tab" onclick="showDepositTab('rejected')">❌ Rejected</div>
+                </div>
                 <div id="depositsList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Withdrawals Section -->
+        <div id="withdrawalsSection" class="hidden">
+            <div class="card">
+                <h3>💸 Withdrawal Requests</h3>
+                <div class="request-tabs">
+                    <div class="request-tab active" onclick="showWithdrawalTab('pending')">⏳ Pending</div>
+                    <div class="request-tab" onclick="showWithdrawalTab('completed')">✅ Completed</div>
+                    <div class="request-tab" onclick="showWithdrawalTab('rejected')">❌ Rejected</div>
+                </div>
+                <div id="withdrawalsList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Notice Section -->
+        <div id="noticeSection" class="hidden">
+            <div class="card">
+                <h3>📢 Notice Board</h3>
+                <textarea id="noticeText" rows="3"></textarea>
+                <button onclick="updateNotice()">Update Notice</button>
+                <div id="noticeMsg" style="margin-top:6px; color:#10b981; font-weight:600; font-size:12px;"></div>
+            </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div id="settingsSection" class="hidden">
+            <div class="card">
+                <h3>🔐 Change Password</h3>
+                <input type="password" id="oldPass" placeholder="Old Password">
+                <input type="password" id="newPass" placeholder="New Password">
+                <button onclick="changePassword()">Update Password</button>
+                <div id="passMsg" style="margin-top:6px; font-weight:600; font-size:12px;"></div>
+            </div>
+            <div class="card">
+                <h3>🏧 UPI ID Settings</h3>
+                <input type="text" id="upiId" placeholder="UPI ID" value="gogami@axl">
+                <button onclick="updateUPI()">Update UPI ID</button>
+                <div id="upiMsg"></div>
+            </div>
+        </div>
+        
+        <!-- Livechat Section -->
+        <div id="livechatSection" class="hidden">
+            <div class="card">
+                <h3>💬 Live Support Chat</h3>
+                <iframe src="admin-chat.html" class="chat-iframe" id="chatIframe"></iframe>
+                <div>
+                    <button onclick="clearAllChats()" class="btn-danger">🗑️ Delete All History</button>
+                    <button onclick="refreshChat()" class="btn-info">🔄 Refresh Chat</button>
+                </div>
             </div>
         </div>
     </div>
@@ -125,155 +253,316 @@
         appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.firestore();
-    let dbPassword = "Gani99@@";
+    
+    let dbPassword = "Gani99@@", allUsers = [], currentSearchTerm = "", currentSortType = "todayBidders", todayBidMap = new Map(), userLastBidTime = new Map();
+    let depositCount = 0, withdrawalCount = 0, chatUnreadCount = 0, depositListener = null, withdrawalListener = null, chatListener = null, currentDepositTab = "pending", currentWithdrawalTab = "pending", openMarketId = null;
+    let userLastActive = new Map();
+    let onlineStatusListener = null;
+    
+    const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
+    
+    async function syncAdminCredentials() {
+        try {
+            const adminDoc = await db.collection('settings').doc('admin').get();
+            if(adminDoc.exists && adminDoc.data().password) {
+                dbPassword = adminDoc.data().password;
+            } else {
+                await db.collection('settings').doc('admin').set({ password: dbPassword });
+            }
+        } catch(e) { console.error("Database sync fault"); }
+    }
 
-    function login() {
-        let pwd = document.getElementById('adminPass').value;
-        if (pwd === dbPassword) {
-            sessionStorage.setItem('adminLoggedIn', 'true');
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'flex';
-            loadMarkets(); loadUsers(); loadDeposits();
-        } else {
-            document.getElementById('loginError').innerText = 'Invalid Admin Password!';
+    syncAdminCredentials().then(() => {
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
+            document.getElementById('loginScreen').style.display = 'none'; 
+            document.getElementById('adminPanel').style.display = 'flex'; 
+            loadMarkets(); loadUsersWithTodayBids(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings(); startNotificationListeners(); startOnlineStatusTracking(); 
         }
-    }
-
-    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'flex';
-        loadMarkets(); loadUsers(); loadDeposits();
-    }
-
-    // 🟢 Realtime Markets Sync Logic
-    function loadMarkets() {
-        db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
-            let html = '';
+    });
+    
+    function startOnlineStatusTracking() {
+        if (onlineStatusListener) onlineStatusListener();
+        onlineStatusListener = db.collection('users').onSnapshot((snapshot) => {
             snapshot.forEach(doc => {
-                let m = doc.data();
-                html += `<div class="market-item">
-                    <b>${m.name}</b> (${m.numbers || '***'}) - <span class="status-badge status-${m.status}">${m.status}</span>
-                    <button onclick="deleteMarket('${doc.id}')" class="btn-danger" style="float:right;">Delete</button>
-                </div>`;
+                const data = doc.data();
+                if (data.lastActive) {
+                    let lastActive = data.lastActive.toDate ? data.lastActive.toDate() : new Date(data.lastActive);
+                    userLastActive.set(doc.id, lastActive);
+                }
             });
-            document.getElementById('marketsList').innerHTML = html || 'No markets found';
+            if (!document.getElementById('usersSection').classList.contains('hidden')) {
+                displayFilteredUsers();
+            }
         });
     }
-
-    async function addMarket() {
-        let name = document.getElementById('marketNameInput').value;
-        let numbers = document.getElementById('marketNumbersInput').value || '***-**-***';
-        if (!name) { alert('Enter market name'); return; }
-
-        let markets = await db.collection('markets').get();
-        await db.collection('markets').add({
-            name: name,
-            numbers: numbers,
-            status: 'open',
-            serialNo: markets.size + 1,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        document.getElementById('marketNameInput').value = '';
-        document.getElementById('marketNumbersInput').value = '';
-        alert('Market added successfully!');
+    
+    function isUserOnline(user) {
+        return user.isOnline === true;
+    }
+    
+    function formatLastLogin(userId) {
+        const lastActive = userLastActive.get(userId);
+        if (!lastActive) return 'Never';
+        const now = new Date();
+        const diffMinutes = Math.floor((now - lastActive) / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes} min ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
+    
+    async function login() { 
+        let pwd = document.getElementById('adminPass').value; 
+        await syncAdminCredentials();
+        if(pwd === dbPassword){ 
+            sessionStorage.setItem('adminLoggedIn','true'); 
+            document.getElementById('loginScreen').style.display='none'; 
+            document.getElementById('adminPanel').style.display='flex'; 
+            loadMarkets(); loadUsersWithTodayBids(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings(); startNotificationListeners(); startOnlineStatusTracking(); 
+        } else { 
+            document.getElementById('loginError').innerText='Control access code unverified!'; 
+        } 
+    }
+    
+    function startNotificationListeners(){ 
+        if(depositListener) depositListener(); 
+        depositListener = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); if(currentDepositTab==='pending') loadDeposits(); }); 
+        
+        if(withdrawalListener) withdrawalListener(); 
+        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
+        
+        if(chatListener) chatListener(); 
+        chatListener = db.collection('chats').where('unread','==',true).onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); }); 
     }
 
-    async function deleteMarket(id) {
-        if (confirm('Delete market?')) {
-            await db.collection('markets').doc(id).delete();
-        }
-    }
+    function updateDepositBadge(){ let b=document.getElementById('depositBadge'); if(depositCount>0){ b.style.display='inline-block'; b.innerText=depositCount>99?'99+':depositCount; } else b.style.display='none'; }
+    function updateWithdrawalBadge(){ let b=document.getElementById('withdrawalBadge'); if(withdrawalCount>0){ b.style.display='inline-block'; b.innerText=withdrawalCount>99?'99+':withdrawalCount; } else b.style.display='none'; }
+    function updateChatBadge(){ let b=document.getElementById('chatBadge'); if(chatUnreadCount>0){ b.style.display='inline-block'; b.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else b.style.display='none'; }
+    
+    function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
+    function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
 
-    // 🟢 Realtime Users Balance & FCM Check
-    function loadUsers() {
-        db.collection('users').onSnapshot(snapshot => {
-            let html = '';
-            snapshot.forEach(doc => {
-                let u = doc.data();
-                let online = u.isOnline === true;
-                let hasFcm = u.fcmToken ? '✅ FCM Active' : '❌ No FCM';
-                html += `<div class="user-item">
-                    <b>${u.name || 'User'}</b> (${u.phone || doc.id}) 
-                    <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span>
-                    <span style="font-size:10px; color:#94a3b8; margin-left:8px;">${hasFcm}</span><br>
-                    Balance: ₹${u.balance || 0}
-                    <div style="margin-top:6px;">
-                        <button onclick="updateBalance('${doc.id}', 'add')" class="btn-success">➕ Add Balance</button>
-                        <button onclick="updateBalance('${doc.id}', 'remove')" class="btn-danger">➖ Remove</button>
-                    </div>
-                </div>`;
+    async function loadUsersWithTodayBids(){ 
+        let today=new Date(); today.setHours(0,0,0,0); 
+        try {
+            let bids=await db.collection('bids').where('createdAt','>=',today).get(); 
+            todayBidMap.clear(); userLastBidTime.clear(); 
+            bids.forEach(d=>{ 
+                let bid=d.data(); let uid=bid.userId; let pts=bid.points||0; 
+                todayBidMap.set(uid,(todayBidMap.get(uid)||0)+pts); 
+                let bidDate=bid.createdAt?.toDate?bid.createdAt.toDate():(bid.createdAt?.seconds?new Date(bid.createdAt.seconds*1000):null); 
+                if(bidDate){ let existing=userLastBidTime.get(uid); if(!existing || bidDate>existing) userLastBidTime.set(uid,bidDate); } 
+            }); 
+            
+            db.collection('users').onSnapshot(s=>{ 
+                allUsers=[]; 
+                s.forEach(d=>{ 
+                    let ud=d.data(); 
+                    allUsers.push({uid:d.id,...ud,todayBidTotal:todayBidMap.get(d.id)||0,lastBidTime:userLastBidTime.get(d.id)||null}); 
+                }); 
+                displayFilteredUsers(); 
             });
-            document.getElementById('usersList').innerHTML = html || 'No users';
-        });
+        } catch(e) { console.error("Error loading users:", e); }
     }
 
-    // 🟢 Balance Merge Fix
+    function displayFilteredUsers(){ 
+        let filtered=[...allUsers]; 
+        if(currentSearchTerm) filtered=filtered.filter(u=>(u.name||'').toLowerCase().includes(currentSearchTerm)||(u.phone||'').toLowerCase().includes(currentSearchTerm)); 
+        if(currentSortType==='todayBidders') filtered.sort((a,b)=>(b.todayBidTotal||0)-(a.todayBidTotal||0)); 
+        else if(currentSortType==='newest') filtered.sort((a,b)=>(b.createdAt?.toDate?.()||new Date(0))-(a.createdAt?.toDate?.()||new Date(0))); 
+        else if(currentSortType==='balanceHigh') filtered.sort((a,b)=>(b.balance||0)-(a.balance||0)); 
+        else if(currentSortType==='balanceLow') filtered.sort((a,b)=>(a.balance||0)-(b.balance||0)); 
+
+        document.getElementById('userCount').innerHTML=`👥 Total: ${filtered.length}`; 
+        if(filtered.length===0){ document.getElementById('usersList').innerHTML='<p style="color:#64748b; text-align:center; padding:20px;">No users found</p>'; return; } 
+        let html=''; 
+        filtered.forEach(u=>{ 
+            let isBlocked=u.blocked===true; 
+            let online = isUserOnline(u); 
+            let fcmBadge = u.fcmToken ? '<span style="color:#10b981; font-size:10px;">✅ FCM Active</span>' : '<span style="color:#ef4444; font-size:10px;">❌ No FCM</span>';
+            html+=`<div class="user-item">
+                <div>
+                    <b>${escapeHtml(u.name||'User')}</b> (${u.phone||u.uid}) ${fcmBadge}
+                    <span class="user-status ${online?'status-online':'status-offline'}">${online?'ONLINE':'OFFLINE'}</span><br>
+                    Balance: <b>₹${u.balance||0}</b><br>
+                    <div class="last-login">📅 Last active: ${formatLastLogin(u.uid)}</div>
+                </div>
+                <div style="margin-top:8px;">
+                    <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add Balance</button>
+                    <button onclick="updateBalance('${u.uid}','remove')" class="btn-danger">➖ Remove</button>
+                    <button onclick="toggleBlockUser('${u.uid}','${escapeHtml(u.name)}',${isBlocked})" class="btn-warning">${isBlocked?'Unblock':'Block'}</button>
+                    <button onclick="deleteUser('${u.uid}','${escapeHtml(u.name)}')" class="btn-delete">❌ Delete</button>
+                </div>
+            </div>`; 
+        }); 
+        document.getElementById('usersList').innerHTML=html; 
+    }
+
+    // 🟢 Dynamic Balance Update
     async function updateBalance(uid, action) {
-        let amt = prompt(`Enter amount to ${action.toUpperCase()}:`);
+        let amt = prompt(`Enter amount to ${action === 'add' ? 'ADD' : 'REMOVE'}:`);
         if (!amt || isNaN(amt) || Number(amt) <= 0) return;
 
         let amtNum = Number(amt);
-        let userRef = db.collection('users').doc(uid);
-        let userSnap = await userRef.get();
+        try {
+            let userDocRef = db.collection('users').doc(uid);
+            let userSnap = await userDocRef.get();
 
-        let currentBal = 0;
-        if (userSnap.exists && userSnap.data().balance !== undefined) {
-            currentBal = Number(userSnap.data().balance) || 0;
-        }
+            let currentBal = 0;
+            if (userSnap.exists && userSnap.data().balance !== undefined) {
+                currentBal = Number(userSnap.data().balance) || 0;
+            }
 
-        let newBal = action === 'add' ? (currentBal + amtNum) : (currentBal - amtNum);
+            let newBal = (action === 'add') ? (currentBal + amtNum) : (currentBal - amtNum);
 
-        await userRef.set({ 
-            balance: newBal,
-            lastActive: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+            await userDocRef.set({ 
+                balance: newBal,
+                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
 
-        await db.collection('transactions').add({
-            userId: uid,
-            type: action === 'add' ? 'credit' : 'debit',
-            amount: amtNum,
-            status: 'Completed',
-            date: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        alert(`Balance Updated! Current Balance: ₹${newBal}`);
-    }
-
-    function loadDeposits() {
-        db.collection('transactions').where('type', '==', 'credit').where('status', '==', 'Pending').onSnapshot(snapshot => {
-            let html = '';
-            snapshot.forEach(doc => {
-                let d = doc.data();
-                html += `<div class="request-item">
-                    Amount: ₹${d.amount} | UTR: ${d.utr || 'N/A'}
-                    <button onclick="approveDeposit('${doc.id}', ${d.amount}, '${d.userId}')" class="btn-success">Approve</button>
-                </div>`;
+            await db.collection('transactions').add({
+                userId: uid,
+                type: (action === 'add') ? 'credit' : 'debit',
+                amount: amtNum,
+                status: 'Completed',
+                description: `Admin ${action === 'add' ? 'Added' : 'Removed'} ₹${amtNum}`,
+                date: firebase.firestore.FieldValue.serverTimestamp()
             });
-            document.getElementById('depositsList').innerHTML = html || 'No pending deposits';
-        });
+
+            alert(`Balance Updated! New Balance: ₹${newBal}`);
+        } catch (e) { alert("Failed: " + e.message); }
     }
 
-    async function approveDeposit(transId, amount, uid) {
-        let userRef = db.collection('users').doc(uid);
-        let userSnap = await userRef.get();
+    // Realtime Markets
+    function loadMarkets(){ 
+        db.collection('markets').orderBy('serialNo','asc').onSnapshot(s=>{ 
+            let html=''; 
+            s.forEach(d=>{ 
+                let m=d.data(); 
+                html+=`<div class="market-item">
+                    <div class="market-header-row" onclick="toggleMarketDetails('${d.id}')">
+                        <span>#${m.serialNo||'?'} <b>${m.name||'Market'}</b></span>
+                        <span class="status-badge status-${m.status||'closed'}">${(m.status||'closed').toUpperCase()}</span>
+                    </div>
+                    <div id="market_detail_${d.id}" class="market-detail-row">
+                        <div>Numbers: ${m.numbers||'***-**-***'}</div>
+                        <div>
+                            <button onclick="setMarketStatus('${d.id}','open')" class="btn-success">Open</button>
+                            <button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">Close</button>
+                            <button onclick="deleteMarket('${d.id}')" class="btn-delete">Delete</button>
+                        </div>
+                    </div>
+                </div>`; 
+            }); 
+            document.getElementById('marketsList').innerHTML=html||'No markets available'; 
+        }); 
+    }
+
+    async function addMarket(){ 
+        let name=document.getElementById('marketNameInput').value; 
+        let numbers=document.getElementById('marketNumbersInput').value||'***-**-***'; 
+        if(!name){ alert('Enter market name'); return; } 
+        let markets=await db.collection('markets').get(); 
+        await db.collection('markets').add({
+            name, numbers, 
+            openBidEnd: document.getElementById('openBidEnd').value||'',
+            closeBidEnd: document.getElementById('closeBidEnd').value||'',
+            status: document.getElementById('marketStatus').value||'open', 
+            serialNo: markets.size+1, 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        }); 
+        document.getElementById('marketNameInput').value=''; 
+        alert('Market added!'); 
+    }
+
+    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
+    async function setMarketStatus(mid,st){ await db.collection('markets').doc(mid).update({status:st}); }
+    function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div) div.classList.toggle('open'); }
+
+    // Deposits
+    function loadDeposits(){ 
+        let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
+        db.collection('transactions').where('type','==','credit').where('status','==',status).onSnapshot(s=>{ 
+            let html=''; 
+            s.forEach(d=>{ 
+                let t=d.data(); 
+                html+=`<div class="request-item">
+                    Amount: <b>₹${t.amount}</b> | UTR: ${t.utr||'N/A'}<br>
+                    ${currentDepositTab==='pending'?`<button onclick="approveDeposit('${d.id}',${t.amount},'${t.userId}')" class="btn-success">Approve</button><button onclick="rejectDeposit('${d.id}')" class="btn-danger">Reject</button>`:''}
+                </div>`; 
+            }); 
+            document.getElementById('depositsList').innerHTML=html||'No deposit records'; 
+        }); 
+    }
+
+    async function approveDeposit(id, amount, uid) {
+        let depositAmt = Number(amount);
+        let userDocRef = db.collection('users').doc(uid);
+        let userSnap = await userDocRef.get();
         let currentBal = Number(userSnap.data()?.balance) || 0;
 
-        await userRef.set({ balance: currentBal + Number(amount) }, { merge: true });
-        await db.collection('transactions').doc(transId).update({ status: 'Completed' });
-        alert('Deposit Approved!');
+        await userDocRef.set({ balance: currentBal + depositAmt }, { merge: true });
+        await db.collection('transactions').doc(id).update({ status: 'Completed' });
+        alert('Approved!');
     }
 
-    function showSection(sec) {
-        ['markets', 'users', 'deposits'].forEach(s => document.getElementById(`${s}Section`).classList.add('hidden'));
-        document.getElementById(`${sec}Section`).classList.remove('hidden');
+    async function rejectDeposit(id){ await db.collection('transactions').doc(id).update({status:'Rejected'}); }
+
+    // Withdrawals
+    function loadWithdrawals(){ 
+        let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
+        db.collection('withdrawRequests').where('status','==',status).onSnapshot(s=>{ 
+            let html=''; 
+            s.forEach(d=>{ 
+                let w=d.data(); 
+                html+=`<div class="request-item">
+                    Amount: <b>₹${w.amount}</b><br>
+                    ${currentWithdrawalTab==='pending'?`<button onclick="approveWithdraw('${d.id}',${w.amount},'${w.userId}')" class="btn-success">Approve</button>`:''}
+                </div>`; 
+            }); 
+            document.getElementById('withdrawalsList').innerHTML=html||'No withdrawal records'; 
+        }); 
     }
 
-    function logout() {
-        sessionStorage.removeItem('adminLoggedIn');
-        location.reload();
+    async function approveWithdraw(id,amount,uid){ 
+        let withdrawAmt = Number(amount); 
+        let userSnap=await db.collection('users').doc(uid).get(); 
+        let currentBal = Number(userSnap.data()?.balance) || 0; 
+        if(currentBal < withdrawAmt){ alert('Insufficient balance!'); return; } 
+        await db.collection('users').doc(uid).set({balance: currentBal - withdrawAmt}, {merge: true}); 
+        await db.collection('withdrawRequests').doc(id).update({status:'Completed'}); 
+        alert('Approved!'); 
     }
+
+    function searchUsers(){ currentSearchTerm=document.getElementById('searchInput').value.trim().toLowerCase(); displayFilteredUsers(); }
+    function clearSearch(){ document.getElementById('searchInput').value=''; currentSearchTerm=''; displayFilteredUsers(); }
+    function applyUserSort(){ currentSortType=document.getElementById('sortUsersSelect').value; displayFilteredUsers(); }
+    function refreshTodayBidsForUsers(){ loadUsersWithTodayBids(); }
+    function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
+    async function toggleBlockUser(uid,name,isBlocked){ await db.collection('users').doc(uid).update({blocked:!isBlocked}); }
+    async function deleteUser(uid,name){ if(confirm(`Delete ${name}?`)) await db.collection('users').doc(uid).delete(); }
+    
+    function loadSettings(){ db.collection('settings').doc('upi').get().then(d=>{ if(d.exists) document.getElementById('upiId').value=d.data().upiId; }); }
+    async function updateUPI(){ await db.collection('settings').doc('upi').set({upiId:document.getElementById('upiId').value}); alert("UPI Updated"); }
+    function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome!'; }); }
+    async function updateNotice(){ await db.collection('settings').doc('notice').set({text:document.getElementById('noticeText').value}); alert('Updated!'); }
+    async function changePassword(){ 
+        let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
+        if(old===dbPassword && newP.length>=4){ 
+            await db.collection('settings').doc('admin').set({ password: newP.trim() }); 
+            alert('Password Changed!'); 
+        } 
+    }
+    
+    function showSection(section){ 
+        ['markets','users','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
+        document.getElementById(`${section}Section`).classList.remove('hidden'); 
+    }
+    function logout(){ sessionStorage.removeItem('adminLoggedIn'); location.reload(); }
 </script>
 </body>
 </html>
