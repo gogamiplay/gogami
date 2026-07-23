@@ -147,12 +147,13 @@
         <div id="message" class="message"></div>
     </div>
     
+    <!-- 🟢 Fixed Relative Navigation Links -->
     <div class="bottom-nav">
-        <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
-        <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
-        <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
-        <a href="funds.html" class="nav-item"><span>Fund</span></a>
-        <a href="chat.html" class="nav-item"><span>Support</span></a>
+        <a href="./mybids.html" class="nav-item"><span>Passbook</span></a>
+        <a href="./mybids.html" class="nav-item"><span>My Bids</span></a>
+        <a href="./index.html" class="nav-item nav-item-home"><span>Home</span></a>
+        <a href="./funds.html" class="nav-item"><span>Fund</span></a>
+        <a href="./chat.html" class="nav-item"><span>Support</span></a>
     </div>
 </div>
 
@@ -194,10 +195,10 @@
     }
     
     showLoader();
+    
+    // 🟢 Fixed Auth Listener to prevent force-redirects
     auth.onAuthStateChanged(async (user) => { 
-        if (!user) {
-            window.location.href = 'index.html'; 
-        } else { 
+        if (user) { 
             currentUser = user; 
             updateLastActive();
             setInterval(updateLastActive, 30000);
@@ -211,6 +212,8 @@
             
             updateAmount(); 
             hideLoader(); 
+        } else {
+            hideLoader();
         } 
     });
 
@@ -277,7 +280,9 @@
             await db.collection('transactions').add({ userId:currentUser.uid, userMobile:currentUserData?.phone || '', type:'credit', amount:amt, requestedAmount:amt, bonusAmount:0, status:'Pending', date:firebase.firestore.FieldValue.serverTimestamp(), upiId:upiId, utr:'Manual Payment' });
             showMessage('✅ Payment confirmation sent! Admin will verify shortly.','success');
             if(timerInterval) clearInterval(timerInterval);
-            setTimeout(()=>{ window.location.href='dashboard.html'; },3000);
+            
+            // 🟢 Redirect updated to index.html
+            setTimeout(()=>{ window.location.href='./index.html'; },3000);
         }catch(e){ showMessage('Error: '+e.message,'error'); }
         finally{ btn.disabled=false; btn.innerText='✅ I HAVE PAID'; }
     }
@@ -297,7 +302,9 @@
     async function saveBankDetails(){ let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } await db.collection('users').doc(currentUser.uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; document.getElementById('bankMsg').innerHTML='✅ Saved!'; setTimeout(()=>closeBankModal(),1500); }
     function showNoticeModal(){ db.collection('settings').doc('notice').get().then(d => { alert(d.exists ? d.data().text : 'Welcome to GOGAMI!'); }); }
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
-    function goBack() { window.location.href = 'dashboard.html'; }
+    
+    // 🟢 Fixed GoBack function
+    function goBack() { window.location.href = './index.html'; }
     
     db.collection('settings').doc('notice').onSnapshot(doc=>{ 
         let el = document.getElementById('noticeText');
