@@ -80,6 +80,13 @@
         /* QR Output Processing Module Layout */
         .qr-section { background: #0f172a; border-radius: 12px; padding: 20px; text-align: center; margin-top: 18px; display: none; border: 1px solid #334155; }
         #qrcode { display: flex; justify-content: center; margin: 12px 0; padding: 10px; background: #fff; border-radius: 8px; width: fit-content; margin-left: auto; margin-right: auto; }
+        
+        /* 🟢 New UTR Field Container */
+        .utr-container { margin-top: 16px; text-align: left; }
+        .utr-container label { display: block; font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; }
+        .utr-input { width: 100%; padding: 12px 14px; background: #1e293b; border: 1px solid #3b82f6; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600; text-align: center; outline: none; letter-spacing: 1px; }
+        .utr-input::placeholder { color: #64748b; font-size: 13px; font-weight: normal; }
+
         .timer-box { background: #1e293b; border-radius: 8px; padding: 12px; text-align: center; margin-top: 14px; border: 1px solid #334155; }
         .timer-text { color: #ef4444; font-size: 26px; font-weight: 700; font-family: monospace; }
         .paid-btn { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
@@ -138,6 +145,13 @@
         <div class="qr-section" id="qrSection">
             <div id="qrcode"></div>
             <p style="font-size:14px; font-weight:700; color:#e2e8f0; margin-top:8px;">Amount Due: ₹<span id="qrAmount">0</span></p>
+
+            <!-- 🟢 UTR Number Input Box -->
+            <div class="utr-container">
+                <label>Enter 12-Digit UTR / Ref No.</label>
+                <input type="text" id="utrInput" class="utr-input" placeholder="e.g. 412356789012" maxlength="12">
+            </div>
+
             <div class="timer-box" id="timerBox">
                 <div class="timer-text" id="countdownTimer">10:00</div>
                 <div style="font-size:11px; color:#94a3b8; font-weight:600; margin-top:2px;">Time remaining to clear account statement</div>
@@ -187,19 +201,34 @@
     function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
 
     function updateLastActive() {
-        if (auth.currentUser) {
-            db.collection('users').doc(auth.currentUser.uid).update({
+        let activeUid = getSafeUid();
+        if (activeUid) {
+            db.collection('users').doc(activeUid).update({
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(e => {});
         }
     }
+
+    // 🟢 SAFE UID RETRIEVAL FUNCTION
+    function getSafeUid() {
+        if (auth.currentUser) return auth.currentUser.uid;
+        return localStorage.getItem('userUid') || localStorage.getItem('uid');
+    }
+
+    function getSafePhone() {
+        if (auth.currentUser && auth.currentUser.phoneNumber) return auth.currentUser.phoneNumber;
+        return localStorage.getItem('userPhone') || currentUserData?.phone || '';
+    }
     
     showLoader();
     
-    // 🟢 Fixed Auth Listener to prevent force-redirects
     auth.onAuthStateChanged(async (user) => { 
         if (user) { 
             currentUser = user; 
+        }
+        
+        let uid = getSafeUid();
+        if (uid) {
             updateLastActive();
             setInterval(updateLastActive, 30000);
             
@@ -211,15 +240,14 @@
             }
             
             updateAmount(); 
-            hideLoader(); 
-        } else {
-            hideLoader();
-        } 
+        }
+        hideLoader(); 
     });
 
     async function loadUserData(){ 
-        if(!currentUser) return;
-        let doc = await db.collection('users').doc(currentUser.uid).get(); 
+        let uid = getSafeUid();
+        if(!uid) return;
+        let doc = await db.collection('users').doc(uid).get(); 
         if(doc.exists){ 
             currentUserData = doc.data(); 
             let balEl = document.getElementById('userBalance');
@@ -252,8 +280,9 @@
         document.getElementById('qrSection').style.display='block';
         document.getElementById('generateBtn').style.display='none';
         document.getElementById('paidBtn').style.display='block';
+        document.getElementById('utrInput').value = ''; // Reset UTR field
         startTimer(600);
-        showMessage(`👑 QR for ₹${amt} generated. Please pay within 10 minutes.`,'success');
+        showMessage(`👑 QR for ₹${amt} generated. Please pay & enter UTR.`,'success');
     }
     
     function startTimer(seconds){
@@ -272,19 +301,51 @@
     }
     
     async function confirmPayment(){
-        if(!confirm(`✅ Have you paid ₹${pendingAmount}?\n\nClick OK to confirm.`)){ return; }
-        let amt=pendingAmount;
+        let uid = getSafeUid();
+        if (!uid) {
+            showMessage('Session expired! Please restart app.', 'error');
+            return;
+        }
+
+        let utrValue = document.getElementById('utrInput').value.trim();
+        if (!utrValue || utrValue.length < 6) {
+            showMessage('Please enter valid UTR / Transaction Reference Number', 'error');
+            return;
+        }
+
+        if(!confirm(`✅ Confirm Deposit of ₹${pendingAmount}?\nUTR: ${utrValue}`)){ return; }
+        
+        let amt = pendingAmount;
         if(!amt){ showMessage('Please generate QR first','error'); return; }
-        let btn=document.getElementById('paidBtn'); btn.disabled=true; btn.innerText='Processing...';
+        
+        let btn = document.getElementById('paidBtn'); 
+        btn.disabled = true; 
+        btn.innerText = 'Processing...';
+
         try{
-            await db.collection('transactions').add({ userId:currentUser.uid, userMobile:currentUserData?.phone || '', type:'credit', amount:amt, requestedAmount:amt, bonusAmount:0, status:'Pending', date:firebase.firestore.FieldValue.serverTimestamp(), upiId:upiId, utr:'Manual Payment' });
+            await db.collection('transactions').add({ 
+                userId: uid, 
+                userMobile: getSafePhone(), 
+                type: 'credit', 
+                amount: amt, 
+                requestedAmount: amt, 
+                bonusAmount: 0, 
+                status: 'Pending', 
+                date: firebase.firestore.FieldValue.serverTimestamp(), 
+                upiId: upiId, 
+                utr: utrValue 
+            });
+
             showMessage('✅ Payment confirmation sent! Admin will verify shortly.','success');
             if(timerInterval) clearInterval(timerInterval);
             
-            // 🟢 Redirect updated to index.html
-            setTimeout(()=>{ window.location.href='./index.html'; },3000);
-        }catch(e){ showMessage('Error: '+e.message,'error'); }
-        finally{ btn.disabled=false; btn.innerText='✅ I HAVE PAID'; }
+            setTimeout(()=>{ window.location.href='./index.html'; }, 2500);
+        }catch(e){ 
+            showMessage('Error: '+e.message,'error'); 
+        } finally{ 
+            btn.disabled = false; 
+            btn.innerText = 'I Have Finalized My Payment'; 
+        }
     }
     
     document.getElementById('generateBtn').onclick=generateQR;
@@ -296,14 +357,13 @@
     function closeGameRatesModal(){ document.getElementById('gameRatesModal').style.display='none'; }
     function showChangePinModal(){ closeProfileModal(); document.getElementById('changePinModal').style.display='flex'; }
     function closeChangePinModal(){ document.getElementById('changePinModal').style.display='none'; document.getElementById('pinMsg').innerHTML=''; }
-    async function updatePin(){ let old=document.getElementById('oldPin').value, newP=document.getElementById('newPin').value, confirm=document.getElementById('confirmPin').value; if(!old||!newP||!confirm){ document.getElementById('pinMsg').innerHTML='Fill all fields'; return; } if(newP.length!==4||!/^\d{4}$/.test(newP)){ document.getElementById('pinMsg').innerHTML='MPIN must be 4 digits'; return; } if(newP!==confirm){ document.getElementById('pinMsg').innerHTML='MPINs do not match'; return; } if(old!==currentUserData.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } await db.collection('users').doc(currentUser.uid).update({pin:newP}); currentUserData.pin=newP; document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; document.getElementById('pinMsg').style.color='#10b981'; setTimeout(()=>closeChangePinModal(),1500); }
+    async function updatePin(){ let old=document.getElementById('oldPin').value, newP=document.getElementById('newPin').value, confirm=document.getElementById('confirmPin').value; if(!old||!newP||!confirm){ document.getElementById('pinMsg').innerHTML='Fill all fields'; return; } if(newP.length!==4||!/^\d{4}$/.test(newP)){ document.getElementById('pinMsg').innerHTML='MPIN must be 4 digits'; return; } if(newP!==confirm){ document.getElementById('pinMsg').innerHTML='MPINs do not match'; return; } if(old!==currentUserData.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } let uid = getSafeUid(); await db.collection('users').doc(uid).update({pin:newP}); currentUserData.pin=newP; document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; document.getElementById('pinMsg').style.color='#10b981'; setTimeout(()=>closeChangePinModal(),1500); }
     function showBankModal(){ closeProfileModal(); let b=currentUserData?.bankDetails; if(b){ document.getElementById('bankAccountHolder').value=b.accountHolder||''; document.getElementById('bankName').value=b.bankName||''; document.getElementById('bankAccountNumber').value=b.accountNumber||''; document.getElementById('bankIfsc').value=b.ifscCode||''; } document.getElementById('bankModal').style.display='flex'; }
     function closeBankModal(){ document.getElementById('bankModal').style.display='none'; document.getElementById('bankMsg').innerHTML=''; }
-    async function saveBankDetails(){ let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } await db.collection('users').doc(currentUser.uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; document.getElementById('bankMsg').innerHTML='✅ Saved!'; setTimeout(()=>closeBankModal(),1500); }
+    async function saveBankDetails(){ let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } let uid = getSafeUid(); await db.collection('users').doc(uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; document.getElementById('bankMsg').innerHTML='✅ Saved!'; setTimeout(()=>closeBankModal(),1500); }
     function showNoticeModal(){ db.collection('settings').doc('notice').get().then(d => { alert(d.exists ? d.data().text : 'Welcome to GOGAMI!'); }); }
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
     
-    // 🟢 Fixed GoBack function
     function goBack() { window.location.href = './index.html'; }
     
     db.collection('settings').doc('notice').onSnapshot(doc=>{ 
