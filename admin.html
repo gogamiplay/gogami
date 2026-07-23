@@ -6,6 +6,10 @@
     <title>GOGAMI - Complete Admin Control Panel</title>
     <!-- Supabase JS SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- OneSignal Push Notification SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; }
@@ -14,8 +18,9 @@
         h2 { color: #38bdf8; font-size: 16px; margin-bottom: 12px; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 6px; }
         .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        input, select, button { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; outline: none; }
-        input:focus, select:focus { border-color: #3b82f6; }
+        input, select, textarea, button { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
+        textarea { resize: vertical; min-height: 80px; }
         button { background: #3b82f6; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s; }
         button:hover { background: #2563eb; }
         .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; display: inline-block; margin: 2px; }
@@ -59,7 +64,34 @@
         </div>
     </div>
 
-    <!-- 2. RESULT DECLARATION CONSOLE -->
+    <!-- 2. ONESIGNAL PUSH NOTIFICATION CONSOLE -->
+    <div class="card">
+        <h2>🔔 Send Push Notification (OneSignal)</h2>
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div>
+                <label style="font-size: 11px; color: #94a3b8;">OneSignal App ID</label>
+                <input type="text" id="oneSignalAppId" placeholder="Enter your OneSignal App ID">
+            </div>
+            <div>
+                <label style="font-size: 11px; color: #94a3b8;">OneSignal REST API Key</label>
+                <input type="password" id="oneSignalApiKey" placeholder="Enter your OneSignal REST API Key">
+            </div>
+            <div>
+                <label style="font-size: 11px; color: #94a3b8;">Notification Title</label>
+                <input type="text" id="notifTitle" placeholder="e.g. KALYAN RESULT DECLARED! 🎉">
+            </div>
+            <div>
+                <label style="font-size: 11px; color: #94a3b8;">Notification Message Body</label>
+                <textarea id="notifMsg" placeholder="e.g. Open result is out now! Check your app passbook for winning amount."></textarea>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button class="btn-success" onclick="sendBroadcastNotification()">🚀 Send Broadcast Push Notification</button>
+            <button class="btn-warning" onclick="saveOneSignalConfig()">Save API Keys</button>
+        </div>
+    </div>
+
+    <!-- 3. RESULT DECLARATION CONSOLE -->
     <div class="card">
         <h2>🎯 Result Declaration Console</h2>
         <div class="grid">
@@ -74,7 +106,7 @@
         <button class="btn-success" onclick="declareResult()">Declare & Publish Result</button>
     </div>
 
-    <!-- 3. MARKET MANAGEMENT -->
+    <!-- 4. MARKET MANAGEMENT -->
     <div class="card">
         <h2>🎰 Market Management</h2>
         <div class="grid">
@@ -102,7 +134,7 @@
         </div>
     </div>
 
-    <!-- 4. USER MANAGEMENT (BALANCE ADD/DEDUCT & BLOCK) -->
+    <!-- 5. USER MANAGEMENT (BALANCE ADD/DEDUCT & BLOCK) -->
     <div class="card">
         <h2>👥 User Management & Wallet Control</h2>
         <input type="text" id="userSearchInput" placeholder="Search user by Name or Phone..." onkeyup="filterUsers()" style="margin-bottom: 12px;">
@@ -122,7 +154,7 @@
         </div>
     </div>
 
-    <!-- 5. DEPOSIT REQUESTS -->
+    <!-- 6. DEPOSIT REQUESTS -->
     <div class="card">
         <h2>💰 Deposit Requests (Credits)</h2>
         <div class="table-responsive">
@@ -142,7 +174,7 @@
         </div>
     </div>
 
-    <!-- 6. WITHDRAWAL REQUESTS -->
+    <!-- 7. WITHDRAWAL REQUESTS -->
     <div class="card">
         <h2>💸 Withdrawal Requests (Debits)</h2>
         <div class="table-responsive">
@@ -184,8 +216,20 @@
     let allUsers = [];
     let activeSelectedUserId = null;
 
+    // --- ONESIGNAL SDK INIT ---
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        let appId = document.getElementById('oneSignalAppId').value || "YOUR_ONESIGNAL_APP_ID";
+        await OneSignal.init({
+            appId: appId,
+            safari_web_id: "sb_safari_web_id",
+            notifyButton: { enable: true },
+        });
+    });
+
     window.onload = () => {
         loadSettings();
+        loadOneSignalConfig();
         loadMarkets();
         loadUsers();
         loadDeposits();
@@ -213,7 +257,63 @@
         alert('✅ Notice Updated Successfully!');
     }
 
-    // --- 2. MARKETS & RESULT DECLARATION ---
+    // --- 2. ONESIGNAL PUSH NOTIFICATIONS ---
+    async function loadOneSignalConfig() {
+        const { data: appIdData } = await supabaseClient.from('settings').select('value').eq('id', 'onesignal_appid').single();
+        if(appIdData) document.getElementById('oneSignalAppId').value = appIdData.value || '';
+
+        const { data: apiKeyData } = await supabaseClient.from('settings').select('value').eq('id', 'onesignal_apikey').single();
+        if(apiKeyData) document.getElementById('oneSignalApiKey').value = apiKeyData.value || '';
+    }
+
+    async function saveOneSignalConfig() {
+        const appId = document.getElementById('oneSignalAppId').value.trim();
+        const apiKey = document.getElementById('oneSignalApiKey').value.trim();
+
+        await supabaseClient.from('settings').upsert({ id: 'onesignal_appid', value: appId });
+        await supabaseClient.from('settings').upsert({ id: 'onesignal_apikey', value: apiKey });
+
+        alert('✅ OneSignal Credentials Saved!');
+    }
+
+    async function sendBroadcastNotification() {
+        const appId = document.getElementById('oneSignalAppId').value.trim();
+        const apiKey = document.getElementById('oneSignalApiKey').value.trim();
+        const title = document.getElementById('notifTitle').value.trim();
+        const message = document.getElementById('notifMsg').value.trim();
+
+        if(!appId || !apiKey) return alert('Please save OneSignal App ID and REST API Key first!');
+        if(!title || !message) return alert('Please fill Title and Message body!');
+
+        try {
+            const response = await fetch("https://onesignal.com/api/v1/notifications", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Authorization": `Basic ${apiKey}`
+                },
+                body: JSON.stringify({
+                    app_id: appId,
+                    included_segments: ["Subscribed Users"],
+                    headings: { "en": title },
+                    contents: { "en": message }
+                })
+            });
+
+            const resData = await response.json();
+            if(resData.id) {
+                alert('🚀 Push Notification Sent Successfully!');
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifMsg').value = '';
+            } else {
+                alert('Failed to send: ' + JSON.stringify(resData));
+            }
+        } catch(e) {
+            alert('Error sending notification: ' + e.message);
+        }
+    }
+
+    // --- 3. MARKETS & RESULT DECLARATION ---
     async function loadMarkets() {
         const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
         
@@ -298,7 +398,7 @@
         }
     }
 
-    // --- 3. USER MANAGEMENT & BALANCE CONTROL ---
+    // --- 4. USER MANAGEMENT & BALANCE CONTROL ---
     async function loadUsers() {
         const { data: users } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
         allUsers = users || [];
@@ -363,7 +463,6 @@
 
         await supabaseClient.from('users').update({ balance: newBal }).eq('id', activeSelectedUserId);
         
-        // Record Administrative Transaction
         await supabaseClient.from('transactions').insert([{
             user_id: activeSelectedUserId,
             type: type === 'add' ? 'credit' : 'debit',
@@ -388,7 +487,7 @@
         loadUsers();
     }
 
-    // --- 4. DEPOSIT APPROVALS ---
+    // --- 5. DEPOSIT APPROVALS ---
     async function loadDeposits() {
         const { data: deposits } = await supabaseClient.from('transactions').select('*').eq('type', 'credit').order('created_at', { ascending: false });
         let tbody = document.getElementById('depositList');
@@ -428,7 +527,7 @@
         loadDeposits();
     }
 
-    // --- 5. WITHDRAWAL APPROVALS ---
+    // --- 6. WITHDRAWAL APPROVALS ---
     async function loadWithdrawals() {
         const { data: withdrawals } = await supabaseClient.from('withdraw_requests').select('*').order('created_at', { ascending: false });
         let tbody = document.getElementById('withdrawList');
