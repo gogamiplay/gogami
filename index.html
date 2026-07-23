@@ -183,7 +183,6 @@
 <!-- SPLASH SCREEN / LOGO LOADER OVERLAY -->
 <div id="splashLoader">
     <div class="splash-logo-container">
-        <!-- Replace src with your official GOGAMI logo URL -->
         <img src="https://i.imgur.com/n48xdmM.png" alt="GOGAMI" class="splash-logo-img">
         <div class="splash-title">GOGAMI</div>
         <div class="splash-sub">SECURE SYSTEM LOADING</div>
@@ -213,7 +212,7 @@
     <div class="bottom-nav">
         <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
         <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
-        <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
+        <a href="index.html" class="nav-item nav-item-home"><span>Home</span></a>
         <a href="funds.html" class="nav-item"><span>Funds</span></a>
         <a href="chat.html" class="nav-item"><span>Support</span></a>
     </div>
@@ -254,10 +253,9 @@
         }
     }
 
+    // 🟢 OPTIMIZED AUTH HANDLER FOR ANDROID NATIVE
     auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = 'index.html';
-        } else {
+        if (user) {
             try {
                 await Promise.all([
                     loadUserData(user.uid),
@@ -266,9 +264,11 @@
             } catch (e) {
                 console.error("Initialization error:", e);
             } finally {
-                // Instantly remove splash loader once background sync finishes
                 hideSplashLoader();
             }
+        } else {
+            // अगर WebView Android App में खुला है, तो जबरदस्ती Redirect न करें
+            loadMarkets().finally(() => hideSplashLoader());
         }
     });
 
@@ -311,11 +311,15 @@
                 });
                 container.innerHTML = html;
                 resolve();
+            }, err => {
+                console.error("Markets load error:", err);
+                resolve();
             });
         });
     }
 
     function showBalance() { alert(`💰 Current Balance: ₹${currentUserData?.balance || 0}`); }
+    
     function showProfileModal() { 
         if(currentUserData){ 
             document.getElementById('profileInfo').innerHTML = `
@@ -325,10 +329,28 @@
                     <div style="font-size:22px; font-weight:900; color:#10b981;">₹${currentUserData.balance || 0}</div>
                 </div>`; 
             document.getElementById('profileModal').style.display='flex'; 
-        } 
+        } else {
+            document.getElementById('profileInfo').innerHTML = `
+                <div style="text-align:center; margin-bottom:14px; color:#f8fafc;">
+                    Gogami User Profile
+                </div>`;
+            document.getElementById('profileModal').style.display='flex';
+        }
     }
+    
     function closeProfileModal() { document.getElementById('profileModal').style.display='none'; }
-    function logout() { auth.signOut().then(() => { sessionStorage.clear(); window.location.href='index.html'; }); }
+    
+    function logout() { 
+        auth.signOut().then(() => { 
+            sessionStorage.clear(); 
+            // 🟢 Android App में Android Interface को कॉल करें या रीलोड करें
+            if (window.AndroidBridge && window.AndroidBridge.logout) {
+                window.AndroidBridge.logout();
+            } else {
+                window.location.reload(); 
+            }
+        }); 
+    }
 </script>
 </body>
 </html>
