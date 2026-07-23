@@ -402,7 +402,7 @@
         document.getElementById('usersList').innerHTML=html; 
     }
 
-    // 🟢 Dynamic Balance Update
+    // Dynamic Balance Update (Atomic Merge)
     async function updateBalance(uid, action) {
         let amt = prompt(`Enter amount to ${action === 'add' ? 'ADD' : 'REMOVE'}:`);
         if (!amt || isNaN(amt) || Number(amt) <= 0) return;
@@ -437,29 +437,192 @@
         } catch (e) { alert("Failed: " + e.message); }
     }
 
-    // Realtime Markets
+    // 🟢 Realtime Markets & FULL RESULT DECLARATION LOGIC
+    function formatTimeTo12Hour(t){ if(!t) return '--:--'; let [h,m]=t.split(':'); let hr=parseInt(h); let ampm=hr>=12?'PM':'AM'; hr=hr%12||12; return `${hr}:${m} ${ampm}`; }
+    function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div) div.classList.toggle('open'); }
+
     function loadMarkets(){ 
         db.collection('markets').orderBy('serialNo','asc').onSnapshot(s=>{ 
             let html=''; 
             s.forEach(d=>{ 
                 let m=d.data(); 
+                let statusClass='', statusText=m.status ? m.status.toUpperCase() : 'CLOSED';
+                if(m.status==='open') statusClass='status-open';
+                else if(m.status==='close') statusClass='status-close';
+                else if(m.status==='holiday') statusClass='status-holiday';
+                else statusClass='status-closed';
+
+                let openPana=m.openPana||'***', openDigit=m.openDigit||'*', closePana=m.closePana||'***', closeDigit=m.closeDigit||'*', jodi=m.jodi||'**';
+
                 html+=`<div class="market-item">
                     <div class="market-header-row" onclick="toggleMarketDetails('${d.id}')">
                         <span>#${m.serialNo||'?'} <b>${m.name||'Market'}</b></span>
-                        <span class="status-badge status-${m.status||'closed'}">${(m.status||'closed').toUpperCase()}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div id="market_detail_${d.id}" class="market-detail-row">
-                        <div>Numbers: ${m.numbers||'***-**-***'}</div>
-                        <div>
-                            <button onclick="setMarketStatus('${d.id}','open')" class="btn-success">Open</button>
-                            <button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">Close</button>
-                            <button onclick="deleteMarket('${d.id}')" class="btn-delete">Delete</button>
+                        <div>🎲 Numbers: ${m.numbers||'***-**-***'}</div>
+                        <div>⏰ Open End: ${formatTimeTo12Hour(m.openBidEnd)} | Close End: ${formatTimeTo12Hour(m.closeBidEnd)}</div>
+                        
+                        <div class="results-container">
+                            <div class="result-card">
+                                <div class="result-pana">${openPana}</div>
+                                <div>Open: ${openDigit}</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-pana">${closePana}</div>
+                                <div>Close: ${closeDigit}</div>
+                            </div>
+                        </div>
+                        <div class="jodi-display">JODI: <strong>${jodi}</strong></div>
+
+                        <div style="margin-top:10px;">
+                            <label>Declare OPEN Result:</label>
+                            <input type="text" id="openPana_${d.id}" placeholder="Open Pana (3 Digits)" maxlength="3" value="${openPana!=='***'?openPana:''}">
+                            <input type="text" id="openDigit_${d.id}" placeholder="Open Digit (1 Digit)" maxlength="1" value="${openDigit!=='*'?openDigit:''}">
+                            <button onclick="declareOpenResult('${d.id}','${m.name}')" class="btn-info">Declare OPEN Result</button>
+                        </div>
+
+                        <div style="margin-top:10px;">
+                            <label>Declare CLOSE Result:</label>
+                            <input type="text" id="closePana_${d.id}" placeholder="Close Pana (3 Digits)" maxlength="3" value="${closePana!=='***'?closePana:''}">
+                            <input type="text" id="closeDigit_${d.id}" placeholder="Close Digit (1 Digit)" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}">
+                            <button onclick="declareCloseResult('${d.id}','${m.name}')" class="btn-info">Declare CLOSE Result</button>
+                        </div>
+
+                        <div style="margin-top:12px;">
+                            <button onclick="setMarketStatus('${d.id}','open')" class="btn-success">🟢 OPEN</button>
+                            <button onclick="setMarketStatus('${d.id}','close')" class="btn-warning">🟡 CLOSE</button>
+                            <button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">🔴 CLOSED</button>
+                            <button onclick="resetMarketResult('${d.id}','${m.name}')" class="btn-reset">⟳ Reset Result</button>
+                            <button onclick="deleteMarket('${d.id}')" class="btn-delete">🗑️ Delete</button>
                         </div>
                     </div>
                 </div>`; 
             }); 
             document.getElementById('marketsList').innerHTML=html||'No markets available'; 
         }); 
+    }
+
+    // 🟢 RESULT DECLARATION & WINNER AUTO-CREDIT LOGIC
+    async function declareOpenResult(mid, name) {
+        let openPana = document.getElementById(`openPana_${mid}`).value.trim();
+        let openDigit = document.getElementById(`openDigit_${mid}`).value.trim();
+
+        if (!openPana || openPana.length !== 3) { alert("Enter valid 3-digit Open Pana"); return; }
+        if (!openDigit || openDigit.length !== 1) { alert("Enter valid 1-digit Open Digit"); return; }
+
+        if (confirm(`Declare OPEN result for ${name}?\nPana: ${openPana}, Digit: ${openDigit}`)) {
+            await db.collection('markets').doc(mid).update({
+                openPana: openPana,
+                openDigit: openDigit
+            });
+            await creditOpenWinners(mid, name, openPana, openDigit);
+            alert("OPEN result declared and winners credited successfully!");
+        }
+    }
+
+    async function declareCloseResult(mid, name) {
+        let closePana = document.getElementById(`closePana_${mid}`).value.trim();
+        let closeDigit = document.getElementById(`closeDigit_${mid}`).value.trim();
+
+        if (!closePana || closePana.length !== 3) { alert("Enter valid 3-digit Close Pana"); return; }
+        if (!closeDigit || closeDigit.length !== 1) { alert("Enter valid 1-digit Close Digit"); return; }
+
+        let mDoc = await db.collection('markets').doc(mid).get();
+        let openDigit = mDoc.data()?.openDigit || '*';
+        let openPana = mDoc.data()?.openPana || '***';
+        let jodi = (openDigit !== '*' && closeDigit !== '*') ? (openDigit + closeDigit) : '**';
+
+        if (confirm(`Declare CLOSE result for ${name}?\nPana: ${closePana}, Digit: ${closeDigit}\nJodi: ${jodi}`)) {
+            await db.collection('markets').doc(mid).update({
+                closePana: closePana,
+                closeDigit: closeDigit,
+                jodi: jodi,
+                closeDeclared: true
+            });
+            await creditCloseWinners(mid, name, openPana, openDigit, closePana, closeDigit, jodi);
+            alert("CLOSE result declared and winners credited successfully!");
+        }
+    }
+
+    async function creditOpenWinners(mid, name, openPana, openDigit) {
+        let bids = await db.collection('bids').where('marketId', '==', mid).where('status', '==', 'pending').get();
+        for (let b of bids.docs) {
+            let bid = b.data();
+            let winning = false;
+            let gameType = (bid.gameType || bid.type || '').trim();
+
+            if (bid.bidType === 'Open') {
+                if (gameType === 'Single Digit' && bid.value === openDigit) winning = true;
+                if (['Single Pana', 'Double Pana', 'Triple Pana'].includes(gameType) && bid.value === openPana) winning = true;
+            }
+
+            if (winning) {
+                let multiplier = gameRates[gameType] || 10;
+                let winAmt = bid.points * multiplier;
+                await b.ref.update({ status: 'won' });
+
+                let userRef = db.collection('users').doc(bid.userId);
+                let uSnap = await userRef.get();
+                let curBal = Number(uSnap.data()?.balance) || 0;
+
+                await userRef.set({ balance: curBal + winAmt }, { merge: true });
+                await db.collection('transactions').add({
+                    userId: bid.userId,
+                    type: 'credit',
+                    amount: winAmt,
+                    status: 'Completed',
+                    description: `Won on ${name} (OPEN) - ${gameType}: ${bid.value}`,
+                    date: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } else if (bid.bidType === 'Open') {
+                await b.ref.update({ status: 'lost' });
+            }
+        }
+    }
+
+    async function creditCloseWinners(mid, name, openPana, openDigit, closePana, closeDigit, jodi) {
+        let bids = await db.collection('bids').where('marketId', '==', mid).where('status', '==', 'pending').get();
+        for (let b of bids.docs) {
+            let bid = b.data();
+            let winning = false;
+            let gameType = (bid.gameType || bid.type || '').trim();
+
+            if (gameType === 'Single Digit' && bid.bidType === 'Close' && bid.value === closeDigit) winning = true;
+            else if (gameType === 'Jodi' && bid.value === jodi) winning = true;
+            else if (['Single Pana', 'Double Pana', 'Triple Pana'].includes(gameType) && bid.bidType === 'Close' && bid.value === closePana) winning = true;
+
+            if (winning) {
+                let multiplier = gameRates[gameType] || 10;
+                let winAmt = bid.points * multiplier;
+                await b.ref.update({ status: 'won' });
+
+                let userRef = db.collection('users').doc(bid.userId);
+                let uSnap = await userRef.get();
+                let curBal = Number(uSnap.data()?.balance) || 0;
+
+                await userRef.set({ balance: curBal + winAmt }, { merge: true });
+                await db.collection('transactions').add({
+                    userId: bid.userId,
+                    type: 'credit',
+                    amount: winAmt,
+                    status: 'Completed',
+                    description: `Won on ${name} - ${gameType}: ${bid.value}`,
+                    date: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } else {
+                await b.ref.update({ status: 'lost' });
+            }
+        }
+    }
+
+    async function resetMarketResult(mid, name) {
+        if (confirm(`Reset all results for ${name}?`)) {
+            await db.collection('markets').doc(mid).update({
+                openPana: '***', openDigit: '*', closePana: '***', closeDigit: '*', jodi: '**', closeDeclared: false
+            });
+            alert("Results reset successfully!");
+        }
     }
 
     async function addMarket(){ 
@@ -473,6 +636,7 @@
             closeBidEnd: document.getElementById('closeBidEnd').value||'',
             status: document.getElementById('marketStatus').value||'open', 
             serialNo: markets.size+1, 
+            openPana: '***', openDigit: '*', closePana: '***', closeDigit: '*', jodi: '**', closeDeclared: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp() 
         }); 
         document.getElementById('marketNameInput').value=''; 
@@ -481,7 +645,6 @@
 
     async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
     async function setMarketStatus(mid,st){ await db.collection('markets').doc(mid).update({status:st}); }
-    function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div) div.classList.toggle('open'); }
 
     // Deposits
     function loadDeposits(){ 
