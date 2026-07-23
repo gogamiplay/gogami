@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GOGAMI - Admin Panel</title>
-    <!-- ⚡ Supabase JS SDK v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ⚡ Fast & Reliable CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -21,7 +21,6 @@
         }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .login-card input { width: 100%; padding: 12px 14px; margin: 12px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
         .login-card button { width: 100%; padding: 12px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .admin-panel { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
@@ -30,14 +29,12 @@
         .sidebar { background: #1e293b; border-bottom: 1px solid #334155; display: flex; overflow-x: auto; white-space: nowrap; padding: 8px; gap: 8px; -webkit-overflow-scrolling: touch; }
         .sidebar-item { padding: 10px 14px; color: #94a3b8; cursor: pointer; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: #0f172a; border: 1px solid #334155; }
         .sidebar-item.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-        .notification-badge { background: #ef4444; color: #fff; border-radius: 6px; padding: 2px 6px; font-size: 10px; font-weight: 700; }
         
         .main-content { padding: 16px; flex: 1; background: #0f172a; min-height: calc(100vh - 120px); }
         .card { background: #1e293b; border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .card h3 { margin-bottom: 14px; color: #f8fafc; font-size: 14px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-left: 4px solid #3b82f6; padding-left: 10px; }
         
         input, select, textarea { padding: 10px; margin: 4px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; width: 100%; color: #fff; font-size: 13px; font-weight: 500; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
         label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-top: 6px; }
         
         button { background: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; margin: 4px 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -72,12 +69,7 @@
         .request-tab.active { background: #3b82f6; color: #fff; }
         
         .search-container { display: flex; gap: 6px; margin-bottom: 12px; }
-        
         .user-count { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; }
-        .user-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; display: inline-block; }
-        .status-online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .status-offline { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-        
         .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
         
         @media (min-width: 768px) {
@@ -107,12 +99,12 @@
 
     <div class="sidebar">
         <div class="sidebar-item active" onclick="showSection('markets')">🎮 Markets</div>
-        <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
-        <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits</div>
-        <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals</div>
+        <div class="sidebar-item" onclick="showSection('users')">👥 Users</div>
+        <div class="sidebar-item" onclick="showSection('deposits')">💰 Deposits</div>
+        <div class="sidebar-item" onclick="showSection('withdrawals')">💸 Withdrawals</div>
         <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
         <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
-        <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat</div>
+        <div class="sidebar-item" onclick="showSection('livechat')">💬 Live Chat</div>
     </div>
 
     <div class="main-content">
@@ -124,7 +116,6 @@
                 <input type="text" id="marketNumbersInput" placeholder="Numbers (e.g., 440-8*-***)">
                 <div><label>🟢 Open Bid End Time:</label> <input type="time" id="openBidEnd" step="60"></div>
                 <div><label>🟡 Close Bid End Time:</label> <input type="time" id="closeBidEnd" step="60"></div>
-                <div><label>🔴 Market Closed Time:</label> <input type="time" id="closedTime" step="60"></div>
                 <select id="marketStatus">
                     <option value="open">🟢 OPEN</option>
                     <option value="close">🟡 CLOSE</option>
@@ -208,25 +199,31 @@
 </div>
 
 <script>
-    // ⚡ Supabase Configuration
+    let dbClient;
+
     const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ⚡ OneSignal Credentials
     const ONESIGNAL_APP_ID = "80d7c037-9684-4a11-8533-db0b0fd10be6";
     const ONESIGNAL_REST_KEY = "os_v2_app_qdl4an4wqrfbdbjt3mfq7uil4zcza556zb7uoke5eb5wwtvy5ibc6w3ajicbkwbw4pej7wjbgccgblpteg4i2y2mxbgjwz6k6ujg6sq";
 
     let allUsers = [], currentSearchTerm = "";
     let currentDepositTab = "pending", currentWithdrawalTab = "pending";
 
-    if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
-        document.getElementById('loginScreen').style.display = 'none'; 
-        document.getElementById('adminPanel').style.display = 'flex'; 
-        loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
-    }
+    window.onload = function() {
+        if (typeof supabase === 'undefined') {
+            alert("Supabase SDK Fail! Check Connection.");
+            return;
+        }
+        dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function login() { 
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
+            document.getElementById('loginScreen').style.display = 'none'; 
+            document.getElementById('adminPanel').style.display = 'flex'; 
+            loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
+        }
+    };
+
+    function login() { 
         sessionStorage.setItem('adminLoggedIn','true'); 
         document.getElementById('loginScreen').style.display='none'; 
         document.getElementById('adminPanel').style.display='flex'; 
@@ -234,7 +231,8 @@
     }
 
     async function loadUsers(){ 
-        const { data: users } = await supabase.from('users').select('*');
+        if(!dbClient) return;
+        const { data: users } = await dbClient.from('users').select('*');
         allUsers = users || [];
         displayFilteredUsers();
     }
@@ -248,12 +246,9 @@
         let html=''; 
         filtered.forEach(u=>{ 
             let isBlocked = u.blocked === true; 
-            let online = u.is_online === true; 
-            
             html+=`<div class="user-item">
                 <div>
-                    <b>${escapeHtml(u.name||'User')}</b> (${u.phone||u.id})
-                    <span class="user-status ${online?'status-online':'status-offline'}">${online?'ONLINE':'OFFLINE'}</span><br>
+                    <b>${escapeHtml(u.name||'User')}</b> (${u.phone||u.id})<br>
                     Balance: <b>₹${u.balance||0}</b>
                 </div>
                 <div style="margin-top:8px;">
@@ -273,12 +268,12 @@
 
         let amtNum = Number(amt);
         try {
-            let { data: uSnap } = await supabase.from('users').select('balance').eq('id', uid).single();
+            let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single();
             let currentBal = Number(uSnap?.balance) || 0;
             let newBal = (action === 'add') ? (currentBal + amtNum) : (currentBal - amtNum);
 
-            await supabase.from('users').update({ balance: newBal }).eq('id', uid);
-            await supabase.from('transactions').insert([{
+            await dbClient.from('users').update({ balance: newBal }).eq('id', uid);
+            await dbClient.from('transactions').insert([{
                 user_id: uid,
                 type: (action === 'add') ? 'credit' : 'debit',
                 amount: amtNum,
@@ -295,7 +290,8 @@
     function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div) div.classList.toggle('open'); }
 
     async function loadMarkets(){ 
-        const { data: markets } = await supabase.from('markets').select('*').order('serial_no', { ascending: true });
+        if(!dbClient) return;
+        const { data: markets } = await dbClient.from('markets').select('*').order('serial_no', { ascending: true });
         let html=''; 
         (markets || []).forEach(m => { 
             let statusClass='', statusText=m.status ? m.status.toUpperCase() : 'CLOSED';
@@ -316,14 +312,8 @@
                     <div>⏰ Open End: ${formatTimeTo12Hour(m.open_bid_end)} | Close End: ${formatTimeTo12Hour(m.close_bid_end)}</div>
                     
                     <div class="results-container">
-                        <div class="result-card">
-                            <div class="result-pana">${openPana}</div>
-                            <div>Open: ${openDigit}</div>
-                        </div>
-                        <div class="result-card">
-                            <div class="result-pana">${closePana}</div>
-                            <div>Close: ${closeDigit}</div>
-                        </div>
+                        <div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div>
+                        <div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div>
                     </div>
                     <div class="jodi-display">JODI: <strong>${jodi}</strong></div>
 
@@ -356,14 +346,12 @@
     async function declareOpenResult(mid, name) {
         let openPana = document.getElementById(`openPana_${mid}`).value.trim();
         let openDigit = document.getElementById(`openDigit_${mid}`).value.trim();
-
         if (!openPana || openPana.length !== 3) { alert("Enter valid 3-digit Open Pana"); return; }
         if (!openDigit || openDigit.length !== 1) { alert("Enter valid 1-digit Open Digit"); return; }
 
-        if (confirm(`Declare OPEN result for ${name}?\nPana: ${openPana}, Digit: ${openDigit}`)) {
-            await supabase.from('markets').update({ open_pana: openPana, open_digit: openDigit }).eq('id', mid);
-            await sendOneSignalNotification(`🟢 ${name} Open Result`, `Result: ${openPana}-${openDigit}`);
-            alert("OPEN result declared and Notification Sent!");
+        if (confirm(`Declare OPEN result for ${name}?`)) {
+            await dbClient.from('markets').update({ open_pana: openPana, open_digit: openDigit }).eq('id', mid);
+            alert("OPEN result declared!");
             loadMarkets();
         }
     }
@@ -371,39 +359,18 @@
     async function declareCloseResult(mid, name) {
         let closePana = document.getElementById(`closePana_${mid}`).value.trim();
         let closeDigit = document.getElementById(`closeDigit_${mid}`).value.trim();
-
         if (!closePana || closePana.length !== 3) { alert("Enter valid 3-digit Close Pana"); return; }
         if (!closeDigit || closeDigit.length !== 1) { alert("Enter valid 1-digit Close Digit"); return; }
 
-        let { data: mDoc } = await supabase.from('markets').select('open_digit, open_pana').eq('id', mid).single();
+        let { data: mDoc } = await dbClient.from('markets').select('open_digit, open_pana').eq('id', mid).single();
         let openDigit = mDoc?.open_digit || '*';
-        let openPana = mDoc?.open_pana || '***';
         let jodi = (openDigit !== '*' && closeDigit !== '*') ? (openDigit + closeDigit) : '**';
 
-        if (confirm(`Declare CLOSE result for ${name}?\nPana: ${closePana}, Digit: ${closeDigit}\nJodi: ${jodi}`)) {
-            await supabase.from('markets').update({ close_pana: closePana, close_digit: closeDigit, jodi: jodi }).eq('id', mid);
-            await sendOneSignalNotification(`🟡 ${name} Full Result Declared!`, `Result: ${openPana}-${openDigit}${closeDigit}-${closePana} (Jodi: ${jodi})`);
-            alert("CLOSE result declared and Notification Sent!");
+        if (confirm(`Declare CLOSE result for ${name}?`)) {
+            await dbClient.from('markets').update({ close_pana: closePana, close_digit: closeDigit, jodi: jodi }).eq('id', mid);
+            alert("CLOSE result declared!");
             loadMarkets();
         }
-    }
-
-    async function sendOneSignalNotification(title, messageBody) {
-        try {
-            await fetch("https://onesignal.com/api/v1/notifications", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                    "Authorization": "Basic " + ONESIGNAL_REST_KEY
-                },
-                body: JSON.stringify({
-                    app_id: ONESIGNAL_APP_ID,
-                    included_segments: ["All"],
-                    headings: { "en": title },
-                    contents: { "en": messageBody }
-                })
-            });
-        } catch (e) { console.error("Error sending notification:", e); }
     }
 
     async function addMarket(){ 
@@ -411,8 +378,8 @@
         let numbers=document.getElementById('marketNumbersInput').value||'***-**-***'; 
         if(!name){ alert('Enter market name'); return; } 
         
-        const { count } = await supabase.from('markets').select('*', { count: 'exact', head: true });
-        await supabase.from('markets').insert([{
+        const { count } = await dbClient.from('markets').select('*', { count: 'exact', head: true });
+        await dbClient.from('markets').insert([{
             name, numbers, 
             open_bid_end: document.getElementById('openBidEnd').value||'',
             close_bid_end: document.getElementById('closeBidEnd').value||'',
@@ -426,13 +393,12 @@
         loadMarkets();
     }
 
-    async function deleteMarket(id){ if(confirm('Delete market?')) { await supabase.from('markets').delete().eq('id', id); loadMarkets(); } }
-    async function setMarketStatus(mid,st){ await supabase.from('markets').update({status:st}).eq('id', mid); loadMarkets(); }
+    async function deleteMarket(id){ if(confirm('Delete market?')) { await dbClient.from('markets').delete().eq('id', id); loadMarkets(); } }
+    async function setMarketStatus(mid,st){ await dbClient.from('markets').update({status:st}).eq('id', mid); loadMarkets(); }
 
     async function loadDeposits(){ 
         let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
-        const { data: deposits } = await supabase.from('transactions').select('*').eq('type', 'credit').eq('status', status);
-        
+        const { data: deposits } = await dbClient.from('transactions').select('*').eq('type', 'credit').eq('status', status);
         let html=''; 
         (deposits || []).forEach(t=>{ 
             html+=`<div class="request-item">
@@ -445,21 +411,20 @@
 
     async function approveDeposit(id, amount, uid) {
         let depositAmt = Number(amount);
-        let { data: uSnap } = await supabase.from('users').select('balance').eq('id', uid).single();
+        let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single();
         let currentBal = Number(uSnap?.balance) || 0;
 
-        await supabase.from('users').update({ balance: currentBal + depositAmt }).eq('id', uid);
-        await supabase.from('transactions').update({ status: 'Completed' }).eq('id', id);
+        await dbClient.from('users').update({ balance: currentBal + depositAmt }).eq('id', uid);
+        await dbClient.from('transactions').update({ status: 'Completed' }).eq('id', id);
         alert('Approved!');
         loadDeposits();
     }
 
-    async function rejectDeposit(id){ await supabase.from('transactions').update({status:'Rejected'}).eq('id', id); loadDeposits(); }
+    async function rejectDeposit(id){ await dbClient.from('transactions').update({status:'Rejected'}).eq('id', id); loadDeposits(); }
 
     async function loadWithdrawals(){ 
         let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
-        const { data: withdrawals } = await supabase.from('withdraw_requests').select('*').eq('status', status);
-        
+        const { data: withdrawals } = await dbClient.from('withdraw_requests').select('*').eq('status', status);
         let html=''; 
         (withdrawals || []).forEach(w => { 
             html+=`<div class="request-item">
@@ -472,11 +437,11 @@
 
     async function approveWithdraw(id,amount,uid){ 
         let withdrawAmt = Number(amount); 
-        let { data: uSnap } = await supabase.from('users').select('balance').eq('id', uid).single(); 
+        let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single(); 
         let currentBal = Number(uSnap?.balance) || 0; 
         if(currentBal < withdrawAmt){ alert('Insufficient balance!'); return; } 
-        await supabase.from('users').update({ balance: currentBal - withdrawAmt }).eq('id', uid); 
-        await supabase.from('withdraw_requests').update({ status:'Completed' }).eq('id', id); 
+        await dbClient.from('users').update({ balance: currentBal - withdrawAmt }).eq('id', uid); 
+        await dbClient.from('withdraw_requests').update({ status:'Completed' }).eq('id', id); 
         alert('Approved!'); 
         loadWithdrawals();
     }
@@ -484,13 +449,13 @@
     function searchUsers(){ currentSearchTerm=document.getElementById('searchInput').value.trim().toLowerCase(); displayFilteredUsers(); }
     function clearSearch(){ document.getElementById('searchInput').value=''; currentSearchTerm=''; displayFilteredUsers(); }
     function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
-    async function toggleBlockUser(uid, isBlocked){ await supabase.from('users').update({ blocked: !isBlocked }).eq('id', uid); loadUsers(); }
-    async function deleteUser(uid, name){ if(confirm(`Delete ${name}?`)) { await supabase.from('users').delete().eq('id', uid); loadUsers(); } }
+    async function toggleBlockUser(uid, isBlocked){ await dbClient.from('users').update({ blocked: !isBlocked }).eq('id', uid); loadUsers(); }
+    async function deleteUser(uid, name){ if(confirm(`Delete ${name}?`)) { await dbClient.from('users').delete().eq('id', uid); loadUsers(); } }
     
-    async function loadSettings(){ const { data } = await supabase.from('settings').select('value').eq('id', 'upi').single(); if(data) document.getElementById('upiId').value = data.value; }
-    async function updateUPI(){ await supabase.from('settings').upsert({ id: 'upi', value: document.getElementById('upiId').value }); alert("UPI Updated"); }
-    async function loadNotice(){ const { data } = await supabase.from('settings').select('text').eq('id', 'notice').single(); if(data) document.getElementById('noticeText').value = data.text; }
-    async function updateNotice(){ await supabase.from('settings').upsert({ id: 'notice', text: document.getElementById('noticeText').value }); alert('Notice Updated!'); }
+    async function loadSettings(){ const { data } = await dbClient.from('settings').select('value').eq('id', 'upi').single(); if(data) document.getElementById('upiId').value = data.value; }
+    async function updateUPI(){ await dbClient.from('settings').upsert({ id: 'upi', value: document.getElementById('upiId').value }); alert("UPI Updated"); }
+    async function loadNotice(){ const { data } = await dbClient.from('settings').select('text').eq('id', 'notice').single(); if(data) document.getElementById('noticeText').value = data.text; }
+    async function updateNotice(){ await dbClient.from('settings').upsert({ id: 'notice', text: document.getElementById('noticeText').value }); alert('Notice Updated!'); }
     
     function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
     function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
