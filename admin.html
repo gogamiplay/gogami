@@ -2,469 +2,273 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>GOGAMI - Admin Panel</title>
-    <!-- ⚡ Fast & Reliable CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Supabase JS SDK v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-        
-        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .login-card { background: #1e293b; padding: 32px; border-radius: 16px; width: 90%; max-width: 340px; text-align: center; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        
-        .app-title-animated {
-            font-weight: 800; font-size: 22px; letter-spacing: 2px; margin-bottom: 24px; display: inline-block;
-            background: linear-gradient(45deg, #3b82f6, #ef4444, #10b981, #f59e0b, #3b82f6);
-            background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: gradientShift 8s ease infinite;
-        }
-        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        .login-card button { width: 100%; padding: 12px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .admin-panel { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
-        
-        .mobile-header { background: #1e293b; padding: 14px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .sidebar { background: #1e293b; border-bottom: 1px solid #334155; display: flex; overflow-x: auto; white-space: nowrap; padding: 8px; gap: 8px; -webkit-overflow-scrolling: touch; }
-        .sidebar-item { padding: 10px 14px; color: #94a3b8; cursor: pointer; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: #0f172a; border: 1px solid #334155; }
-        .sidebar-item.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-        
-        .main-content { padding: 16px; flex: 1; background: #0f172a; min-height: calc(100vh - 120px); }
-        .card { background: #1e293b; border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .card h3 { margin-bottom: 14px; color: #f8fafc; font-size: 14px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-left: 4px solid #3b82f6; padding-left: 10px; }
-        
-        input, select, textarea { padding: 10px; margin: 4px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; width: 100%; color: #fff; font-size: 13px; font-weight: 500; outline: none; }
-        label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-top: 6px; }
-        
-        button { background: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; margin: 4px 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .market-item, .user-item, .request-item { background: #1a2238; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid #334155; }
-        .market-header-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; font-size: 13px; }
-        .market-detail-row { display: none; background: #1e293b; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
-        .market-detail-row.open { display: block; }
-        
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
-        .status-open { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .status-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-        .status-closed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-        .status-holiday { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
-        
-        .btn-success { background: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 16px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1, h2 { color: #3b82f6; margin-bottom: 12px; }
+        .card { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #334155; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; }
+        button { background: #3b82f6; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background: #2563eb; }
         .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; color: #0f172a; }
-        .btn-reset { background: #475569; }
-        .btn-info { background: #0ea5e9; }
-        .btn-delete { background: #7f1d1d; color: #fca5a5; }
-        .hidden { display: none !important; }
-        
-        .results-container { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-        .result-card { background: #0f172a; border-radius: 8px; padding: 8px 12px; text-align: center; border: 1px solid #334155; flex: 1; min-width: 90px; }
-        .result-pana { font-size: 18px; font-weight: 700; color: #3b82f6; font-family: monospace; }
-        .jodi-display { font-size: 12px; color: #94a3b8; margin-top: 6px; }
-        .jodi-display strong { color: #f59e0b; font-size: 14px; font-family: monospace; }
-        
-        .request-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #0f172a; padding: 4px; border-radius: 8px; border: 1px solid #334155; }
-        .request-tab { flex: 1; padding: 8px; cursor: pointer; border-radius: 6px; background: transparent; font-size: 11px; font-weight: 700; text-align: center; color: #94a3b8; text-transform: uppercase; }
-        .request-tab.active { background: #3b82f6; color: #fff; }
-        
-        .search-container { display: flex; gap: 6px; margin-bottom: 12px; }
-        .user-count { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; }
-        .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
-        
-        @media (min-width: 768px) {
-            .admin-panel { flex-direction: row; }
-            .mobile-header { display: none; }
-            .sidebar { width: 240px; min-height: 100vh; flex-direction: column; position: fixed; white-space: normal; }
-            .sidebar-item { display: flex; justify-content: space-between; width: 100%; border-radius: 0; border: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-            .main-content { margin-left: 240px; padding: 24px; }
-        }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
+        th { background: #0f172a; color: #94a3b8; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-pending { background: #f59e0b20; color: #f59e0b; }
+        .badge-success { background: #10b98120; color: #10b981; }
+        .badge-danger { background: #ef444420; color: #ef4444; }
     </style>
 </head>
 <body>
+<div class="container">
+    <h1>🌸 GOGAMI Admin Panel</h1>
 
-<div id="loginScreen" class="login-screen">
-    <div class="login-card">
-        <span class="app-title-animated">GOGAMI ADMIN</span>
-        <p style="color:#94a3b8; font-size:12px; margin-bottom:12px;">Direct Access Enabled</p>
-        <button onclick="login()">Enter Dashboard</button>
-    </div>
-</div>
-
-<div id="adminPanel" class="admin-panel" style="display:none;">
-    <div class="mobile-header">
-        <span class="app-title-animated" style="font-size:16px; margin:0;">GOGAMI ADMIN</span>
-        <button onclick="logout()" class="btn-danger" style="padding:6px 10px; font-size:10px;">Logout</button>
-    </div>
-
-    <div class="sidebar">
-        <div class="sidebar-item active" onclick="showSection('markets')">🎮 Markets</div>
-        <div class="sidebar-item" onclick="showSection('users')">👥 Users</div>
-        <div class="sidebar-item" onclick="showSection('deposits')">💰 Deposits</div>
-        <div class="sidebar-item" onclick="showSection('withdrawals')">💸 Withdrawals</div>
-        <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
-        <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
-        <div class="sidebar-item" onclick="showSection('livechat')">💬 Live Chat</div>
+    <!-- Notice & Settings Section -->
+    <div class="card">
+        <h2>📢 Platform Settings & Notice</h2>
+        <div class="grid">
+            <div>
+                <label>UPI ID for Deposits</label>
+                <input type="text" id="upiInput" placeholder="e.g. gogami@axl">
+                <button onclick="saveUpi()">Save UPI ID</button>
+            </div>
+            <div>
+                <label>Global Notice Bar</label>
+                <input type="text" id="noticeInput" placeholder="Welcome Notice Text">
+                <button onclick="saveNotice()">Update Notice</button>
+            </div>
+        </div>
     </div>
 
-    <div class="main-content">
-        <!-- Markets Section -->
-        <div id="marketsSection">
-            <div class="card">
-                <h3>➕ Add New Market</h3>
-                <input type="text" id="marketNameInput" placeholder="Market Name">
-                <input type="text" id="marketNumbersInput" placeholder="Numbers (e.g., 440-8*-***)">
-                <div><label>🟢 Open Bid End Time:</label> <input type="time" id="openBidEnd" step="60"></div>
-                <div><label>🟡 Close Bid End Time:</label> <input type="time" id="closeBidEnd" step="60"></div>
-                <select id="marketStatus">
-                    <option value="open">🟢 OPEN</option>
-                    <option value="close">🟡 CLOSE</option>
-                    <option value="closed">🔴 CLOSED</option>
-                    <option value="holiday">🎪 HOLIDAY</option>
-                </select>
-                <button onclick="addMarket()">Add Market</button>
-            </div>
-            <div class="card">
-                <h3>📋 Manage Markets</h3>
-                <div id="marketsList">Loading...</div>
-            </div>
+    <!-- Add/Manage Markets -->
+    <div class="card">
+        <h2>🎰 Market Management</h2>
+        <div class="grid">
+            <input type="text" id="mName" placeholder="Market Name (e.g. KALYAN NIGHT)">
+            <input type="number" id="mSerial" placeholder="Serial No. (e.g. 1)">
+            <input type="text" id="mOpenEnd" placeholder="Open Bid End Time (e.g. 09:00 PM)">
+            <input type="text" id="mCloseEnd" placeholder="Close Bid End Time (e.g. 11:00 PM)">
         </div>
-        
-        <!-- Users Section -->
-        <div id="usersSection" class="hidden">
-            <div class="card">
-                <h3>👥 Users Management</h3>
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Search name or phone...">
-                    <button onclick="searchUsers()" class="btn-info">Search</button>
-                    <button onclick="clearSearch()" class="btn-reset">Clear</button>
-                </div>
-                <div id="userCount" class="user-count"></div>
-                <div id="usersList">Loading...</div>
-            </div>
+        <button onclick="addMarket()">Add New Market</button>
+        <div style="overflow-x: auto; margin-top: 15px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Serial</th>
+                        <th>Market Name</th>
+                        <th>Result Number</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="marketsList"><tr><td colspan="5">Loading markets...</td></tr></tbody>
+            </table>
         </div>
-        
-        <!-- Deposits Section -->
-        <div id="depositsSection" class="hidden">
-            <div class="card">
-                <h3>💰 Deposit Requests</h3>
-                <div class="request-tabs">
-                    <div class="request-tab active" onclick="showDepositTab('pending')">⏳ Pending</div>
-                    <div class="request-tab" onclick="showDepositTab('completed')">✅ Completed</div>
-                    <div class="request-tab" onclick="showDepositTab('rejected')">❌ Rejected</div>
-                </div>
-                <div id="depositsList">Loading...</div>
-            </div>
+    </div>
+
+    <!-- Deposit Requests -->
+    <div class="card">
+        <h2>💰 Deposit Requests (Credits)</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User ID</th>
+                        <th>Amount</th>
+                        <th>UTR / Reference</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="depositList"><tr><td colspan="6">Loading deposits...</td></tr></tbody>
+            </table>
         </div>
-        
-        <!-- Withdrawals Section -->
-        <div id="withdrawalsSection" class="hidden">
-            <div class="card">
-                <h3>💸 Withdrawal Requests</h3>
-                <div class="request-tabs">
-                    <div class="request-tab active" onclick="showWithdrawalTab('pending')">⏳ Pending</div>
-                    <div class="request-tab" onclick="showWithdrawalTab('completed')">✅ Completed</div>
-                    <div class="request-tab" onclick="showWithdrawalTab('rejected')">❌ Rejected</div>
-                </div>
-                <div id="withdrawalsList">Loading...</div>
-            </div>
-        </div>
-        
-        <!-- Notice Section -->
-        <div id="noticeSection" class="hidden">
-            <div class="card">
-                <h3>📢 Notice Board</h3>
-                <textarea id="noticeText" rows="3"></textarea>
-                <button onclick="updateNotice()">Update Notice</button>
-            </div>
-        </div>
-        
-        <!-- Settings Section -->
-        <div id="settingsSection" class="hidden">
-            <div class="card">
-                <h3>🏧 UPI ID Settings</h3>
-                <input type="text" id="upiId" placeholder="UPI ID" value="gogami@axl">
-                <button onclick="updateUPI()">Update UPI ID</button>
-            </div>
-        </div>
-        
-        <!-- Livechat Section -->
-        <div id="livechatSection" class="hidden">
-            <div class="card">
-                <h3>💬 Live Support Chat</h3>
-                <iframe src="admin-chat.html" class="chat-iframe" id="chatIframe"></iframe>
-            </div>
+    </div>
+
+    <!-- Withdrawal Requests -->
+    <div class="card">
+        <h2>💸 Withdrawal Requests (Debits)</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User ID</th>
+                        <th>Amount</th>
+                        <th>Bank Details</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="withdrawList"><tr><td colspan="6">Loading withdrawals...</td></tr></tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-    let dbClient;
-
     const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const ONESIGNAL_APP_ID = "80d7c037-9684-4a11-8533-db0b0fd10be6";
-    const ONESIGNAL_REST_KEY = "os_v2_app_qdl4an4wqrfbdbjt3mfq7uil4zcza556zb7uoke5eb5wwtvy5ibc6w3ajicbkwbw4pej7wjbgccgblpteg4i2y2mxbgjwz6k6ujg6sq";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let allUsers = [], currentSearchTerm = "";
-    let currentDepositTab = "pending", currentWithdrawalTab = "pending";
-
-    window.onload = function() {
-        if (typeof supabase === 'undefined') {
-            alert("Supabase SDK Fail! Check Connection.");
-            return;
-        }
-        dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
-            document.getElementById('loginScreen').style.display = 'none'; 
-            document.getElementById('adminPanel').style.display = 'flex'; 
-            loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
-        }
+    // Initializations
+    window.onload = () => {
+        loadSettings();
+        loadMarkets();
+        loadDeposits();
+        loadWithdrawals();
     };
 
-    function login() { 
-        sessionStorage.setItem('adminLoggedIn','true'); 
-        document.getElementById('loginScreen').style.display='none'; 
-        document.getElementById('adminPanel').style.display='flex'; 
-        loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
-    }
-
-    async function loadUsers(){ 
-        if(!dbClient) return;
-        const { data: users } = await dbClient.from('users').select('*');
-        allUsers = users || [];
-        displayFilteredUsers();
-    }
-
-    function displayFilteredUsers(){ 
-        let filtered=[...allUsers]; 
-        if(currentSearchTerm) filtered=filtered.filter(u=>(u.name||'').toLowerCase().includes(currentSearchTerm)||(u.phone||'').toLowerCase().includes(currentSearchTerm)); 
-
-        document.getElementById('userCount').innerHTML=`👥 Total Users: ${filtered.length}`; 
-        if(filtered.length===0){ document.getElementById('usersList').innerHTML='<p style="color:#64748b; text-align:center; padding:20px;">No users found</p>'; return; } 
-        let html=''; 
-        filtered.forEach(u=>{ 
-            let isBlocked = u.blocked === true; 
-            html+=`<div class="user-item">
-                <div>
-                    <b>${escapeHtml(u.name||'User')}</b> (${u.phone||u.id})<br>
-                    Balance: <b>₹${u.balance||0}</b>
-                </div>
-                <div style="margin-top:8px;">
-                    <button onclick="updateBalance('${u.id}','add')" class="btn-success">➕ Add Balance</button>
-                    <button onclick="updateBalance('${u.id}','remove')" class="btn-danger">➖ Remove</button>
-                    <button onclick="toggleBlockUser('${u.id}',${isBlocked})" class="btn-warning">${isBlocked?'Unblock':'Block'}</button>
-                    <button onclick="deleteUser('${u.id}','${escapeHtml(u.name)}')" class="btn-delete">❌ Delete</button>
-                </div>
-            </div>`; 
-        }); 
-        document.getElementById('usersList').innerHTML=html; 
-    }
-
-    async function updateBalance(uid, action) {
-        let amt = prompt(`Enter amount to ${action === 'add' ? 'ADD' : 'REMOVE'}:`);
-        if (!amt || isNaN(amt) || Number(amt) <= 0) return;
-
-        let amtNum = Number(amt);
-        try {
-            let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single();
-            let currentBal = Number(uSnap?.balance) || 0;
-            let newBal = (action === 'add') ? (currentBal + amtNum) : (currentBal - amtNum);
-
-            await dbClient.from('users').update({ balance: newBal }).eq('id', uid);
-            await dbClient.from('transactions').insert([{
-                user_id: uid,
-                type: (action === 'add') ? 'credit' : 'debit',
-                amount: amtNum,
-                status: 'Completed',
-                description: `Admin ${action === 'add' ? 'Added' : 'Removed'} ₹${amtNum}`
-            }]);
-
-            alert(`Balance Updated! New Balance: ₹${newBal}`);
-            loadUsers();
-        } catch (e) { alert("Failed: " + e.message); }
-    }
-
-    function formatTimeTo12Hour(t){ if(!t) return '--:--'; let [h,m]=t.split(':'); let hr=parseInt(h); let ampm=hr>=12?'PM':'AM'; hr=hr%12||12; return `${hr}:${m} ${ampm}`; }
-    function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div) div.classList.toggle('open'); }
-
-    async function loadMarkets(){ 
-        if(!dbClient) return;
-        const { data: markets } = await dbClient.from('markets').select('*').order('serial_no', { ascending: true });
-        let html=''; 
-        (markets || []).forEach(m => { 
-            let statusClass='', statusText=m.status ? m.status.toUpperCase() : 'CLOSED';
-            if(m.status==='open') statusClass='status-open';
-            else if(m.status==='close') statusClass='status-close';
-            else if(m.status==='holiday') statusClass='status-holiday';
-            else statusClass='status-closed';
-
-            let openPana=m.open_pana||'***', openDigit=m.open_digit||'*', closePana=m.close_pana||'***', closeDigit=m.close_digit||'*', jodi=m.jodi||'**';
-
-            html+=`<div class="market-item">
-                <div class="market-header-row" onclick="toggleMarketDetails('${m.id}')">
-                    <span>#${m.serial_no||'?'} <b>${m.name||'Market'}</b></span>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-                <div id="market_detail_${m.id}" class="market-detail-row">
-                    <div>🎲 Numbers: ${m.numbers||'***-**-***'}</div>
-                    <div>⏰ Open End: ${formatTimeTo12Hour(m.open_bid_end)} | Close End: ${formatTimeTo12Hour(m.close_bid_end)}</div>
-                    
-                    <div class="results-container">
-                        <div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div>
-                        <div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div>
-                    </div>
-                    <div class="jodi-display">JODI: <strong>${jodi}</strong></div>
-
-                    <div style="margin-top:10px;">
-                        <label>Declare OPEN Result:</label>
-                        <input type="text" id="openPana_${m.id}" placeholder="Open Pana (3 Digits)" maxlength="3" value="${openPana!=='***'?openPana:''}">
-                        <input type="text" id="openDigit_${m.id}" placeholder="Open Digit (1 Digit)" maxlength="1" value="${openDigit!=='*'?openDigit:''}">
-                        <button onclick="declareOpenResult('${m.id}','${m.name}')" class="btn-info">Declare OPEN Result</button>
-                    </div>
-
-                    <div style="margin-top:10px;">
-                        <label>Declare CLOSE Result:</label>
-                        <input type="text" id="closePana_${m.id}" placeholder="Close Pana (3 Digits)" maxlength="3" value="${closePana!=='***'?closePana:''}">
-                        <input type="text" id="closeDigit_${m.id}" placeholder="Close Digit (1 Digit)" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}">
-                        <button onclick="declareCloseResult('${m.id}','${m.name}')" class="btn-info">Declare CLOSE Result</button>
-                    </div>
-
-                    <div style="margin-top:12px;">
-                        <button onclick="setMarketStatus('${m.id}','open')" class="btn-success">🟢 OPEN</button>
-                        <button onclick="setMarketStatus('${m.id}','close')" class="btn-warning">🟡 CLOSE</button>
-                        <button onclick="setMarketStatus('${m.id}','closed')" class="btn-danger">🔴 CLOSED</button>
-                        <button onclick="deleteMarket('${m.id}')" class="btn-delete">🗑️ Delete</button>
-                    </div>
-                </div>
-            </div>`; 
-        }); 
-        document.getElementById('marketsList').innerHTML=html||'No markets available'; 
-    }
-
-    async function declareOpenResult(mid, name) {
-        let openPana = document.getElementById(`openPana_${mid}`).value.trim();
-        let openDigit = document.getElementById(`openDigit_${mid}`).value.trim();
-        if (!openPana || openPana.length !== 3) { alert("Enter valid 3-digit Open Pana"); return; }
-        if (!openDigit || openDigit.length !== 1) { alert("Enter valid 1-digit Open Digit"); return; }
-
-        if (confirm(`Declare OPEN result for ${name}?`)) {
-            await dbClient.from('markets').update({ open_pana: openPana, open_digit: openDigit }).eq('id', mid);
-            alert("OPEN result declared!");
-            loadMarkets();
-        }
-    }
-
-    async function declareCloseResult(mid, name) {
-        let closePana = document.getElementById(`closePana_${mid}`).value.trim();
-        let closeDigit = document.getElementById(`closeDigit_${mid}`).value.trim();
-        if (!closePana || closePana.length !== 3) { alert("Enter valid 3-digit Close Pana"); return; }
-        if (!closeDigit || closeDigit.length !== 1) { alert("Enter valid 1-digit Close Digit"); return; }
-
-        let { data: mDoc } = await dbClient.from('markets').select('open_digit, open_pana').eq('id', mid).single();
-        let openDigit = mDoc?.open_digit || '*';
-        let jodi = (openDigit !== '*' && closeDigit !== '*') ? (openDigit + closeDigit) : '**';
-
-        if (confirm(`Declare CLOSE result for ${name}?`)) {
-            await dbClient.from('markets').update({ close_pana: closePana, close_digit: closeDigit, jodi: jodi }).eq('id', mid);
-            alert("CLOSE result declared!");
-            loadMarkets();
-        }
-    }
-
-    async function addMarket(){ 
-        let name=document.getElementById('marketNameInput').value; 
-        let numbers=document.getElementById('marketNumbersInput').value||'***-**-***'; 
-        if(!name){ alert('Enter market name'); return; } 
+    async function loadSettings() {
+        const { data: upi } = await supabaseClient.from('settings').select('value').eq('id', 'upi').single();
+        if (upi) document.getElementById('upiInput').value = upi.value || '';
         
-        const { count } = await dbClient.from('markets').select('*', { count: 'exact', head: true });
-        await dbClient.from('markets').insert([{
-            name, numbers, 
-            open_bid_end: document.getElementById('openBidEnd').value||'',
-            close_bid_end: document.getElementById('closeBidEnd').value||'',
-            status: document.getElementById('marketStatus').value||'open', 
-            serial_no: (count || 0) + 1, 
-            open_pana: '***', open_digit: '*', close_pana: '***', close_digit: '*', jodi: '**'
-        }]); 
+        const { data: notice } = await supabaseClient.from('settings').select('text').eq('id', 'notice').single();
+        if (notice) document.getElementById('noticeInput').value = notice.text || '';
+    }
+
+    async function saveUpi() {
+        const val = document.getElementById('upiInput').value.trim();
+        await supabaseClient.from('settings').upsert({ id: 'upi', value: val });
+        alert('UPI ID Updated!');
+    }
+
+    async function saveNotice() {
+        const txt = document.getElementById('noticeInput').value.trim();
+        await supabaseClient.from('settings').upsert({ id: 'notice', text: txt });
+        alert('Notice Text Updated!');
+    }
+
+    async function loadMarkets() {
+        const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
+        let tbody = document.getElementById('marketsList');
+        if (!markets || markets.length === 0) { tbody.innerHTML = '<tr><td colspan="5">No markets found</td></tr>'; return; }
         
-        document.getElementById('marketNameInput').value=''; 
-        alert('Market added!'); 
+        tbody.innerHTML = markets.map(m => `
+            <tr>
+                <td>${m.serial_no || '-'}</td>
+                <td><strong>${m.name}</strong></td>
+                <td>${m.numbers || '***-**-***'}</td>
+                <td><span class="badge badge-success">${m.status || 'open'}</span></td>
+                <td>
+                    <button class="btn-danger" style="width:auto; padding: 4px 8px;" onclick="deleteMarket('${m.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function addMarket() {
+        const name = document.getElementById('mName').value.trim();
+        const serial = parseInt(document.getElementById('mSerial').value) || 1;
+        const openEnd = document.getElementById('mOpenEnd').value.trim();
+        const closeEnd = document.getElementById('mCloseEnd').value.trim();
+        if(!name) return alert('Enter market name');
+
+        await supabaseClient.from('markets').insert([{
+            name, serial_no: serial, open_bid_end: openEnd, close_bid_end: closeEnd, status: 'open'
+        }]);
+        alert('Market Created!');
         loadMarkets();
     }
 
-    async function deleteMarket(id){ if(confirm('Delete market?')) { await dbClient.from('markets').delete().eq('id', id); loadMarkets(); } }
-    async function setMarketStatus(mid,st){ await dbClient.from('markets').update({status:st}).eq('id', mid); loadMarkets(); }
-
-    async function loadDeposits(){ 
-        let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
-        const { data: deposits } = await dbClient.from('transactions').select('*').eq('type', 'credit').eq('status', status);
-        let html=''; 
-        (deposits || []).forEach(t=>{ 
-            html+=`<div class="request-item">
-                Amount: <b>₹${t.amount}</b> | UTR: ${t.utr||'N/A'}<br>
-                ${currentDepositTab==='pending'?`<button onclick="approveDeposit('${t.id}',${t.amount},'${t.user_id}')" class="btn-success">Approve</button><button onclick="rejectDeposit('${t.id}')" class="btn-danger">Reject</button>`:''}
-            </div>`; 
-        }); 
-        document.getElementById('depositsList').innerHTML=html||'No deposit records'; 
+    async function deleteMarket(id) {
+        if(!confirm('Delete this market?')) return;
+        await supabaseClient.from('markets').delete().eq('id', id);
+        loadMarkets();
     }
 
-    async function approveDeposit(id, amount, uid) {
-        let depositAmt = Number(amount);
-        let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single();
-        let currentBal = Number(uSnap?.balance) || 0;
+    async function loadDeposits() {
+        const { data: deposits } = await supabaseClient.from('transactions').select('*').eq('type', 'credit').order('created_at', { ascending: false });
+        let tbody = document.getElementById('depositList');
+        if (!deposits || deposits.length === 0) { tbody.innerHTML = '<tr><td colspan="6">No deposits found</td></tr>'; return; }
 
-        await dbClient.from('users').update({ balance: currentBal + depositAmt }).eq('id', uid);
-        await dbClient.from('transactions').update({ status: 'Completed' }).eq('id', id);
-        alert('Approved!');
+        tbody.innerHTML = deposits.map(d => `
+            <tr>
+                <td>${new Date(d.created_at).toLocaleString()}</td>
+                <td>${d.user_id}</td>
+                <td>₹${d.amount}</td>
+                <td>${d.utr || 'N/A'}</td>
+                <td><span class="badge badge-${d.status === 'Completed' ? 'success' : (d.status === 'Rejected' ? 'danger' : 'pending')}">${d.status}</span></td>
+                <td>
+                    ${d.status === 'Pending' ? `
+                        <button class="btn-success" style="width:auto; padding:4px 8px;" onclick="approveDeposit('${d.id}', '${d.user_id}', ${d.amount})">Approve</button>
+                        <button class="btn-danger" style="width:auto; padding:4px 8px;" onclick="rejectDeposit('${d.id}')">Reject</button>
+                    ` : '-'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function approveDeposit(txId, userId, amount) {
+        await supabaseClient.from('transactions').update({ status: 'Completed' }).eq('id', txId);
+        
+        // Fetch current user balance
+        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
+        const currentBal = user?.balance || 0;
+        
+        // Credit Balance
+        await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
+        alert('Deposit Approved & Balance Credited!');
         loadDeposits();
     }
 
-    async function rejectDeposit(id){ await dbClient.from('transactions').update({status:'Rejected'}).eq('id', id); loadDeposits(); }
-
-    async function loadWithdrawals(){ 
-        let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
-        const { data: withdrawals } = await dbClient.from('withdraw_requests').select('*').eq('status', status);
-        let html=''; 
-        (withdrawals || []).forEach(w => { 
-            html+=`<div class="request-item">
-                Amount: <b>₹${w.amount}</b><br>
-                ${currentWithdrawalTab==='pending'?`<button onclick="approveWithdraw('${w.id}',${w.amount},'${w.user_id}')" class="btn-success">Approve</button>`:''}
-            </div>`; 
-        }); 
-        document.getElementById('withdrawalsList').innerHTML=html||'No withdrawal records'; 
+    async function rejectDeposit(txId) {
+        await supabaseClient.from('transactions').update({ status: 'Rejected' }).eq('id', txId);
+        loadDeposits();
     }
 
-    async function approveWithdraw(id,amount,uid){ 
-        let withdrawAmt = Number(amount); 
-        let { data: uSnap } = await dbClient.from('users').select('balance').eq('id', uid).single(); 
-        let currentBal = Number(uSnap?.balance) || 0; 
-        if(currentBal < withdrawAmt){ alert('Insufficient balance!'); return; } 
-        await dbClient.from('users').update({ balance: currentBal - withdrawAmt }).eq('id', uid); 
-        await dbClient.from('withdraw_requests').update({ status:'Completed' }).eq('id', id); 
-        alert('Approved!'); 
+    async function loadWithdrawals() {
+        const { data: withdrawals } = await supabaseClient.from('withdraw_requests').select('*').order('created_at', { ascending: false });
+        let tbody = document.getElementById('withdrawList');
+        if (!withdrawals || withdrawals.length === 0) { tbody.innerHTML = '<tr><td colspan="6">No withdrawal requests</td></tr>'; return; }
+
+        tbody.innerHTML = withdrawals.map(w => {
+            let bank = w.bank_details || {};
+            return `
+            <tr>
+                <td>${new Date(w.created_at).toLocaleString()}</td>
+                <td>${w.user_id}</td>
+                <td>₹${w.amount}</td>
+                <td>${bank.bankName || ''} - ${bank.accountNumber || ''}</td>
+                <td><span class="badge badge-${w.status === 'Completed' ? 'success' : (w.status === 'Rejected' ? 'danger' : 'pending')}">${w.status}</span></td>
+                <td>
+                    ${w.status === 'Pending' ? `
+                        <button class="btn-success" style="width:auto; padding:4px 8px;" onclick="approveWithdrawal('${w.id}')">Complete</button>
+                        <button class="btn-danger" style="width:auto; padding:4px 8px;" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
+                    ` : '-'}
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function approveWithdrawal(wId) {
+        await supabaseClient.from('withdraw_requests').update({ status: 'Completed' }).eq('id', wId);
+        alert('Withdrawal marked as completed!');
         loadWithdrawals();
     }
 
-    function searchUsers(){ currentSearchTerm=document.getElementById('searchInput').value.trim().toLowerCase(); displayFilteredUsers(); }
-    function clearSearch(){ document.getElementById('searchInput').value=''; currentSearchTerm=''; displayFilteredUsers(); }
-    function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
-    async function toggleBlockUser(uid, isBlocked){ await dbClient.from('users').update({ blocked: !isBlocked }).eq('id', uid); loadUsers(); }
-    async function deleteUser(uid, name){ if(confirm(`Delete ${name}?`)) { await dbClient.from('users').delete().eq('id', uid); loadUsers(); } }
-    
-    async function loadSettings(){ const { data } = await dbClient.from('settings').select('value').eq('id', 'upi').single(); if(data) document.getElementById('upiId').value = data.value; }
-    async function updateUPI(){ await dbClient.from('settings').upsert({ id: 'upi', value: document.getElementById('upiId').value }); alert("UPI Updated"); }
-    async function loadNotice(){ const { data } = await dbClient.from('settings').select('text').eq('id', 'notice').single(); if(data) document.getElementById('noticeText').value = data.text; }
-    async function updateNotice(){ await dbClient.from('settings').upsert({ id: 'notice', text: document.getElementById('noticeText').value }); alert('Notice Updated!'); }
-    
-    function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
-    function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
-
-    function showSection(section){ 
-        ['markets','users','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
-        document.getElementById(`${section}Section`).classList.remove('hidden'); 
+    async function rejectWithdrawal(wId, userId, amount) {
+        await supabaseClient.from('withdraw_requests').update({ status: 'Rejected' }).eq('id', wId);
+        
+        // Refund Balance back to user
+        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
+        const currentBal = user?.balance || 0;
+        await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
+        
+        alert('Withdrawal Rejected & Amount Refunded to User!');
+        loadWithdrawals();
     }
-    function logout(){ sessionStorage.removeItem('adminLoggedIn'); location.reload(); }
 </script>
 </body>
 </html>
