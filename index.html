@@ -53,7 +53,7 @@
         .market-result { font-size: 18px; font-weight: 800; color: #f59e0b; font-family: monospace; letter-spacing: 1px; }
         .market-timing { font-size: 11px; color: #94a3b8; margin-top: 4px; }
         
-        .play-btn { background: #3b82f6; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; }
+        .play-btn { background: #3b82f6; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
         .play-btn.disabled { background: #475569; cursor: not-allowed; }
 
         /* Bottom Fixed Navigation Bar */
@@ -88,7 +88,7 @@
         <button class="close-notice" onclick="event.stopPropagation(); closeNotice()">✕</button>
     </div>
 
-    <!-- 🟢 Action Buttons with Full Repository Paths -->
+    <!-- 🟢 Action Buttons -->
     <div class="action-grid">
         <a href="https://gogamiplay.github.io/gogami/deposit.html" class="action-btn deposit-theme">➕ Deposit</a>
         <a href="https://gogamiplay.github.io/gogami/withdraw.html" class="action-btn withdraw-theme">💸 Withdraw</a>
@@ -99,7 +99,7 @@
         <div style="text-align: center; color: #64748b; padding: 20px;">Loading Markets...</div>
     </div>
 
-    <!-- 🟢 Navigation Bar with Full Repository Paths -->
+    <!-- 🟢 Navigation Bar -->
     <div class="bottom-nav">
         <a href="https://gogamiplay.github.io/gogami/mybids.html" class="nav-item"><span>Passbook</span></a>
         <a href="https://gogamiplay.github.io/gogami/mybids.html" class="nav-item"><span>My Bids</span></a>
@@ -139,48 +139,61 @@
     }
     function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
 
+    function getActiveUid() {
+        if (auth.currentUser) return auth.currentUser.uid;
+        let localUid = localStorage.getItem('userUid');
+        return (localUid && localUid !== 'null') ? localUid : null;
+    }
+
     function updateLastActive() {
-        if (auth.currentUser) {
-            db.collection('users').doc(auth.currentUser.uid).update({
+        let uid = getActiveUid();
+        if (uid) {
+            db.collection('users').doc(uid).set({
+                isOnline: true,
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(e => {});
+            }, { merge: true }).catch(e => {});
         }
     }
 
     showLoader();
 
-    // 🟢 Safe Auth Listener without forcing web redirect
+    // 🟢 Realtime Markets & User Listener
     auth.onAuthStateChanged(async (user) => { 
         if (user) { 
             currentUser = user; 
-            updateLastActive();
-            setInterval(updateLastActive, 30000);
-            
-            try {
-                await loadUserData();
-                listenMarkets();
-            } catch(e) {
-                console.log("Error loading user/markets", e);
-            }
-            hideLoader(); 
+            localStorage.setItem('userUid', user.uid);
+            initUserDataAndMarkets(user.uid);
         } else {
-            hideLoader();
+            let localUid = localStorage.getItem('userUid');
+            if (localUid) {
+                initUserDataAndMarkets(localUid);
+            } else {
+                listenMarkets();
+                hideLoader();
+            }
         } 
     });
 
-    async function loadUserData(){ 
-        if(!currentUser) return;
-        db.collection('users').doc(currentUser.uid).onSnapshot(doc => {
+    function initUserDataAndMarkets(uid) {
+        updateLastActive();
+        setInterval(updateLastActive, 30000);
+        
+        // 🟢 Realtime User Balance Listener
+        db.collection('users').doc(uid).onSnapshot(doc => {
             if(doc.exists){ 
                 currentUserData = doc.data(); 
                 let balEl = document.getElementById('userBalance');
                 if(balEl) balEl.innerText = currentUserData.balance || 0; 
             }
         });
+
+        listenMarkets();
+        hideLoader();
     }
 
+    // 🟢 Updated Realtime Markets Sync Logic (Matches admin.html fields)
     function listenMarkets(){
-        db.collection('markets').orderBy('openTime', 'asc').onSnapshot(snapshot => {
+        db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
             let container = document.getElementById('marketList');
             container.innerHTML = '';
             
@@ -191,22 +204,31 @@
 
             snapshot.forEach(doc => {
                 let m = doc.data();
-                let isOpen = m.status === 'Open';
+                let status = (m.status || 'closed').toLowerCase();
+                let isOpen = status === 'open' || status === 'close';
                 
+                let openPana = m.openPana || '***';
+                let openDigit = m.openDigit || '*';
+                let closeDigit = m.closeDigit || '*';
+                let closePana = m.closePana || '***';
+                let resultDisplay = `${openPana}-${openDigit}${closeDigit}-${closePana}`;
+
                 let card = document.createElement('div');
                 card.className = `market-card ${isOpen ? '' : 'closed'}`;
                 card.innerHTML = `
                     <div class="market-info">
                         <h4>${m.name || 'Market'}</h4>
-                        <div class="market-result">${m.result || '***-**-***'}</div>
-                        <div class="market-timing">Open: ${m.openTime || '--'} | Close: ${m.closeTime || '--'}</div>
+                        <div class="market-result">${resultDisplay}</div>
+                        <div class="market-timing">Open: ${m.openBidEnd || '--:--'} | Close: ${m.closeBidEnd || '--:--'}</div>
                     </div>
                     ${isOpen ? 
                         `<a href="https://gogamiplay.github.io/gogami/games.html?id=${doc.id}" class="play-btn">PLAY NOW</a>` : 
-                        `<button class="play-btn disabled" disabled>CLOSED</button>`}
+                        `<button class="play-btn disabled" disabled>${status.toUpperCase()}</button>`}
                 `;
                 container.appendChild(card);
             });
+        }, error => {
+            console.error("Markets snapshot error:", error);
         });
     }
 
@@ -214,7 +236,7 @@
     
     function handleLogout() {
         if(confirm("Are you sure you want to logout?")) {
-            // Trigger Android Native Logout if inside App
+            localStorage.removeItem('userUid');
             if(window.AndroidBridge && window.AndroidBridge.logout) {
                 window.AndroidBridge.logout();
             } else {
@@ -225,16 +247,58 @@
         }
     }
 
-    function showProfileModal(){ if(currentUserData){ document.getElementById('profileInfo').innerHTML=`<div style="text-align:center;"><div style="font-size:18px; font-weight:700; color:#cbd5e1;">${currentUserData.name || 'User'}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone || ''}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance || 0}</div></div>`; document.getElementById('profileModal').style.display='flex'; } }
+    function showProfileModal(){ 
+        let uid = getActiveUid();
+        if(currentUserData){ 
+            document.getElementById('profileInfo').innerHTML=`<div style="text-align:center;"><div style="font-size:18px; font-weight:700; color:#cbd5e1;">${currentUserData.name || 'User'}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone || ''}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance || 0}</div></div>`; 
+            document.getElementById('profileModal').style.display='flex'; 
+        } 
+    }
     function closeProfileModal(){ document.getElementById('profileModal').style.display='none'; }
     function showGameRatesModal(){ closeProfileModal(); document.getElementById('gameRatesModal').style.display='flex'; }
     function closeGameRatesModal(){ document.getElementById('gameRatesModal').style.display='none'; }
     function showChangePinModal(){ closeProfileModal(); document.getElementById('changePinModal').style.display='flex'; }
     function closeChangePinModal(){ document.getElementById('changePinModal').style.display='none'; document.getElementById('pinMsg').innerHTML=''; }
-    async function updatePin(){ let old=document.getElementById('oldPin').value, newP=document.getElementById('newPin').value, confirm=document.getElementById('confirmPin').value; if(!old||!newP||!confirm){ document.getElementById('pinMsg').innerHTML='Fill all fields'; return; } if(newP.length!==4||!/^\d{4}$/.test(newP)){ document.getElementById('pinMsg').innerHTML='MPIN must be 4 digits'; return; } if(newP!==confirm){ document.getElementById('pinMsg').innerHTML='MPINs do not match'; return; } if(old!==currentUserData.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } await db.collection('users').doc(currentUser.uid).update({pin:newP}); currentUserData.pin=newP; document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; document.getElementById('pinMsg').style.color='#10b981'; setTimeout(()=>closeChangePinModal(),1500); }
-    function showBankModal(){ closeProfileModal(); let b=currentUserData?.bankDetails; if(b){ document.getElementById('bankAccountHolder').value=b.accountHolder||''; document.getElementById('bankName').value=b.bankName||''; document.getElementById('bankAccountNumber').value=b.accountNumber||''; document.getElementById('bankIfsc').value=b.ifscCode||''; } document.getElementById('bankModal').style.display='flex'; }
+    
+    async function updatePin(){ 
+        let old=document.getElementById('oldPin').value, newP=document.getElementById('newPin').value, confirmPin=document.getElementById('confirmPin').value; 
+        if(!old||!newP||!confirmPin){ document.getElementById('pinMsg').innerHTML='Fill all fields'; return; } 
+        if(newP.length!==4||!/^\d{4}$/.test(newP)){ document.getElementById('pinMsg').innerHTML='MPIN must be 4 digits'; return; } 
+        if(newP!==confirmPin){ document.getElementById('pinMsg').innerHTML='MPINs do not match'; return; } 
+        if(old!==currentUserData?.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } 
+        
+        let uid = getActiveUid();
+        await db.collection('users').doc(uid).update({pin:newP}); 
+        currentUserData.pin=newP; 
+        document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; 
+        document.getElementById('pinMsg').style.color='#10b981'; 
+        setTimeout(()=>closeChangePinModal(),1500); 
+    }
+    
+    function showBankModal(){ 
+        closeProfileModal(); 
+        let b=currentUserData?.bankDetails; 
+        if(b){ 
+            document.getElementById('bankAccountHolder').value=b.accountHolder||''; 
+            document.getElementById('bankName').value=b.bankName||''; 
+            document.getElementById('bankAccountNumber').value=b.accountNumber||''; 
+            document.getElementById('bankIfsc').value=b.ifscCode||''; 
+        } 
+        document.getElementById('bankModal').style.display='flex'; 
+    }
     function closeBankModal(){ document.getElementById('bankModal').style.display='none'; document.getElementById('bankMsg').innerHTML=''; }
-    async function saveBankDetails(){ let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } await db.collection('users').doc(currentUser.uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; document.getElementById('bankMsg').innerHTML='✅ Saved!'; setTimeout(()=>closeBankModal(),1500); }
+    
+    async function saveBankDetails(){ 
+        let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); 
+        if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } 
+        
+        let uid = getActiveUid();
+        await db.collection('users').doc(uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); 
+        currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; 
+        document.getElementById('bankMsg').innerHTML='✅ Saved!'; 
+        setTimeout(()=>closeBankModal(),1500); 
+    }
+    
     function showNoticeModal(){ db.collection('settings').doc('notice').get().then(d => { alert(d.exists ? d.data().text : 'Welcome to GOGAMI!'); }); }
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
 
