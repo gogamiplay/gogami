@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GOGAMI - Online Matka Play</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- ⚡ Supabase JS SDK v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
@@ -116,21 +115,12 @@
 <div id="bankModal" class="modal"><div class="modal-content"><h3>🏦 Bank Details</h3><input type="text" id="bankAccountHolder" class="modal-input" placeholder="Account Holder"><input type="text" id="bankName" class="modal-input" placeholder="Bank Name"><input type="text" id="bankAccountNumber" class="modal-input" placeholder="Account Number"><input type="text" id="bankIfsc" class="modal-input" placeholder="IFSC"><button class="modal-btn" onclick="saveBankDetails()">Save</button><button class="modal-btn close-modal" onclick="closeBankModal()">Cancel</button><div id="bankMsg" style="text-align:center; color:#34d399; margin-top:6px; font-size:13px;"></div></div></div>
 
 <script>
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c", 
-        authDomain: "gogami-877be.firebaseapp.com", 
-        projectId: "gogami-877be", 
-        storageBucket: "gogami-877be.firebasestorage.app", 
-        messagingSenderId: "220921167245", 
-        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
-        measurementId: "G-2Q572T3D8J"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    // ⚡ Supabase Configuration
+    const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser = null, currentUserData = null;
+    let currentUserData = null;
 
     function showLoader() { 
         if(!document.getElementById('pageLoader')) {
@@ -140,77 +130,89 @@
     function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
 
     function getActiveUid() {
-        if (auth.currentUser) return auth.currentUser.uid;
         let localUid = localStorage.getItem('userUid');
         return (localUid && localUid !== 'null') ? localUid : null;
     }
 
-    function updateLastActive() {
+    async function updateLastActive() {
         let uid = getActiveUid();
         if (uid) {
-            db.collection('users').doc(uid).set({
-                isOnline: true,
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true }).catch(e => {});
+            await supabase
+                .from('users')
+                .update({ is_online: true, last_active: new Date().toISOString() })
+                .eq('id', uid);
         }
     }
 
     showLoader();
 
-    // 🟢 Realtime Markets & User Listener
-    auth.onAuthStateChanged(async (user) => { 
-        if (user) { 
-            currentUser = user; 
-            localStorage.setItem('userUid', user.uid);
-            initUserDataAndMarkets(user.uid);
+    // 🟢 Initialization Logic
+    document.addEventListener("DOMContentLoaded", async () => {
+        let uid = getActiveUid();
+        if (uid) {
+            await initUserDataAndMarkets(uid);
         } else {
-            let localUid = localStorage.getItem('userUid');
-            if (localUid) {
-                initUserDataAndMarkets(localUid);
-            } else {
-                listenMarkets();
-                hideLoader();
-            }
-        } 
+            listenMarkets();
+            hideLoader();
+        }
+        loadNotice();
     });
 
-    function initUserDataAndMarkets(uid) {
+    async function initUserDataAndMarkets(uid) {
         updateLastActive();
         setInterval(updateLastActive, 30000);
         
-        // 🟢 Realtime User Balance Listener
-        db.collection('users').doc(uid).onSnapshot(doc => {
-            if(doc.exists){ 
-                currentUserData = doc.data(); 
+        // 🟢 Initial Fetch User Profile
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', uid)
+            .single();
+
+        if (user) {
+            currentUserData = user;
+            let balEl = document.getElementById('userBalance');
+            if(balEl) balEl.innerText = user.balance || 0;
+        }
+
+        // 🟢 Realtime User Balance Listener (Supabase Subscription)
+        supabase
+            .channel('user-balance-changes')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${uid}` }, payload => {
+                currentUserData = payload.new;
                 let balEl = document.getElementById('userBalance');
-                if(balEl) balEl.innerText = currentUserData.balance || 0; 
-            }
-        });
+                if(balEl) balEl.innerText = payload.new.balance || 0;
+            })
+            .subscribe();
 
         listenMarkets();
         hideLoader();
     }
 
-    // 🟢 Updated Realtime Markets Sync Logic (Matches admin.html fields)
-    function listenMarkets(){
-        db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
+    // 🟢 Realtime Markets Fetch & Listener
+    async function listenMarkets(){
+        const fetchAndRenderMarkets = async () => {
+            const { data: markets, error } = await supabase
+                .from('markets')
+                .select('*')
+                .order('serial_no', { ascending: true });
+
             let container = document.getElementById('marketList');
             container.innerHTML = '';
             
-            if(snapshot.empty){
+            if(!markets || markets.length === 0){
                 container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px;">No Markets Available</div>';
                 return;
             }
 
-            snapshot.forEach(doc => {
-                let m = doc.data();
+            markets.forEach(m => {
                 let status = (m.status || 'closed').toLowerCase();
                 let isOpen = status === 'open' || status === 'close';
                 
-                let openPana = m.openPana || '***';
-                let openDigit = m.openDigit || '*';
-                let closeDigit = m.closeDigit || '*';
-                let closePana = m.closePana || '***';
+                let openPana = m.open_pana || '***';
+                let openDigit = m.open_digit || '*';
+                let closeDigit = m.close_digit || '*';
+                let closePana = m.close_pana || '***';
                 let resultDisplay = `${openPana}-${openDigit}${closeDigit}-${closePana}`;
 
                 let card = document.createElement('div');
@@ -219,17 +221,36 @@
                     <div class="market-info">
                         <h4>${m.name || 'Market'}</h4>
                         <div class="market-result">${resultDisplay}</div>
-                        <div class="market-timing">Open: ${m.openBidEnd || '--:--'} | Close: ${m.closeBidEnd || '--:--'}</div>
+                        <div class="market-timing">Open: ${m.open_bid_end || '--:--'} | Close: ${m.close_bid_end || '--:--'}</div>
                     </div>
                     ${isOpen ? 
-                        `<a href="https://gogamiplay.github.io/gogami/games.html?id=${doc.id}" class="play-btn">PLAY NOW</a>` : 
+                        `<a href="https://gogamiplay.github.io/gogami/games.html?id=${m.id}" class="play-btn">PLAY NOW</a>` : 
                         `<button class="play-btn disabled" disabled>${status.toUpperCase()}</button>`}
                 `;
                 container.appendChild(card);
             });
-        }, error => {
-            console.error("Markets snapshot error:", error);
-        });
+        };
+
+        await fetchAndRenderMarkets();
+
+        // Supabase Realtime Listener for Markets Table
+        supabase
+            .channel('markets-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, () => {
+                fetchAndRenderMarkets();
+            })
+            .subscribe();
+    }
+
+    async function loadNotice() {
+        const { data: notice } = await supabase
+            .from('settings')
+            .select('text')
+            .eq('id', 'notice')
+            .single();
+
+        let el = document.getElementById('noticeText');
+        if(el) el.innerHTML = notice ? notice.text : 'Welcome to GOGAMI!';
     }
 
     function showBalance(){ alert(`💰 Balance: ₹${currentUserData?.balance||0}`); }
@@ -240,9 +261,7 @@
             if(window.AndroidBridge && window.AndroidBridge.logout) {
                 window.AndroidBridge.logout();
             } else {
-                auth.signOut().then(() => {
-                    location.reload();
-                });
+                location.reload();
             }
         }
     }
@@ -268,21 +287,25 @@
         if(old!==currentUserData?.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } 
         
         let uid = getActiveUid();
-        await db.collection('users').doc(uid).update({pin:newP}); 
-        currentUserData.pin=newP; 
-        document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; 
-        document.getElementById('pinMsg').style.color='#10b981'; 
-        setTimeout(()=>closeChangePinModal(),1500); 
+        const { error } = await supabase.from('users').update({ pin: newP }).eq('id', uid); 
+        if(!error) {
+            currentUserData.pin = newP; 
+            document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; 
+            document.getElementById('pinMsg').style.color='#10b981'; 
+            setTimeout(()=>closeChangePinModal(), 1500); 
+        } else {
+            document.getElementById('pinMsg').innerHTML='Error updating PIN';
+        }
     }
     
     function showBankModal(){ 
         closeProfileModal(); 
-        let b=currentUserData?.bankDetails; 
+        let b = currentUserData?.bank_details; 
         if(b){ 
-            document.getElementById('bankAccountHolder').value=b.accountHolder||''; 
-            document.getElementById('bankName').value=b.bankName||''; 
-            document.getElementById('bankAccountNumber').value=b.accountNumber||''; 
-            document.getElementById('bankIfsc').value=b.ifscCode||''; 
+            document.getElementById('bankAccountHolder').value = b.accountHolder || ''; 
+            document.getElementById('bankName').value = b.bankName || ''; 
+            document.getElementById('bankAccountNumber').value = b.accountNumber || ''; 
+            document.getElementById('bankIfsc').value = b.ifscCode || ''; 
         } 
         document.getElementById('bankModal').style.display='flex'; 
     }
@@ -293,19 +316,24 @@
         if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } 
         
         let uid = getActiveUid();
-        await db.collection('users').doc(uid).update({bankDetails:{accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}}); 
-        currentUserData.bankDetails={accountHolder:ah,bankName:bn,accountNumber:an,ifscCode:ifsc}; 
-        document.getElementById('bankMsg').innerHTML='✅ Saved!'; 
-        setTimeout(()=>closeBankModal(),1500); 
+        let bankDetailsObj = { accountHolder: ah, bankName: bn, accountNumber: an, ifscCode: ifsc };
+        const { error } = await supabase.from('users').update({ bank_details: bankDetailsObj }).eq('id', uid); 
+        
+        if(!error) {
+            currentUserData.bank_details = bankDetailsObj; 
+            document.getElementById('bankMsg').innerHTML='✅ Saved!'; 
+            setTimeout(()=>closeBankModal(), 1500); 
+        } else {
+            document.getElementById('bankMsg').innerHTML='Error saving details';
+        }
     }
     
-    function showNoticeModal(){ db.collection('settings').doc('notice').get().then(d => { alert(d.exists ? d.data().text : 'Welcome to GOGAMI!'); }); }
+    function showNoticeModal(){ 
+        supabase.from('settings').select('text').eq('id', 'notice').single().then(({ data }) => {
+            alert(data ? data.text : 'Welcome to GOGAMI!');
+        });
+    }
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
-
-    db.collection('settings').doc('notice').onSnapshot(doc=>{ 
-        let el = document.getElementById('noticeText');
-        if(el) el.innerHTML=doc.exists?doc.data().text:'Welcome to GOGAMI!'; 
-    }, e => {});
 
     window.showBalance=showBalance; window.showProfileModal=showProfileModal; window.closeProfileModal=closeProfileModal; window.showGameRatesModal=showGameRatesModal; window.closeGameRatesModal=closeGameRatesModal; window.showChangePinModal=showChangePinModal; window.closeChangePinModal=closeChangePinModal; window.updatePin=updatePin; window.showBankModal=showBankModal; window.closeBankModal=closeBankModal; window.saveBankDetails=saveBankDetails; window.closeNotice=closeNotice; window.handleLogout=handleLogout;
 </script>
