@@ -72,13 +72,11 @@
         .request-tab.active { background: #3b82f6; color: #fff; }
         
         .search-container { display: flex; gap: 6px; margin-bottom: 12px; }
-        .sort-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; padding: 10px; background: #0f172a; border-radius: 8px; align-items: center; border: 1px solid #334155; font-size: 12px; color: #94a3b8; }
         
         .user-count { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; }
         .user-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; display: inline-block; }
         .status-online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
         .status-offline { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-        .last-login { font-size: 10px; color: #64748b; margin-top: 4px; }
         
         .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
         
@@ -96,9 +94,8 @@
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
         <span class="app-title-animated">GOGAMI ADMIN</span>
-        <input type="password" id="adminPass" placeholder="Enter Control Password">
-        <button onclick="login()">Sign In</button>
-        <div id="loginError" style="color:#f87171; margin-top:12px; font-size:13px; font-weight:600;"></div>
+        <p style="color:#94a3b8; font-size:12px; margin-bottom:12px;">Direct Access Enabled</p>
+        <button onclick="login()">Enter Dashboard</button>
     </div>
 </div>
 
@@ -111,11 +108,11 @@
     <div class="sidebar">
         <div class="sidebar-item active" onclick="showSection('markets')">🎮 Markets</div>
         <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
-        <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
-        <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
+        <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits</div>
+        <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals</div>
         <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
         <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
-        <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat <span id="chatBadge" class="notification-badge" style="display:none;">0</span></div>
+        <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat</div>
     </div>
 
     <div class="main-content">
@@ -194,12 +191,6 @@
         <!-- Settings Section -->
         <div id="settingsSection" class="hidden">
             <div class="card">
-                <h3>🔐 Change Password</h3>
-                <input type="password" id="oldPass" placeholder="Old Password">
-                <input type="password" id="newPass" placeholder="New Password">
-                <button onclick="changePassword()">Update Password</button>
-            </div>
-            <div class="card">
                 <h3>🏧 UPI ID Settings</h3>
                 <input type="text" id="upiId" placeholder="UPI ID" value="gogami@axl">
                 <button onclick="updateUPI()">Update UPI ID</button>
@@ -222,43 +213,24 @@
     const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ⚡ OneSignal Credentials (Configured)
+    // ⚡ OneSignal Credentials
     const ONESIGNAL_APP_ID = "80d7c037-9684-4a11-8533-db0b0fd10be6";
     const ONESIGNAL_REST_KEY = "os_v2_app_qdl4an4wqrfbdbjt3mfq7uil4zcza556zb7uoke5eb5wwtvy5ibc6w3ajicbkwbw4pej7wjbgccgblpteg4i2y2mxbgjwz6k6ujg6sq";
 
-    let dbPassword = "Gani99@@", allUsers = [], currentSearchTerm = "";
+    let allUsers = [], currentSearchTerm = "";
     let currentDepositTab = "pending", currentWithdrawalTab = "pending";
 
-    async function syncAdminCredentials() {
-        try {
-            const { data } = await supabase.from('settings').select('value').eq('id', 'admin_pass').single();
-            if(data && data.value) {
-                dbPassword = data.value;
-            } else {
-                await supabase.from('settings').upsert({ id: 'admin_pass', value: dbPassword });
-            }
-        } catch(e) { console.error("Database sync fault", e); }
+    if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
+        document.getElementById('loginScreen').style.display = 'none'; 
+        document.getElementById('adminPanel').style.display = 'flex'; 
+        loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
     }
 
-    syncAdminCredentials().then(() => {
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
-            document.getElementById('loginScreen').style.display = 'none'; 
-            document.getElementById('adminPanel').style.display = 'flex'; 
-            loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
-        }
-    });
-
     async function login() { 
-        let pwd = document.getElementById('adminPass').value; 
-        await syncAdminCredentials();
-        if(pwd === dbPassword){ 
-            sessionStorage.setItem('adminLoggedIn','true'); 
-            document.getElementById('loginScreen').style.display='none'; 
-            document.getElementById('adminPanel').style.display='flex'; 
-            loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
-        } else { 
-            document.getElementById('loginError').innerText='Control access code unverified!'; 
-        } 
+        sessionStorage.setItem('adminLoggedIn','true'); 
+        document.getElementById('loginScreen').style.display='none'; 
+        document.getElementById('adminPanel').style.display='flex'; 
+        loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings();
     }
 
     async function loadUsers(){ 
@@ -431,9 +403,7 @@
                     contents: { "en": messageBody }
                 })
             });
-        } catch (e) {
-            console.error("Error sending notification:", e);
-        }
+        } catch (e) { console.error("Error sending notification:", e); }
     }
 
     async function addMarket(){ 
@@ -521,14 +491,6 @@
     async function updateUPI(){ await supabase.from('settings').upsert({ id: 'upi', value: document.getElementById('upiId').value }); alert("UPI Updated"); }
     async function loadNotice(){ const { data } = await supabase.from('settings').select('text').eq('id', 'notice').single(); if(data) document.getElementById('noticeText').value = data.text; }
     async function updateNotice(){ await supabase.from('settings').upsert({ id: 'notice', text: document.getElementById('noticeText').value }); alert('Notice Updated!'); }
-    
-    async function changePassword(){ 
-        let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
-        if(old===dbPassword && newP.length>=4){ 
-            await supabase.from('settings').upsert({ id: 'admin_pass', value: newP.trim() }); 
-            alert('Password Changed!'); 
-        } else { alert('Invalid credentials'); }
-    }
     
     function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
     function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
