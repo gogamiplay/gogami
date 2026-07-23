@@ -2,168 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GOGAMI - Automated System Setup</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOGAMI - Supabase Setup Helper</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
-        .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; max-width: 520px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .title { font-size: 22px; font-weight: 800; color: #3b82f6; text-align: center; margin-bottom: 6px; }
-        .subtitle { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; }
-        
-        .btn-setup { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
-        .btn-setup:hover { background: #059669; }
-        .btn-setup:disabled { background: #475569; cursor: not-allowed; }
-
-        .log-container { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-top: 20px; max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 12px; display: none; }
-        .log-line { margin-bottom: 6px; }
-        .log-success { color: #34d399; }
-        .log-info { color: #60a5fa; }
-        .log-warning { color: #fbbf24; }
-        .log-error { color: #f87171; }
-
-        .links-box { margin-top: 16px; padding: 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; display: none; }
-        .links-box h4 { color: #93c5fd; font-size: 13px; margin-bottom: 8px; }
-        .index-link { display: block; color: #34d399; word-break: break-all; font-size: 11px; margin-bottom: 6px; text-decoration: underline; }
+        body { font-family: monospace; background: #0f172a; color: #38bdf8; padding: 20px; line-height: 1.6; }
+        .box { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+        button { background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
+        #logs { background: #000; color: #4ade80; padding: 10px; margin-top: 15px; border-radius: 6px; min-height: 150px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="setup-card">
-    <div class="title">⚡ GOGAMI System Setup</div>
-    <div class="subtitle">System Configs & Firestore Index Link Generator</div>
-
-    <button id="runBtn" class="btn-setup" onclick="startAutomatedSetup()">Run Setup Now</button>
-
-    <div id="linksBox" class="links-box">
-        <h4>🔗 Required Composite Index Links (Click to create):</h4>
-        <div id="indexLinksContainer"></div>
-    </div>
-
-    <div id="logBox" class="log-container"></div>
+<div class="box">
+    <h2>🚀 Supabase Automated Initializer</h2>
+    <p>यह टूल आपके Firebase Collections के अनुसार Supabase में ज़रूरी टेबल स्ट्रक्चर तैयार करने के लिए रिकॉर्ड्स इनीशियलाइज़ करेगा।</p>
+    <button onclick="runDatabaseInit()">Setup Database Infrastructure</button>
+    <div id="logs">> Click button to start setup...</div>
 </div>
 
 <script>
-    // Firebase Configuration
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c", 
-        authDomain: "gogami-877be.firebaseapp.com", 
-        projectId: "gogami-877be", 
-        storageBucket: "gogami-877be.firebasestorage.app", 
-        messagingSenderId: "220921167245", 
-        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
-        measurementId: "G-2Q572T3D8J"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+    const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function log(msg, type = 'info') {
-        const box = document.getElementById('logBox');
-        box.style.display = 'block';
-        const line = document.createElement('div');
-        line.className = `log-line log-${type}`;
-        line.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        box.appendChild(line);
-        box.scrollTop = box.scrollHeight;
+    function log(msg) {
+        document.getElementById('logs').innerHTML += "<br>> " + msg;
     }
 
-    function addIndexLink(url, label) {
-        const container = document.getElementById('linksBox');
-        const list = document.getElementById('indexLinksContainer');
-        container.style.display = 'block';
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.className = 'index-link';
-        a.innerText = `👉 Create Index for: ${label}`;
-        list.appendChild(a);
-    }
-
-    async function startAutomatedSetup() {
-        const btn = document.getElementById('runBtn');
-        btn.disabled = true;
-        btn.innerText = 'Setting up Database...';
-        
-        log('Starting GOGAMI Automated Setup...', 'info');
+    async function runDatabaseInit() {
+        log("Checking connection & setting up collections...");
 
         try {
-            // 1. Initialize System Default Configs
-            log('Configuring settings/notice...', 'info');
-            await db.collection('settings').doc('notice').set({
-                text: 'Welcome to GOGAMI! Play responsibly and enjoy instant payouts.'
-            }, { merge: true });
-            log('✓ Notice configuration updated', 'success');
+            // 1. Setup default UPI ID
+            await supabase.from('settings').upsert({ id: 'upi', value: 'gogami@axl' });
+            log("✅ 'settings' Collection initialized with default UPI.");
 
-            log('Configuring settings/upi...', 'info');
-            await db.collection('settings').doc('upi').set({
-                upiId: 'gogami@axl'
-            }, { merge: true });
-            log('✓ Payment UPI ID initialized (gogami@axl)', 'success');
+            // 2. Setup Notice
+            await supabase.from('settings').upsert({ id: 'notice', text: 'Welcome to GOGAMI Game Panel' });
+            log("✅ Notice Settings initialized.");
 
-            log('Configuring settings/servertime...', 'info');
-            await db.collection('settings').doc('servertime').set({
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            log('✓ Server time baseline established', 'success');
+            // 3. Dummy Market Test Record
+            const { data: marketCheck } = await supabase.from('markets').select('id').limit(1);
+            if (!marketCheck || marketCheck.length === 0) {
+                await supabase.from('markets').insert([{
+                    name: 'KALYAN NIGHT',
+                    numbers: '120-3*-***',
+                    open_bid_end: '21:00',
+                    close_bid_end: '23:00',
+                    status: 'open',
+                    serial_no: 1,
+                    open_pana: '120', open_digit: '3', close_pana: '***', close_digit: '*', jodi: '**'
+                }]);
+                log("✅ 'markets' Collection created with sample market.");
+            } else {
+                log("✅ 'markets' Collection already active.");
+            }
 
-            // 2. Test Composite Queries to Catch Missing Indexes & Generate Instant Links
-            log('Testing queries for index requirements...', 'info');
-            await testIndexes();
-
-            log('🎉 System setup completed successfully!', 'success');
-            btn.innerText = 'Setup Completed!';
-            btn.style.background = '#059669';
+            log("-----------------------------------------");
+            log("🎉 Setup process triggered successfully!");
+            log("You can now open admin.html safely.");
 
         } catch (e) {
-            log(`Error during setup: ${e.message}`, 'error');
-            btn.disabled = false;
-            btn.innerText = 'Retry Setup';
-        }
-    }
-
-    async function testIndexes() {
-        const dummyUid = "setup_check_dummy_uid";
-
-        // Query 1: Transactions by userId + order by date
-        try {
-            await db.collection('transactions').where('userId', '==', dummyUid).orderBy('date', 'desc').limit(1).get();
-            log('✓ Index active: transactions (userId + date)', 'success');
-        } catch(e) {
-            parseIndexError(e.message, 'Transactions History');
-        }
-
-        // Query 2: Bids by userId + order by createdAt
-        try {
-            await db.collection('bids').where('userId', '==', dummyUid).orderBy('createdAt', 'desc').limit(1).get();
-            log('✓ Index active: bids (userId + createdAt)', 'success');
-        } catch(e) {
-            parseIndexError(e.message, 'Bids History');
-        }
-
-        // Query 3: Withdraw Requests by userId + status
-        try {
-            await db.collection('withdrawRequests').where('userId', '==', dummyUid).where('status', '==', 'Pending').limit(1).get();
-            log('✓ Index active: withdrawRequests (userId + status)', 'success');
-        } catch(e) {
-            parseIndexError(e.message, 'Withdraw Requests Pending Check');
-        }
-    }
-
-    function parseIndexError(errMsg, label) {
-        if (errMsg.includes('https://console.firebase.google.com')) {
-            const urlMatch = errMsg.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
-            if (urlMatch && urlMatch[0]) {
-                log(`⚠️ Index needed for ${label}. Link generated below.`, 'warning');
-                addIndexLink(urlMatch[0], label);
-            }
-        } else {
-            log(`Query note for ${label}: ${errMsg}`, 'info');
+            log("❌ Setup Error: " + e.message);
         }
     }
 </script>
