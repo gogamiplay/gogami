@@ -38,26 +38,16 @@
         
         input, select, textarea { padding: 10px; margin: 4px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; width: 100%; color: #fff; font-size: 13px; font-weight: 500; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
-        label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-top: 6px; }
         
         button { background: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; margin: 4px 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .market-item, .user-item, .request-item { background: #1a2238; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid #334155; }
-        .market-header-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; font-size: 13px; }
-        .market-detail-row { display: none; background: #1e293b; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
-        .market-detail-row.open { display: block; }
-        
         .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .status-open { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .status-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
         .status-closed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
         
         .btn-success { background: #10b981; }
         .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; color: #0f172a; }
-        .btn-reset { background: #475569; }
-        .btn-info { background: #0ea5e9; }
-        .btn-delete { background: #7f1d1d; color: #fca5a5; }
         .hidden { display: none !important; }
         
         .user-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; }
@@ -92,8 +82,7 @@
     <div class="sidebar">
         <div class="sidebar-item active" onclick="showSection('markets')">🎮 Markets</div>
         <div class="sidebar-item" onclick="showSection('users')">👥 Users</div>
-        <div class="sidebar-item" onclick="showSection('deposits')">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
-        <div class="sidebar-item" onclick="showSection('withdrawals')">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
+        <div class="sidebar-item" onclick="showSection('deposits')">💰 Deposits</div>
     </div>
 
     <div class="main-content">
@@ -123,13 +112,6 @@
                 <div id="depositsList">Loading...</div>
             </div>
         </div>
-
-        <div id="withdrawalsSection" class="hidden">
-            <div class="card">
-                <h3>💸 Withdrawal Requests</h3>
-                <div id="withdrawalsList">Loading...</div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -152,7 +134,7 @@
             sessionStorage.setItem('adminLoggedIn', 'true');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'flex';
-            loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals();
+            loadMarkets(); loadUsers(); loadDeposits();
         } else {
             document.getElementById('loginError').innerText = 'Invalid Admin Password!';
         }
@@ -161,10 +143,10 @@
     if (sessionStorage.getItem('adminLoggedIn') === 'true') {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'flex';
-        loadMarkets(); loadUsers(); loadDeposits(); loadWithdrawals();
+        loadMarkets(); loadUsers(); loadDeposits();
     }
 
-    // 🟢 Realtime Market Sync
+    // 🟢 Realtime Markets Sync Logic
     function loadMarkets() {
         db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
             let html = '';
@@ -204,19 +186,21 @@
         }
     }
 
-    // 🟢 Realtime Users Balance & Sync
+    // 🟢 Realtime Users Balance & FCM Check
     function loadUsers() {
         db.collection('users').onSnapshot(snapshot => {
             let html = '';
             snapshot.forEach(doc => {
                 let u = doc.data();
                 let online = u.isOnline === true;
+                let hasFcm = u.fcmToken ? '✅ FCM Active' : '❌ No FCM';
                 html += `<div class="user-item">
-                    <b>${u.name || 'User'}</b> (${u.phone || 'N/A'}) 
-                    <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span><br>
+                    <b>${u.name || 'User'}</b> (${u.phone || doc.id}) 
+                    <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span>
+                    <span style="font-size:10px; color:#94a3b8; margin-left:8px;">${hasFcm}</span><br>
                     Balance: ₹${u.balance || 0}
                     <div style="margin-top:6px;">
-                        <button onclick="updateBalance('${doc.id}', 'add')" class="btn-success">➕ Add</button>
+                        <button onclick="updateBalance('${doc.id}', 'add')" class="btn-success">➕ Add Balance</button>
                         <button onclick="updateBalance('${doc.id}', 'remove')" class="btn-danger">➖ Remove</button>
                     </div>
                 </div>`;
@@ -225,6 +209,7 @@
         });
     }
 
+    // 🟢 Balance Merge Fix
     async function updateBalance(uid, action) {
         let amt = prompt(`Enter amount to ${action.toUpperCase()}:`);
         if (!amt || isNaN(amt) || Number(amt) <= 0) return;
@@ -233,21 +218,27 @@
         let userRef = db.collection('users').doc(uid);
         let userSnap = await userRef.get();
 
-        if (userSnap.exists) {
-            let currentBal = Number(userSnap.data().balance) || 0;
-            let newBal = action === 'add' ? (currentBal + amtNum) : (currentBal - amtNum);
-
-            await userRef.set({ balance: newBal }, { merge: true });
-            await db.collection('transactions').add({
-                userId: uid,
-                type: action === 'add' ? 'credit' : 'debit',
-                amount: amtNum,
-                status: 'Completed',
-                date: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            alert(`Balance updated! Current balance: ₹${newBal}`);
+        let currentBal = 0;
+        if (userSnap.exists && userSnap.data().balance !== undefined) {
+            currentBal = Number(userSnap.data().balance) || 0;
         }
+
+        let newBal = action === 'add' ? (currentBal + amtNum) : (currentBal - amtNum);
+
+        await userRef.set({ 
+            balance: newBal,
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        await db.collection('transactions').add({
+            userId: uid,
+            type: action === 'add' ? 'credit' : 'debit',
+            amount: amtNum,
+            status: 'Completed',
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert(`Balance Updated! Current Balance: ₹${newBal}`);
     }
 
     function loadDeposits() {
@@ -274,36 +265,8 @@
         alert('Deposit Approved!');
     }
 
-    function loadWithdrawals() {
-        db.collection('withdrawRequests').where('status', '==', 'Pending').onSnapshot(snapshot => {
-            let html = '';
-            snapshot.forEach(doc => {
-                let w = doc.data();
-                html += `<div class="request-item">
-                    Amount: ₹${w.amount}
-                    <button onclick="approveWithdrawal('${doc.id}', ${w.amount}, '${w.userId}')" class="btn-success">Approve</button>
-                </div>`;
-            });
-            document.getElementById('withdrawalsList').innerHTML = html || 'No pending withdrawals';
-        });
-    }
-
-    async function approveWithdrawal(id, amount, uid) {
-        let userRef = db.collection('users').doc(uid);
-        let userSnap = await userRef.get();
-        let currentBal = Number(userSnap.data()?.balance) || 0;
-
-        if (currentBal >= Number(amount)) {
-            await userRef.set({ balance: currentBal - Number(amount) }, { merge: true });
-            await db.collection('withdrawRequests').doc(id).update({ status: 'Completed' });
-            alert('Withdrawal Approved!');
-        } else {
-            alert('Insufficient User Balance!');
-        }
-    }
-
     function showSection(sec) {
-        ['markets', 'users', 'deposits', 'withdrawals'].forEach(s => document.getElementById(`${s}Section`).classList.add('hidden'));
+        ['markets', 'users', 'deposits'].forEach(s => document.getElementById(`${s}Section`).classList.add('hidden'));
         document.getElementById(`${sec}Section`).classList.remove('hidden');
     }
 
