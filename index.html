@@ -3,339 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOGAMI - Online Matka Play</title>
-    <!-- ⚡ Supabase JS SDK v2 -->
+    <title>GOGAMI - Dashboard</title>
+    <!-- Supabase JS SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        
-        body { background: #0f172a; color: #f8fafc; padding-bottom: 100px; min-height: 100vh; }
+        body { background: #0f172a; color: #f8fafc; padding-bottom: 90px; min-height: 100vh; }
         .app-container { max-width: 480px; margin: 0 auto; background: #0f172a; min-height: 100vh; padding: 16px; position: relative; }
         
-        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 16px 0; border-bottom: 1px solid #1e293b; }
+        .logo-title { font-weight: 900; font-size: 22px; letter-spacing: 2px; background: linear-gradient(45deg, #3b82f6, #ef4444, #10b981, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .balance-card { background: #1e293b; border: 1px solid #334155; padding: 6px 14px; border-radius: 20px; color: #10b981; font-weight: 700; font-size: 14px; cursor: pointer; }
         
-        /* App Header */
-        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 16px 0; background: #0f172a; }
-        .menu-btn { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+        .notice-bar { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; padding: 10px 14px; margin: 16px 0; color: #93c5fd; font-size: 12px; font-weight: 500; }
         
-        .app-title {
-            font-weight: 800; font-size: 22px; letter-spacing: 2px;
-            background: linear-gradient(45deg, #3b82f6, #ef4444, #10b981, #f59e0b, #3b82f6);
-            background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: gradientShift 8s ease infinite;
-        }
-        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .action-btn { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px; text-align: center; color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .action-btn.deposit { background: linear-gradient(135deg, #10b981, #059669); border: none; }
+        .action-btn.withdraw { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; }
 
-        .balance-pill { background: #1e293b; border: 1px solid #334155; padding: 6px 14px; border-radius: 20px; color: #10b981; font-weight: 700; font-size: 14px; cursor: pointer; }
-
-        /* Notice Banner */
-        .notice-banner { background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.2); margin-bottom: 16px; }
-        .notice-text { flex: 1; color: #93c5fd; font-weight: 500; font-size: 12px; line-height: 1.4; }
-        .close-notice { background: none; border: none; color: #93c5fd; font-size: 14px; cursor: pointer; opacity: 0.6; }
-
-        /* Quick Action Grid */
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 14px; text-decoration: none; border: none; cursor: pointer; transition: transform 0.1s; }
-        .action-btn:active { transform: scale(0.98); }
-        .deposit-theme { background: #10b981; color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
-        .withdraw-theme { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
-
-        /* Market Cards Section */
-        .section-title { font-size: 16px; font-weight: 700; color: #cbd5e1; margin-bottom: 12px; letter-spacing: 0.5px; }
-        .market-list { display: flex; flex-direction: column; gap: 12px; }
-        .market-card { background: #1e293b; border-radius: 14px; padding: 16px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
-        .market-card.closed { opacity: 0.6; filter: grayscale(0.6); }
+        .section-title { font-size: 14px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
         
-        .market-info h4 { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
-        .market-result { font-size: 18px; font-weight: 800; color: #f59e0b; font-family: monospace; letter-spacing: 1px; }
-        .market-timing { font-size: 11px; color: #94a3b8; margin-top: 4px; }
-        
-        .play-btn { background: #3b82f6; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
-        .play-btn.disabled { background: #475569; cursor: not-allowed; }
+        .market-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .market-info h4 { font-size: 16px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }
+        .market-number { font-family: monospace; font-size: 18px; color: #38bdf8; font-weight: 800; letter-spacing: 1px; }
+        .market-timing { font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600; }
+        .play-btn { background: #3b82f6; border: none; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; text-transform: uppercase; text-decoration: none; }
+        .play-btn.closed { background: #334155; color: #64748b; cursor: not-allowed; }
 
-        /* Bottom Fixed Navigation Bar */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 10px 6px 14px 6px; border-top: 1px solid #334155; z-index: 1000; height: 75px; }
-        .nav-item { text-align: center; color: #94a3b8; cursor: pointer; font-size: 13px; flex: 1; font-weight: 600; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+        .nav-item { text-align: center; color: #94a3b8; cursor: pointer; font-size: 12px; flex: 1; font-weight: 600; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .nav-item.active { color: #3b82f6; }
-        .nav-item-home { position: relative; top: -20px; background: #3b82f6; color: #fff !important; width: 64px; height: 64px; max-width: 64px; border-radius: 50%; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); border: 4px solid #0f172a; }
-        .nav-item-home span { font-size: 12px; font-weight: 700; }
-
-        /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: #1e293b; border-radius: 16px; padding: 24px; width: 90%; max-width: 340px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        .modal-content h3 { color: #f8fafc; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
-        .modal-btn { width: 100%; padding: 11px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 14px; }
-        .logout-btn { background: #ef4444; }
-        .close-modal { background: #334155; color: #cbd5e1; }
-        .modal-input { width: 100%; padding: 10px 12px; margin: 8px 0; border: 1px solid #334155; background: #0f172a; border-radius: 8px; font-size: 14px; color: #fff; }
-        .rate-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; color: #cbd5e1; }
+        .nav-item-home { position: relative; top: -20px; background: #3b82f6; color: #fff !important; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); border: 4px solid #0f172a; }
     </style>
 </head>
 <body>
 <div class="app-container">
-    
-    <div class="app-header">
-        <button class="menu-btn" onclick="showProfileModal()">☰</button>
-        <span class="app-title">GOGAMI</span>
-        <div class="balance-pill" onclick="showBalance()">₹<span id="userBalance">0</span></div>
-    </div>
-    
-    <div id="noticeBoard" class="notice-banner" onclick="showNoticeModal()">
-        <div class="notice-text" id="noticeText">Welcome to GOGAMI Matka Play!</div>
-        <button class="close-notice" onclick="event.stopPropagation(); closeNotice()">✕</button>
+    <div class="header">
+        <span class="logo-title">GOGAMI</span>
+        <div class="balance-card" onclick="location.href='funds.html'">₹<span id="userBalance">0</span></div>
     </div>
 
-    <!-- 🟢 Action Buttons -->
+    <div class="notice-bar" id="noticeBar">Loading notice...</div>
+
     <div class="action-grid">
-        <a href="https://gogamiplay.github.io/gogami/deposit.html" class="action-btn deposit-theme">➕ Deposit</a>
-        <a href="https://gogamiplay.github.io/gogami/withdraw.html" class="action-btn withdraw-theme">💸 Withdraw</a>
+        <a href="deposit.html" class="action-btn deposit">➕ Add Cash</a>
+        <a href="withdraw.html" class="action-btn withdraw">💸 Withdraw</a>
     </div>
 
-    <div class="section-title">LIVE MARKETS</div>
-    <div class="market-list" id="marketList">
-        <div style="text-align: center; color: #64748b; padding: 20px;">Loading Markets...</div>
+    <div class="section-title">Live Betting Markets</div>
+    <div id="marketsList">
+        <div style="text-align:center; color:#64748b; padding:30px; font-size:13px;">Fetching Live Markets...</div>
     </div>
 
-    <!-- 🟢 Navigation Bar -->
     <div class="bottom-nav">
-        <a href="https://gogamiplay.github.io/gogami/mybids.html" class="nav-item"><span>Passbook</span></a>
-        <a href="https://gogamiplay.github.io/gogami/mybids.html" class="nav-item"><span>My Bids</span></a>
-        <a href="https://gogamiplay.github.io/gogami/index.html" class="nav-item nav-item-home"><span>Home</span></a>
-        <a href="https://gogamiplay.github.io/gogami/funds.html" class="nav-item"><span>Funds</span></a>
-        <a href="https://gogamiplay.github.io/gogami/chat.html" class="nav-item"><span>Support</span></a>
+        <a href="transactions.html" class="nav-item"><span>Passbook</span></a>
+        <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
+        <a href="index.html" class="nav-item nav-item-home"><span>Home</span></a>
+        <a href="funds.html" class="nav-item"><span>Funds</span></a>
+        <a href="chat.html" class="nav-item"><span>Support</span></a>
     </div>
 </div>
 
-<!-- Modals -->
-<div id="profileModal" class="modal"><div class="modal-content"><h3>My Profile</h3><div id="profileInfo"></div><button class="modal-btn" onclick="showGameRatesModal()">🎲 Game Rates</button><button class="modal-btn" onclick="showChangePinModal()">🔐 Change MPIN</button><button class="modal-btn" onclick="showBankModal()">🏦 Bank Details</button><button class="modal-btn logout-btn" onclick="handleLogout()">🚪 Logout</button><button class="modal-btn close-modal" onclick="closeProfileModal()">Close</button></div></div>
-<div id="gameRatesModal" class="modal"><div class="modal-content"><h3>🎲 GAME RATES</h3><div class="rate-row"><span>Single Digit</span><span>10x</span></div><div class="rate-row"><span>Jodi</span><span>100x</span></div><div class="rate-row"><span>Single Pana</span><span>160x</span></div><div class="rate-row"><span>Double Pana</span><span>320x</span></div><div class="rate-row"><span>Triple Pana</span><span>1000x</span></div><div class="rate-row"><span>Half Sangam A</span><span>1000x</span></div><div class="rate-row"><span>Half Sangam B</span><span>1000x</span></div><div class="rate-row"><span>Full Sangam</span><span>10000x</span></div><button class="modal-btn close-modal" onclick="closeGameRatesModal()">Close</button></div></div>
-<div id="changePinModal" class="modal"><div class="modal-content"><h3>🔐 Change MPIN</h3><input type="password" id="oldPin" class="modal-input" placeholder="Current MPIN" maxlength="4"><input type="password" id="newPin" class="modal-input" placeholder="New MPIN" maxlength="4"><input type="password" id="confirmPin" class="modal-input" placeholder="Confirm MPIN" maxlength="4"><button class="modal-btn" onclick="updatePin()">Update</button><button class="modal-btn close-modal" onclick="closeChangePinModal()">Cancel</button><div id="pinMsg" style="text-align:center; color:#f87171; margin-top:6px; font-size:13px;"></div></div></div>
-<div id="bankModal" class="modal"><div class="modal-content"><h3>🏦 Bank Details</h3><input type="text" id="bankAccountHolder" class="modal-input" placeholder="Account Holder"><input type="text" id="bankName" class="modal-input" placeholder="Bank Name"><input type="text" id="bankAccountNumber" class="modal-input" placeholder="Account Number"><input type="text" id="bankIfsc" class="modal-input" placeholder="IFSC"><button class="modal-btn" onclick="saveBankDetails()">Save</button><button class="modal-btn close-modal" onclick="closeBankModal()">Cancel</button><div id="bankMsg" style="text-align:center; color:#34d399; margin-top:6px; font-size:13px;"></div></div></div>
-
 <script>
-    // ⚡ Supabase Configuration
     const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUserData = null;
+    let currentUser = null;
 
-    function showLoader() { 
-        if(!document.getElementById('pageLoader')) {
-            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div); 
+    function getSafeUid() {
+        let uid = localStorage.getItem('userUid') || localStorage.getItem('uid');
+        if(!uid) {
+            uid = 'user_' + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('userUid', uid);
         }
-    }
-    function hideLoader() { let el = document.getElementById('pageLoader'); if(el) el.remove(); }
-
-    function getActiveUid() {
-        let localUid = localStorage.getItem('userUid');
-        return (localUid && localUid !== 'null') ? localUid : null;
+        return uid;
     }
 
-    async function updateLastActive() {
-        let uid = getActiveUid();
-        if (uid) {
-            await supabase
-                .from('users')
-                .update({ is_online: true, last_active: new Date().toISOString() })
-                .eq('id', uid);
+    // OneSignal Push Notification Setup
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        const { data } = await supabaseClient.from('settings').select('value').eq('id', 'onesignal_appid').single();
+        if(data && data.value) {
+            await OneSignal.init({
+                appId: data.value,
+            });
         }
-    }
-
-    showLoader();
-
-    // 🟢 Initialization Logic
-    document.addEventListener("DOMContentLoaded", async () => {
-        let uid = getActiveUid();
-        if (uid) {
-            await initUserDataAndMarkets(uid);
-        } else {
-            listenMarkets();
-            hideLoader();
-        }
-        loadNotice();
     });
 
-    async function initUserDataAndMarkets(uid) {
-        updateLastActive();
-        setInterval(updateLastActive, 30000);
-        
-        // 🟢 Initial Fetch User Profile
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', uid)
-            .single();
+    window.onload = async () => {
+        await initUser();
+        await loadNotice();
+        await loadMarkets();
+        subscribeToRealtime();
+    };
 
-        if (user) {
-            currentUserData = user;
-            let balEl = document.getElementById('userBalance');
-            if(balEl) balEl.innerText = user.balance || 0;
+    async function initUser() {
+        let uid = getSafeUid();
+        let { data: user } = await supabaseClient.from('users').select('*').eq('id', uid).single();
+        
+        if(!user) {
+            const { data: newUser } = await supabaseClient.from('users').insert([{
+                id: uid, name: 'User ' + uid.substring(5), balance: 0
+            }]).select().single();
+            user = newUser;
         }
 
-        // 🟢 Realtime User Balance Listener (Supabase Subscription)
-        supabase
-            .channel('user-balance-changes')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${uid}` }, payload => {
-                currentUserData = payload.new;
-                let balEl = document.getElementById('userBalance');
-                if(balEl) balEl.innerText = payload.new.balance || 0;
-            })
-            .subscribe();
-
-        listenMarkets();
-        hideLoader();
-    }
-
-    // 🟢 Realtime Markets Fetch & Listener
-    async function listenMarkets(){
-        const fetchAndRenderMarkets = async () => {
-            const { data: markets, error } = await supabase
-                .from('markets')
-                .select('*')
-                .order('serial_no', { ascending: true });
-
-            let container = document.getElementById('marketList');
-            container.innerHTML = '';
-            
-            if(!markets || markets.length === 0){
-                container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px;">No Markets Available</div>';
-                return;
-            }
-
-            markets.forEach(m => {
-                let status = (m.status || 'closed').toLowerCase();
-                let isOpen = status === 'open' || status === 'close';
-                
-                let openPana = m.open_pana || '***';
-                let openDigit = m.open_digit || '*';
-                let closeDigit = m.close_digit || '*';
-                let closePana = m.close_pana || '***';
-                let resultDisplay = `${openPana}-${openDigit}${closeDigit}-${closePana}`;
-
-                let card = document.createElement('div');
-                card.className = `market-card ${isOpen ? '' : 'closed'}`;
-                card.innerHTML = `
-                    <div class="market-info">
-                        <h4>${m.name || 'Market'}</h4>
-                        <div class="market-result">${resultDisplay}</div>
-                        <div class="market-timing">Open: ${m.open_bid_end || '--:--'} | Close: ${m.close_bid_end || '--:--'}</div>
-                    </div>
-                    ${isOpen ? 
-                        `<a href="https://gogamiplay.github.io/gogami/games.html?id=${m.id}" class="play-btn">PLAY NOW</a>` : 
-                        `<button class="play-btn disabled" disabled>${status.toUpperCase()}</button>`}
-                `;
-                container.appendChild(card);
-            });
-        };
-
-        await fetchAndRenderMarkets();
-
-        // Supabase Realtime Listener for Markets Table
-        supabase
-            .channel('markets-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, () => {
-                fetchAndRenderMarkets();
-            })
-            .subscribe();
+        currentUser = user;
+        document.getElementById('userBalance').innerText = (user?.balance || 0).toLocaleString();
     }
 
     async function loadNotice() {
-        const { data: notice } = await supabase
-            .from('settings')
-            .select('text')
-            .eq('id', 'notice')
-            .single();
-
-        let el = document.getElementById('noticeText');
-        if(el) el.innerHTML = notice ? notice.text : 'Welcome to GOGAMI!';
+        const { data } = await supabaseClient.from('settings').select('text').eq('id', 'notice').single();
+        document.getElementById('noticeBar').innerText = data?.text || "Welcome to GOGAMI Matka Play!";
     }
 
-    function showBalance(){ alert(`💰 Balance: ₹${currentUserData?.balance||0}`); }
-    
-    function handleLogout() {
-        if(confirm("Are you sure you want to logout?")) {
-            localStorage.removeItem('userUid');
-            if(window.AndroidBridge && window.AndroidBridge.logout) {
-                window.AndroidBridge.logout();
-            } else {
-                location.reload();
-            }
+    async function loadMarkets() {
+        const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
+        let container = document.getElementById('marketsList');
+
+        if(!markets || markets.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px;">No Markets Available</div>';
+            return;
         }
+
+        container.innerHTML = markets.map(m => {
+            let isClosed = m.status === 'close' || m.status === 'closed' || m.status === 'holiday';
+            return `
+            <div class="market-card">
+                <div class="market-info">
+                    <h4>${m.name}</h4>
+                    <div class="market-number">${m.numbers || '***-**-***'}</div>
+                    <div class="market-timing">Open: ${m.open_bid_end || '-'} | Close: ${m.close_bid_end || '-'}</div>
+                </div>
+                ${isClosed ? 
+                    `<button class="play-btn closed" disabled>CLOSED</button>` : 
+                    `<a href="betting.html?market=${encodeURIComponent(m.name)}" class="play-btn">PLAY NOW</a>`
+                }
+            </div>`;
+        }).join('');
     }
 
-    function showProfileModal(){ 
-        let uid = getActiveUid();
-        if(currentUserData){ 
-            document.getElementById('profileInfo').innerHTML=`<div style="text-align:center;"><div style="font-size:18px; font-weight:700; color:#cbd5e1;">${currentUserData.name || 'User'}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone || ''}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance || 0}</div></div>`; 
-            document.getElementById('profileModal').style.display='flex'; 
-        } 
-    }
-    function closeProfileModal(){ document.getElementById('profileModal').style.display='none'; }
-    function showGameRatesModal(){ closeProfileModal(); document.getElementById('gameRatesModal').style.display='flex'; }
-    function closeGameRatesModal(){ document.getElementById('gameRatesModal').style.display='none'; }
-    function showChangePinModal(){ closeProfileModal(); document.getElementById('changePinModal').style.display='flex'; }
-    function closeChangePinModal(){ document.getElementById('changePinModal').style.display='none'; document.getElementById('pinMsg').innerHTML=''; }
-    
-    async function updatePin(){ 
-        let old=document.getElementById('oldPin').value, newP=document.getElementById('newPin').value, confirmPin=document.getElementById('confirmPin').value; 
-        if(!old||!newP||!confirmPin){ document.getElementById('pinMsg').innerHTML='Fill all fields'; return; } 
-        if(newP.length!==4||!/^\d{4}$/.test(newP)){ document.getElementById('pinMsg').innerHTML='MPIN must be 4 digits'; return; } 
-        if(newP!==confirmPin){ document.getElementById('pinMsg').innerHTML='MPINs do not match'; return; } 
-        if(old!==currentUserData?.pin){ document.getElementById('pinMsg').innerHTML='Current MPIN incorrect'; return; } 
-        
-        let uid = getActiveUid();
-        const { error } = await supabase.from('users').update({ pin: newP }).eq('id', uid); 
-        if(!error) {
-            currentUserData.pin = newP; 
-            document.getElementById('pinMsg').innerHTML='✅ MPIN changed!'; 
-            document.getElementById('pinMsg').style.color='#10b981'; 
-            setTimeout(()=>closeChangePinModal(), 1500); 
-        } else {
-            document.getElementById('pinMsg').innerHTML='Error updating PIN';
-        }
-    }
-    
-    function showBankModal(){ 
-        closeProfileModal(); 
-        let b = currentUserData?.bank_details; 
-        if(b){ 
-            document.getElementById('bankAccountHolder').value = b.accountHolder || ''; 
-            document.getElementById('bankName').value = b.bankName || ''; 
-            document.getElementById('bankAccountNumber').value = b.accountNumber || ''; 
-            document.getElementById('bankIfsc').value = b.ifscCode || ''; 
-        } 
-        document.getElementById('bankModal').style.display='flex'; 
-    }
-    function closeBankModal(){ document.getElementById('bankModal').style.display='none'; document.getElementById('bankMsg').innerHTML=''; }
-    
-    async function saveBankDetails(){ 
-        let ah=document.getElementById('bankAccountHolder').value.trim(), bn=document.getElementById('bankName').value.trim(), an=document.getElementById('bankAccountNumber').value.trim(), ifsc=document.getElementById('bankIfsc').value.trim(); 
-        if(!ah||!bn||!an||!ifsc){ document.getElementById('bankMsg').innerHTML='Fill all fields'; return; } 
-        
-        let uid = getActiveUid();
-        let bankDetailsObj = { accountHolder: ah, bankName: bn, accountNumber: an, ifscCode: ifsc };
-        const { error } = await supabase.from('users').update({ bank_details: bankDetailsObj }).eq('id', uid); 
-        
-        if(!error) {
-            currentUserData.bank_details = bankDetailsObj; 
-            document.getElementById('bankMsg').innerHTML='✅ Saved!'; 
-            setTimeout(()=>closeBankModal(), 1500); 
-        } else {
-            document.getElementById('bankMsg').innerHTML='Error saving details';
-        }
-    }
-    
-    function showNoticeModal(){ 
-        supabase.from('settings').select('text').eq('id', 'notice').single().then(({ data }) => {
-            alert(data ? data.text : 'Welcome to GOGAMI!');
-        });
-    }
-    function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
+    function subscribeToRealtime() {
+        supabaseClient.channel('public:markets')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, () => {
+                loadMarkets();
+            }).subscribe();
 
-    window.showBalance=showBalance; window.showProfileModal=showProfileModal; window.closeProfileModal=closeProfileModal; window.showGameRatesModal=showGameRatesModal; window.closeGameRatesModal=closeGameRatesModal; window.showChangePinModal=showChangePinModal; window.closeChangePinModal=closeChangePinModal; window.updatePin=updatePin; window.showBankModal=showBankModal; window.closeBankModal=closeBankModal; window.saveBankDetails=saveBankDetails; window.closeNotice=closeNotice; window.handleLogout=handleLogout;
+        let uid = getSafeUid();
+        supabaseClient.channel('public:users:' + uid)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${uid}` }, (payload) => {
+                document.getElementById('userBalance').innerText = (payload.new.balance || 0).toLocaleString();
+            }).subscribe();
+    }
 </script>
 </body>
 </html>
