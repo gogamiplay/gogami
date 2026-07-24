@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>App</title>
+    <title>GOMAGI</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -80,7 +80,6 @@
             100% { left: 100%; }
         }
 
-        /* Native App Wrapper Layout */
         .app-wrapper {
             width: 100%;
             max-width: 360px;
@@ -109,7 +108,6 @@
             display: none !important; 
         }
 
-        /* Clean Flat Input Fields */
         .input-field {
             background: #151c2c;
             border-radius: 14px;
@@ -135,7 +133,6 @@
             letter-spacing: 0px;
         }
 
-        /* Clean Native App Buttons */
         .btn {
             width: 100%;
             padding: 16px;
@@ -197,7 +194,7 @@
         <div class="loader-bar"></div>
     </div>
 
-    <!-- Direct Clean App Content Area -->
+    <!-- Main Content Area -->
     <div class="app-wrapper">
         <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="main-logo">
         
@@ -295,7 +292,6 @@
             }, 1000); 
         }
 
-        // WebOTP Listener for Automatic Read & Fill
         function listenForAutoOTP() {
             if ('OTPCredential' in window) {
                 ac = new AbortController();
@@ -361,6 +357,16 @@
                 const user = result.user; 
                 db.collection('users').doc(user.uid).get().then(doc => { 
                     if (doc.exists) {
+                        // USER BLOCK CHECK
+                        if (doc.data().blocked === true) {
+                            alert('🚫 Your account has been blocked by Admin.');
+                            auth.signOut().then(() => {
+                                showScreen(document.getElementById('phoneScreen'));
+                                btn.disabled = false;
+                                btn.innerText = 'VERIFY OTP';
+                            });
+                            return;
+                        }
                         window.location.href = 'dashboard.html';
                     } else {
                         showScreen(document.getElementById('registerScreen'));
@@ -399,6 +405,7 @@
                 phone: user.phoneNumber, 
                 name: name, 
                 balance: 0, 
+                blocked: false,
                 role: 'user', 
                 createdAt: new Date() 
             }).then(() => { 
@@ -410,11 +417,20 @@
             });
         };
 
-        // Automatic Backend Check on Load
+        // Automatic Backend & Block Guard Check on Load
         auth.onAuthStateChanged(user => { 
             if (user) { 
                 db.collection('users').doc(user.uid).get().then(doc => { 
                     if (doc.exists) { 
+                        // USER BLOCK CHECK GUARD
+                        if (doc.data().blocked === true) {
+                            alert('🚫 Your account has been blocked by Admin.');
+                            auth.signOut().then(() => {
+                                showScreen(document.getElementById('phoneScreen'));
+                                hideSplashScreen();
+                            });
+                            return;
+                        }
                         window.location.href = 'dashboard.html'; 
                     } else { 
                         showScreen(document.getElementById('registerScreen')); 
