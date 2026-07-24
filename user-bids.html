@@ -3,54 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOGAMI - User Bid Details</title>
+    <title>GOMAGI - User Bid Details</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding-bottom: 30px; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
-        
-        .header { background: #1e293b; padding: 18px 20px; border-radius: 12px; margin-bottom: 16px; color: #fff; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .header h1 { color: #3b82f6; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
-        .header p { color: #94a3b8; font-size: 13px; font-weight: 500; margin-top: 2px; }
-        
-        .back-btn { background: #334155; color: #f8fafc; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+            border: none;
+        }
+
+        body { 
+            background: #090d16; 
+            color: #f8fafc; 
+            padding-bottom: 30px; 
+            min-height: 100vh;
+        }
+
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 14px; 
+        }
+
+        .back-btn { 
+            background: #151c2c; 
+            color: #cbd5e1; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            margin-bottom: 14px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+
         .back-btn:active { background: #1e293b; }
 
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-        .stat-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 14px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
-        .stat-card .label { color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .stat-card .value { color: #f8fafc; font-size: 18px; font-weight: 800; }
-        .stat-card .value.positive { color: #34d399; }
-        .stat-card .value.negative { color: #f87171; }
-        
-        .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-        .filter-select { padding: 10px 14px; border: 1px solid #334155; border-radius: 8px; background: #1e293b; font-size: 13px; font-weight: 600; color: #fff; outline: none; }
-        .filter-select:focus { border-color: #3b82f6; }
-        .search-input { flex: 1; padding: 10px 14px; border: 1px solid #334155; border-radius: 8px; background: #1e293b; min-width: 200px; font-size: 13px; font-weight: 500; color: #fff; outline: none; }
-        .search-input:focus { border-color: #3b82f6; }
-        
-        .refresh-btn { background: #3b82f6; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-        .refresh-btn:active { background: #2563eb; }
+        /* Header Card */
+        .header { 
+            background: #0f172a; 
+            padding: 16px 18px; 
+            border-radius: 16px; 
+            margin-bottom: 14px; 
+            color: #fff; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-        .bids-table { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 12px; overflow-x: auto; border: 1px solid rgba(255,255,255,0.08); -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 850px; }
-        th { background: #1e293b; padding: 14px 12px; text-align: left; font-weight: 700; color: #94a3b8; border-bottom: 1px solid #334155; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #f8fafc; font-size: 13px; font-weight: 500; }
+        .header h1 { 
+            color: #f8fafc; 
+            font-size: 16px; 
+            font-weight: 800; 
+            margin-bottom: 6px; 
+            text-transform: uppercase;
+        }
+
+        .header p { 
+            color: #94a3b8; 
+            font-size: 12px; 
+            font-weight: 600; 
+            margin-top: 2px; 
+        }
+
+        /* Stats Grid */
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px; 
+            margin-bottom: 14px; 
+        }
+
+        .stat-card { 
+            background: #151c2c; 
+            padding: 12px 10px; 
+            border-radius: 14px; 
+            text-align: center; 
+        }
+
+        .stat-card .label { 
+            color: #64748b; 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 4px; 
+        }
+
+        .stat-card .value { 
+            color: #f8fafc; 
+            font-size: 16px; 
+            font-weight: 800; 
+        }
+
+        .stat-card .value.positive { color: #10b981; }
+        .stat-card .value.negative { color: #f87171; }
+
+        /* Filter Controls */
+        .filters { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 14px; 
+            flex-wrap: wrap; 
+            align-items: center; 
+        }
+
+        .filter-select { 
+            padding: 10px 12px; 
+            border-radius: 10px; 
+            background: #151c2c; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: #f8fafc; 
+            outline: none; 
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .search-input { 
+            flex: 1; 
+            padding: 10px 14px; 
+            border-radius: 10px; 
+            background: #151c2c;
+            min-width: 160px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: #fff;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .refresh-btn { 
+            background: #2563eb; 
+            color: #fff; 
+            border: none; 
+            padding: 10px 16px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+
+        .refresh-btn:active { background: #1d4ed8; }
+
+        /* Table Box */
+        .bids-table { 
+            background: #151c2c; 
+            border-radius: 16px; 
+            overflow-x: auto; 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: 800px; 
+        }
+
+        th { 
+            background: #0f172a; 
+            padding: 12px 10px; 
+            text-align: left; 
+            font-weight: 700; 
+            color: #64748b; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+
+        td { 
+            padding: 12px 10px; 
+            border-bottom: 1px solid rgba(255,255,255,0.03); 
+            color: #f8fafc; 
+            font-size: 12px; 
+            font-weight: 600; 
+        }
+
         tr:last-child td { border-bottom: none; }
-        tr:hover { background: rgba(255,255,255,0.02); }
-        
-        .status-won { color: #34d399; font-weight: 700; }
-        .status-lost { color: #f87171; font-weight: 700; }
-        .status-pending { color: #fbbf24; font-weight: 700; }
-        
-        .bid-type-open { background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-block; }
-        .bid-type-close { background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-block; }
-        .no-data { text-align: center; padding: 40px; color: #64748b; font-size: 13px; font-weight: 500; }
-        
-        @media (max-width: 768px) { .stats { grid-template-columns: repeat(2, 1fr); } th, td { padding: 10px 8px; font-size: 12px; } }
+
+        .bid-id-text {
+            color: #3b82f6;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .status-won { color: #34d399; font-weight: 800; }
+        .status-lost { color: #f87171; font-weight: 800; }
+        .status-pending { color: #fbbf24; font-weight: 800; }
+
+        .bid-type-open { background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+        .bid-type-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+        .no-data { text-align: center; padding: 40px; color: #64748b; font-size: 13px; font-weight: 600; }
+
+        @media (max-width: 768px) { 
+            .stats { grid-template-columns: repeat(2, 1fr); } 
+            th, td { padding: 10px 8px; font-size: 11px; } 
+        }
     </style>
 </head>
 <body>
@@ -87,7 +243,7 @@
             <option value="Half Sangam B">Half Sangam B</option>
             <option value="Full Sangam">Full Sangam</option>
         </select>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search market or number..." onkeyup="filterBids()">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search market or number..." onkeyup="filterBids()">
         <button class="refresh-btn" onclick="refreshData()">Refresh</button>
     </div>
     
@@ -95,6 +251,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Bidding ID</th>
                     <th>Date & Time</th>
                     <th>Market</th>
                     <th>Session</th>
@@ -107,7 +264,7 @@
                 </tr>
             </thead>
             <tbody id="bidsList">
-                <tr><td colspan="9" class="no-data">Loading user placements...</td></tr>
+                <tr><td colspan="10" class="no-data">Loading user placements...</td></tr>
             </tbody>
         </table>
     </div>
@@ -115,13 +272,16 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyBeGpb7V0i5GN1opY9JECHxQIGvHFDPX38",
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c",
         authDomain: "gogami-877be.firebaseapp.com",
+        databaseURL: "https://gogami-877be-default-rtdb.firebaseio.com",
         projectId: "gogami-877be",
         storageBucket: "gogami-877be.firebasestorage.app",
-        messagingSenderId: "843686112399",
-        appId: "1:843686112399:web:9c20a96831e6a94cd814fa"
+        messagingSenderId: "220921167245",
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -132,8 +292,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     userId = urlParams.get('uid');
     userName = urlParams.get('name') || 'User';
-    if (userId) { document.getElementById('userName').innerHTML = `👤 Bid History: ${escapeHtml(userName)}`; init(); }
-    else { document.getElementById('userName').innerHTML = '❌ No User Selected'; document.getElementById('bidsList').innerHTML = '<tr><td colspan="9" class="no-data">No user ID provided</td></tr>'; }
+
+    if (userId) { 
+        document.getElementById('userName').innerHTML = `👤 User: ${escapeHtml(userName)}`; 
+        init(); 
+    } else { 
+        document.getElementById('userName').innerHTML = '❌ No User Selected'; 
+        document.getElementById('bidsList').innerHTML = '<tr><td colspan="10" class="no-data">No user ID provided</td></tr>'; 
+    }
     
     async function init() { await loadUserData(); await loadBids(); listenToBidUpdates(); }
     
@@ -142,16 +308,16 @@
         try { 
             let userDoc = await db.collection('users').doc(userId).get(); 
             if(userDoc.exists) { 
-                let ud=userDoc.data(); 
+                let ud = userDoc.data(); 
                 document.getElementById('userPhone').innerHTML = `📞 Phone: ${ud.phone || 'Not provided'}`; 
-                document.getElementById('userBalance').innerHTML = `💰 Balance: ₹${(ud.balance || 0).toLocaleString()}`; 
+                document.getElementById('userBalance').innerHTML = `💰 Wallet: ₹${(ud.balance || 0).toLocaleString()}`; 
             } 
         } catch(e) { console.error(e); } 
     }
     
     async function loadBids() { 
         if(!userId) return; 
-        document.getElementById('bidsList').innerHTML = '<tr><td colspan="9" class="no-data">Loading...</td></tr>'; 
+        document.getElementById('bidsList').innerHTML = '<tr><td colspan="10" class="no-data">Loading...</td></tr>'; 
         try { 
             let snapshot = await db.collection('bids').where('userId', '==', userId).get(); 
             allBids = []; 
@@ -161,63 +327,79 @@
                 allBids.push({ id: doc.id, ...b, dateObj: bidDate, bidType: b.bidType || null }); 
             }); 
             allBids.sort((a,b) => b.dateObj - a.dateObj); 
-            if(allBids.length===0) document.getElementById('bidsList').innerHTML = '<tr><td colspan="9" class="no-data">No bids found for this user</td></tr>'; 
+            if(allBids.length === 0) document.getElementById('bidsList').innerHTML = '<tr><td colspan="10" class="no-data">No bids found for this user</td></tr>'; 
             updateStats(); 
             filterBids(); 
-        } catch(e) { document.getElementById('bidsList').innerHTML = `<tr><td colspan="9" class="no-data">❌ Error: ${e.message}</td></tr>`; } 
+        } catch(e) { document.getElementById('bidsList').innerHTML = `<tr><td colspan="10" class="no-data">❌ Error: ${e.message}</td></tr>`; } 
     }
     
     function filterBids() { 
-        let status=document.getElementById('statusFilter').value, game=document.getElementById('gameTypeFilter').value, search=document.getElementById('searchInput').value.trim().toLowerCase(); 
+        let status = document.getElementById('statusFilter').value;
+        let game = document.getElementById('gameTypeFilter').value;
+        let search = document.getElementById('searchInput').value.trim().toLowerCase(); 
         let filtered = [...allBids]; 
-        if(status!=='all') filtered = filtered.filter(b=>b.status===status); 
-        if(game!=='all') filtered = filtered.filter(b=>(b.gameType || b.type)===game); 
-        if(search) filtered = filtered.filter(b=>(b.market||'').toLowerCase().includes(search) || (b.value||'').toLowerCase().includes(search)); 
+        
+        if(status !== 'all') filtered = filtered.filter(b => b.status === status); 
+        if(game !== 'all') filtered = filtered.filter(b => (b.gameType || b.type) === game); 
+        if(search) filtered = filtered.filter(b => (b.market||'').toLowerCase().includes(search) || (b.value||'').toLowerCase().includes(search) || b.id.toLowerCase().includes(search)); 
+        
         displayBidsTable(filtered); 
     }
     
     function displayBidsTable(bids){ 
-        let tbody=document.getElementById('bidsList'); 
-        if(bids.length===0){ tbody.innerHTML='<tr><td colspan="9" class="no-data">No bids match your filters</td></tr>'; return; } 
-        let html=''; 
+        let tbody = document.getElementById('bidsList'); 
+        if(bids.length === 0){ tbody.innerHTML = '<tr><td colspan="10" class="no-data">No bids match your filters</td></tr>'; return; } 
+        let html = ''; 
         for(let b of bids){ 
-            let dateStr=b.dateObj && b.dateObj.getTime()>0 ? b.dateObj.toLocaleString() : 'Unknown'; 
+            let dateStr = b.dateObj && b.dateObj.getTime() > 0 ? b.dateObj.toLocaleString() : 'Unknown'; 
             let gameDisplay = b.gameType || b.type || '-';
-            let rate=gameRates[gameDisplay]||10; 
-            let possibleWin=(b.points||0)*rate; 
-            let statusClass=b.status==='won'?'status-won':(b.status==='lost'?'status-lost':'status-pending'); 
-            let statusText=b.status ? b.status.toUpperCase() : 'PENDING'; 
-            let bidTypeBadge=b.bidType ? (b.bidType==='Open'? '<span class="bid-type-open">OPEN</span>' : '<span class="bid-type-close">CLOSE</span>') : '<span style="color:#64748b;">—</span>'; 
-            html+=`<tr><td>${dateStr}</td><td>${escapeHtml(b.market||'Unknown')}</td><td>${bidTypeBadge}</td><td>${escapeHtml(gameDisplay)}</td><td><strong style="font-family:monospace; font-size:14px; color:#3b82f6;">${escapeHtml(b.value||'-')}</strong></td><td>₹${(b.points||0).toLocaleString()}</td><td>${rate}x</td><td>₹${possibleWin.toLocaleString()}</td><td class="${statusClass}">${statusText}</td></tr>`; 
+            let rate = gameRates[gameDisplay] || 10; 
+            let possibleWin = (b.points || 0) * rate; 
+            let statusClass = b.status === 'won' ? 'status-won' : (b.status === 'lost' ? 'status-lost' : 'status-pending'); 
+            let statusText = b.status ? b.status.toUpperCase() : 'PENDING'; 
+            let bidTypeBadge = b.bidType ? (b.bidType === 'Open' ? '<span class="bid-type-open">OPEN</span>' : '<span class="bid-type-close">CLOSE</span>') : '<span style="color:#64748b;">—</span>'; 
+            
+            html += `<tr>
+                <td class="bid-id-text">#${b.id.substring(0, 8).toUpperCase()}</td>
+                <td>${dateStr}</td>
+                <td>${escapeHtml(b.market||'Unknown')}</td>
+                <td>${bidTypeBadge}</td>
+                <td>${escapeHtml(gameDisplay)}</td>
+                <td><strong style="font-family:monospace; font-size:13px; color:#f87171;">${escapeHtml(b.value||'-')}</strong></td>
+                <td style="color:#10b981;">₹${(b.points||0).toLocaleString()}</td>
+                <td>${rate}x</td>
+                <td>₹${possibleWin.toLocaleString()}</td>
+                <td class="${statusClass}">${statusText}</td>
+            </tr>`; 
         } 
-        tbody.innerHTML=html; 
+        tbody.innerHTML = html; 
     }
     
     function updateStats(){ 
-        let total=allBids.length, spent=0, won=0; 
+        let total = allBids.length, spent = 0, won = 0; 
         for(let b of allBids){ 
-            spent+=b.points||0; 
-            if(b.status==='won'){ 
+            spent += b.points || 0; 
+            if(b.status === 'won'){ 
                 let gameDisplay = b.gameType || b.type || '-';
-                let rate=gameRates[gameDisplay]||10; 
-                won+=(b.points||0)*rate; 
+                let rate = gameRates[gameDisplay] || 10; 
+                won += (b.points || 0) * rate; 
             } 
         } 
-        let net=won-spent; 
-        document.getElementById('totalBids').innerHTML=total; 
-        document.getElementById('totalSpent').innerHTML=`₹${spent.toLocaleString()}`; 
-        document.getElementById('totalWon').innerHTML=`₹${won.toLocaleString()}`; 
-        let netEl=document.getElementById('netProfit'); 
-        netEl.innerHTML=`₹${net.toLocaleString()}`; 
-        netEl.className='value '+(net>0?'positive':(net<0?'negative':'')); 
-        if(net===0) netEl.className='value';
+        let net = won - spent; 
+        document.getElementById('totalBids').innerHTML = total; 
+        document.getElementById('totalSpent').innerHTML = `₹${spent.toLocaleString()}`; 
+        document.getElementById('totalWon').innerHTML = `₹${won.toLocaleString()}`; 
+        let netEl = document.getElementById('netProfit'); 
+        netEl.innerHTML = `₹${net.toLocaleString()}`; 
+        netEl.className = 'value ' + (net > 0 ? 'positive' : (net < 0 ? 'negative' : '')); 
     }
     
-    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m; }); }
+    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m; }); }
     async function refreshData(){ await loadUserData(); await loadBids(); }
     function listenToBidUpdates(){ if(!userId) return; db.collection('bids').where('userId','==',userId).onSnapshot(()=>{ loadBids(); }); }
     
-    window.filterBids=filterBids; window.refreshData=refreshData;
+    window.filterBids = filterBids; 
+    window.refreshData = refreshData;
 </script>
 </body>
 </html>
