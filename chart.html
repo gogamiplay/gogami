@@ -2,82 +2,412 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GOGAMI - Result Panel Charts</title>
-    <!-- Supabase JS SDK v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GOMAGI - Panel Charts</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 16px; }
-        .app-container { max-width: 600px; margin: 0 auto; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .back-btn { background: #1e293b; border: 1px solid #334155; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .title { color: #38bdf8; font-size: 18px; font-weight: 800; }
-        .chart-card { background: #1e293b; border-radius: 12px; padding: 16px; border: 1px solid #334155; margin-bottom: 16px; }
-        .market-header { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #334155; padding-bottom: 6px; display: flex; justify-content: space-between; }
-        .result-number { font-family: monospace; font-size: 18px; color: #10b981; font-weight: 800; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 8px; text-align: center; border: 1px solid #334155; font-size: 12px; }
-        th { background: #0f172a; color: #94a3b8; }
-        .jodi-cell { color: #f59e0b; font-weight: 800; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+            border: none;
+        }
+
+        body { 
+            background: #090d16; 
+            color: #f8fafc; 
+            padding-bottom: 90px; 
+            min-height: 100vh;
+        }
+
+        .app-container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background: #090d16; 
+            min-height: 100vh; 
+            padding: 16px; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* Full Screen Android App Style Splash Screen */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #090d16;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .splash-logo {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 30px;
+        }
+
+        .loader-bar {
+            width: 120px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #2563eb;
+            border-radius: 10px;
+            animation: loading 1.2s infinite linear;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            50% { left: 0%; }
+            100% { left: 100%; }
+        }
+
+        /* Compact Header Bar */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 0 16px 0;
+            background: #090d16;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-title-text {
+            font-size: 16px;
+            font-weight: 800;
+            color: #f8fafc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-pill {
+            background: #151c2c;
+            padding: 6px 14px;
+            border-radius: 12px;
+            color: #10b981;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .section-title { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            letter-spacing: 0.8px; 
+            margin: 0 4px 14px 4px; 
+        }
+
+        /* Menu Selection List view container */
+        .menu-list-wrapper { display: flex; flex-direction: column; gap: 10px; }
+
+        .chart-list-item {
+            background: #151c2c;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .chart-list-item:active { background: #1c263b; }
+
+        .market-info-box { display: flex; flex-direction: column; gap: 2px; }
+
+        .market-name-label { 
+            font-size: 15px; 
+            font-weight: 700; 
+            color: #f8fafc; 
+            text-transform: uppercase; 
+            letter-spacing: 0.3px;
+        }
+
+        .market-sub-label { 
+            font-size: 11px; 
+            color: #64748b; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+        }
+
+        .action-arrow-indicator {
+            width: 32px; 
+            height: 32px; 
+            background: #0f172a; 
+            border-radius: 10px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: #3b82f6; 
+            font-size: 14px; 
+            font-weight: 800;
+        }
+
+        /* Full Screen Embedded Chart Frame Container */
+        .chart-frame-view {
+            display: none;
+            position: fixed;
+            top: 60px; 
+            left: 0; 
+            right: 0; 
+            bottom: 70px;
+            background: #090d16;
+            z-index: 900;
+        }
+
+        .embedded-chart-iframe {
+            width: 100%; 
+            height: 100%; 
+            border: none;
+            background: #ffffff;
+        }
+
+        /* Navigation Dock */
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background: #0f172a; 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            padding: 8px 12px 10px 12px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+            z-index: 1000; 
+            height: 70px; 
+        }
+
+        .nav-item { 
+            text-align: center; 
+            color: #64748b; 
+            cursor: pointer; 
+            font-size: 11px; 
+            flex: 1; 
+            font-weight: 700; 
+            text-decoration: none; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 48px; 
+            border-radius: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            transition: all 0.2s ease; 
+        }
+
+        .nav-item.active { color: #3b82f6; }
+        .nav-item:active { transform: scale(0.95); }
+
+        .nav-item-home { 
+            position: relative; 
+            top: -14px; 
+            background: #2563eb; 
+            color: #fff !important; 
+            width: 52px; 
+            height: 52px; 
+            max-width: 52px; 
+            border-radius: 50%; 
+            border: 4px solid #090d16; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        .nav-item-home span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
     </style>
 </head>
 <body>
+
+<!-- Android App Style Splash Screen Loader -->
+<div id="splashScreen">
+    <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="splash-logo">
+    <div class="loader-bar"></div>
+</div>
+
 <div class="app-container">
-    <div class="header">
-        <button class="back-btn" onclick="window.history.back()">← Back</button>
-        <span class="title">📊 RESULT CHARTS</span>
-        <div></div>
+    
+    <!-- App Header -->
+    <div class="app-header">
+        <button class="back-btn" onclick="handleBackAction()">←</button>
+        <span class="header-title-text" id="pageHeaderTitle">Panel Charts</span>
+        <div class="balance-pill" onclick="showBalance()">₹<span id="userBalance">0</span></div>
+    </div>
+    
+    <!-- Menu View Deck Elements -->
+    <div id="menuListView">
+        <div class="section-title">Select Market Record</div>
+        <div class="menu-list-wrapper" id="chartMenuContainer">
+            <!-- Injected via Script -->
+        </div>
     </div>
 
-    <div id="chartsContainer">
-        <div style="text-align: center; color: #94a3b8; padding: 40px;">Loading live charts...</div>
+    <!-- Live Viewport Chart Document Node -->
+    <div class="chart-frame-view" id="chartFrameView">
+        <iframe src="" class="embedded-chart-iframe" id="chartIframe"></iframe>
+    </div>
+    
+    <!-- Bottom Navigation Dock -->
+    <div class="bottom-nav">
+        <a href="chart.html" class="nav-item active"><span>Chart</span></a>
+        <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
+        <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
+        <a href="funds.html" class="nav-item"><span>Fund</span></a>
+        <a href="chat.html" class="nav-item"><span>Support</span></a>
     </div>
 </div>
 
 <script>
-    const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    window.onload = () => {
-        loadCharts();
+    const firebaseConfig = {
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c",
+        authDomain: "gogami-877be.firebaseapp.com",
+        databaseURL: "https://gogami-877be-default-rtdb.firebaseio.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "220921167245",
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
 
-    async function loadCharts() {
-        const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
-        let container = document.getElementById('chartsContainer');
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    let currentUserData = null;
+    let isViewingChart = false;
 
-        if(!markets || markets.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:40px;">No panel chart records available</div>';
-            return;
+    function hideSplashScreen() {
+        const splash = document.getElementById('splashScreen');
+        if (splash && splash.style.opacity !== '0') {
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.visibility = 'hidden';
+            }, 300);
         }
+    }
 
-        container.innerHTML = markets.map(m => `
-            <div class="chart-card">
-                <div class="market-header">
-                    <span>${m.name}</span>
-                    <span class="result-number">${m.numbers || '***-**-***'}</span>
+    const marketChartsData = [
+        { name: "sridevi", url: "https://dpbossss.boston/panel-chart-record/sridevi.php#" },
+        { name: "time bazar", url: "https://dpbossss.boston/panel-chart-record/time-bazar.php" },
+        { name: "madhur day", url: "https://dpbossss.boston/panel-chart-record/madhur-day.php" },
+        { name: "milan day", url: "https://dpbossss.boston/panel-chart-record/milan-day.php" },
+        { name: "rajdhani day", url: "https://dpbossss.boston/panel-chart-record/rajdhani-day.php" },
+        { name: "kalyan", url: "https://dpbossss.boston/panel-chart-record/kalyan.php" },
+        { name: "sridevi night", url: "https://dpbossss.boston/panel-chart-record/sridevi-night.php" },
+        { name: "madhur night", url: "https://dpbossss.boston/panel-chart-record/madhur-night.php" },
+        { name: "milan night", url: "https://dpbossss.boston/panel-chart-record/milan-night.php" },
+        { name: "rajdhani night", url: "https://dpbossss.boston/panel-chart-record/rajdhani-night.php" },
+        { name: "kalyan night", url: "https://dpbossss.boston/panel-chart-record/kalyan-night.php" },
+        { name: "main bazar", url: "https://dpbossss.boston/panel-chart-record/main-bazar.php" }
+    ];
+
+    function buildChartMenu() {
+        const container = document.getElementById('chartMenuContainer');
+        container.innerHTML = marketChartsData.map(m => `
+            <div class="chart-list-item" onclick="openChartIframe('${m.url}', '${m.name}')">
+                <div class="market-info-box">
+                    <span class="market-name-label">${m.name}</span>
+                    <span class="market-sub-label">Panel Chart History</span>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Open Pana</th>
-                            <th>Jodi</th>
-                            <th>Close Pana</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${m.open_pana || '***'}</td>
-                            <td class="jodi-cell">${m.jodi || (m.open_digit && m.close_digit ? m.open_digit + m.close_digit : '**')}</td>
-                            <td>${m.close_pana || '***'}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="action-arrow-indicator">→</div>
             </div>
         `).join('');
     }
+
+    function openChartIframe(url, name) {
+        document.getElementById('chartIframe').src = url;
+        document.getElementById('menuListView').style.display = 'none';
+        document.getElementById('chartFrameView').style.display = 'block';
+        document.getElementById('pageHeaderTitle').innerText = name.toUpperCase();
+        isViewingChart = true;
+    }
+
+    function handleBackAction() {
+        if (isViewingChart) {
+            document.getElementById('chartIframe').src = "";
+            document.getElementById('chartFrameView').style.display = 'none';
+            document.getElementById('menuListView').style.display = 'block';
+            document.getElementById('pageHeaderTitle').innerText = "Panel Charts";
+            isViewingChart = false;
+        } else {
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    async function loadUserData(){ 
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        let doc = await db.collection('users').doc(user.uid).get(); 
+        if(doc.exists){ 
+            // BLOCK CHECK GUARD
+            if (doc.data().blocked === true) {
+                alert('🚫 Your account has been blocked by Admin.');
+                await auth.signOut();
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUserData = doc.data(); 
+            document.getElementById('userBalance').innerText = currentUserData.balance || 0; 
+        } 
+        hideSplashScreen();
+    }
+    
+    function showBalance(){ alert(`💰 Wallet Balance: ₹${currentUserData?.balance||0}`); }
+    
+    buildChartMenu();
+    
+    auth.onAuthStateChanged(async (user) => { 
+        if (!user) {
+            window.location.href = 'index.html'; 
+        } else { 
+            await loadUserData(); 
+        } 
+    });
+
+    setTimeout(hideSplashScreen, 2500);
 </script>
 </body>
 </html>
