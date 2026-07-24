@@ -86,7 +86,6 @@
             100% { left: 100%; }
         }
         
-        /* Pinned Header Panel */
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -110,14 +109,12 @@
             position: relative; 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: space-between; 
             width: 100%; 
             height: 35px; 
         }
 
         .menu-toggle-btn { 
-            position: absolute; 
-            left: 0; 
             background: none; 
             border: none; 
             color: #94a3b8; 
@@ -132,7 +129,6 @@
             object-fit: contain;
         }
 
-        /* Shortcuts */
         .panel-shortcuts-row { 
             display: flex; 
             align-items: center; 
@@ -175,7 +171,6 @@
             cursor: pointer; 
         }
 
-        /* Marquee Notice */
         .marquee-notice-banner {
             margin-top: 13vh; 
             background: #151c2c; 
@@ -217,7 +212,6 @@
             margin: 4px 4px 12px 4px; 
         }
 
-        /* Clean Flat Market Cards */
         .market-card-wrapper { 
             background: #151c2c; 
             border-radius: 16px; 
@@ -333,7 +327,6 @@
 
         .time-node span { color: #cbd5e1; font-weight: 700; }
 
-        /* Left-Aligned Drawer Overlay Component */
         .drawer-nav-backdrop { 
             position: fixed; 
             top: 0; 
@@ -401,7 +394,6 @@
         .drawer-arrow-label { color: #475569; font-weight: bold; font-size: 12px; }
         .drawer-logout-btn { color: #ef4444; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 12px; }
 
-        /* Navigation Dock */
         .bottom-nav { 
             position: fixed; 
             bottom: 0; 
@@ -471,7 +463,6 @@
             z-index: 10;
         }
 
-        /* Modal Overlays */
         .modal-popup-layer { 
             display: none; 
             position: fixed; 
@@ -526,7 +517,6 @@
 
         .popup-rate-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; font-weight: 600; color: #cbd5e1; }
 
-        /* Alert Pop-up Overlay */
         .alert-popup-layer { 
             display: none; 
             position: fixed; 
@@ -718,8 +708,18 @@
             }
         });
 
+        // Realtime User Document & Block Status Monitor
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if (doc.exists) {
+                // BLOCK CHECK GUARD
+                if (doc.data().blocked === true) {
+                    alert('🚫 Your account has been blocked by Admin.');
+                    auth.signOut().then(() => {
+                        window.location.href = 'index.html';
+                    });
+                    return;
+                }
+
                 currentUserData = doc.data();
                 document.getElementById('userWalletBalance').innerText = currentUserData.balance || 0;
                 document.getElementById('drawerLabelBalance').innerText = currentUserData.balance || 0;
@@ -800,7 +800,6 @@
                     </div>`;
             }).join('');
 
-            // Hide Splash screen once markets load
             hideSplashScreen();
         });
     }
@@ -879,6 +878,15 @@
         if (!user) {
             window.location.href = 'index.html';
         } else {
+            // BLOCK CHECK GUARD
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists && doc.data().blocked === true) {
+                alert('🚫 Your account has been blocked by Admin.');
+                await auth.signOut();
+                window.location.href = 'index.html';
+                return;
+            }
+
             db.collection('users').doc(user.uid).update({
                 isOnline: true,
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
@@ -889,7 +897,6 @@
         }
     });
 
-    // Safety fallback to hide splash screen
     setTimeout(hideSplashScreen, 2500);
 </script>
 </body>
