@@ -242,7 +242,7 @@
         .game-panel-content { padding: 4px 16px 6px 16px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
         
         .native-image-row { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px; }
-        .native-image-label { font-size: 13px; color: #94a3b8; font-weight: 600; flex-shrink: 0; width: 115px; text-align: left; }
+        .native-image-label { font-size: 13px; color: #94a3b8; font-weight: 600; flex-shrink: 0; width: 120px; text-align: left; }
         
         .select-native-dropdown-wrapper { flex: 1; position: relative; background: #151c2c; border-radius: 12px; padding-right: 12px; }
         .select-native-input { width: 100%; padding: 12px 14px; background: transparent; border: none; outline: none; font-size: 13.5px; font-weight: 700; color: #fff; appearance: none; -webkit-appearance: none; cursor: pointer; text-transform: uppercase; }
@@ -305,10 +305,6 @@
         .digit-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 2px 16px; width: 100%; flex-shrink: 0; }
         .digit-btn { background: #151c2c; border-radius: 10px; padding: 12px 0; text-align: center; font-size: 16px; font-weight: 700; color: #f8fafc; cursor: pointer; }
         .digit-btn:active { background: #2563eb; }
-
-        .jodi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 2px 16px; max-height: 160px; overflow-y: auto; width: 100%; flex-shrink: 0; }
-        .jodi-btn { background: #151c2c; border-radius: 8px; padding: 10px 0; text-align: center; font-size: 14px; font-weight: 700; color: #f8fafc; cursor: pointer; }
-        .jodi-btn.number-selected-active { background: #2563eb !important; color: #ffffff !important; }
 
         /* Bottom Summary Bar */
         .fixed-bottom-summary-deck {
@@ -413,7 +409,7 @@
     
     let currentUser = null, currentMarket = '', currentMarketId = '', currentStatus = 'open', currentGameType = '', bids = [];
     let marketOpenEndTime = null, marketCloseEndTime = null, isSubmitting = false, selectedOpenClose = 'Open';
-    let serverTimeOffset = 0; // Pre-calculated offset for instantaneous time checks
+    let serverTimeOffset = 0;
 
     function hideSplashScreen() {
         const splash = document.getElementById('splashScreen');
@@ -473,7 +469,6 @@
         { name: 'Full Sangam', availableInOpen: true, availableInClose: false, shape: '✪', color: 'icon-green' }
     ];
 
-    // Initialize server offset once on load to enable Instant Zero-Latency local time checks
     async function syncServerOffset() {
         try {
             const docRef = db.collection('settings').doc('servertime');
@@ -488,7 +483,6 @@
         }
     }
 
-    // Instant local time evaluation without network latency
     function isBettingAllowedFast() {
         if (currentStatus === 'holiday') return { allowed: false, message: '⚠️ Market Closed due to holiday.' };
         
@@ -569,32 +563,11 @@
         return 'Single Pana';
     }
 
-    // Fast Instant Jodi Toggle Execution
-    function toggleJodiSelection(val, pts, element) {
-        const check = isBettingAllowedFast(); 
-        if (!check.allowed) { alert(check.message); return; }
-        if (isNaN(pts) || pts < 5) { alert('Min ₹5 required. Enter points above.'); return; }
-        
-        let targetType = 'Close';
-        const index = bids.findIndex(b => b.type === 'Jodi' && b.value === val && b.bidType === targetType);
-        
-        if(index > -1) {
-            bids.splice(index, 1);
-            element.classList.remove('number-selected-active');
-        } else {
-            bids.push({ type: 'Jodi', gameType: 'Jodi', bidType: targetType, value: val, points: pts, market: currentMarket, marketId: currentMarketId });
-            element.classList.add('number-selected-active');
-        }
-        updateSummary();
-        const targetBlock = document.getElementById('bidsContainerTargetBlock');
-        if(targetBlock) targetBlock.innerHTML = renderBidsOnly();
-    }
-
-    // Instant Direct Add
+    // Direct Instant Add to Bids
     function addToBidsDirectly(resolvedGameType, val, pts) {
         const check = isBettingAllowedFast(); 
         if (!check.allowed) { alert(check.message); return; }
-        if (isNaN(pts) || pts < 5) { alert('Min ₹5 required. Enter points above.'); return; }
+        if (isNaN(pts) || pts < 5) { alert('Min ₹5 required. Enter points first.'); return; }
         
         let targetType = (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana', 'Family Pana'].includes(resolvedGameType)) ? ((currentStatus === 'close') ? 'Close' : selectedOpenClose) : 'Close';
 
@@ -605,6 +578,23 @@
         updateSummary(); 
         const targetBlock = document.getElementById('bidsContainerTargetBlock');
         if(targetBlock) targetBlock.innerHTML = renderBidsOnly();
+    }
+
+    // Instant Fast 2-Digit Auto Add for Jodi Mode
+    function handleJodiInput(el) {
+        let val = el.value.replace(/\D/g, '');
+        el.value = val;
+        if (val.length === 2) {
+            const ptsInput = document.getElementById('pointsInput');
+            const pts = parseInt(ptsInput.value);
+            if (isNaN(pts) || pts < 5) {
+                alert('Min ₹5 required. Please enter points above.');
+                el.value = '';
+                return;
+            }
+            addToBidsDirectly('Jodi', val, pts);
+            el.value = ''; // Auto clear Jodi digit input for fast continuous entry
+        }
     }
 
     // Super Fast Family and Manual Add Execution
@@ -751,17 +741,11 @@
                 </div>
                 ${renderTableWrapper()}`;
         } else if (currentGameType === 'Jodi') {
-            let grid = ''; 
-            for(let i=0;i<=99;i++) { 
-                let v = i.toString().padStart(2,'0'); 
-                let isSelectedClass = bids.some(b => b.type === 'Jodi' && b.value === v) ? 'number-selected-active' : '';
-                grid += `<div class="jodi-btn ${isSelectedClass}" onclick="toggleJodiSelection('${v}', parseInt(document.getElementById('pointsInput').value), this)">${v}</div>`; 
-            }
             p.innerHTML = `
                 <div class="game-panel-content">
                     ${dropdownSelectionHeader}
                     <div class="native-image-row"><span class="native-image-label">Enter Points</span><div class="native-input-box-wrapper"><input type="number" id="pointsInput" class="native-form-input-field" value="${pts||''}" placeholder="Enter Points"></div></div>
-                    <div class="jodi-grid">${grid}</div>
+                    <div class="native-image-row"><span class="native-image-label">Enter Jodi Digit</span><div class="native-input-box-wrapper"><input type="tel" id="jodiDigitInput" class="native-form-input-field" maxlength="2" inputmode="numeric" placeholder="Enter Jodi (00-99)" oninput="handleJodiInput(this)"></div></div>
                 </div>
                 ${renderTableWrapper()}`;
         } else if (currentGameType.includes('Sangam')) {
