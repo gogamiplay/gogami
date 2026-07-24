@@ -2,573 +2,991 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GOGAMI - Complete Admin Control Panel</title>
-    <!-- Supabase JS SDK v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- OneSignal Push Notification SDK -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GOMAGI - Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: #3b82f6; margin-bottom: 20px; text-align: center; font-size: 24px; font-weight: 800; }
-        h2 { color: #38bdf8; font-size: 16px; margin-bottom: 12px; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 6px; }
-        .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        input, select, textarea, button { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 13px; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
-        textarea { resize: vertical; min-height: 80px; }
-        button { background: #3b82f6; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s; }
-        button:hover { background: #2563eb; }
-        .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; display: inline-block; margin: 2px; }
-        .btn-danger { background: #ef4444; }
-        .btn-danger:hover { background: #dc2626; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+            border: none;
+        }
+
+        body { 
+            background: #090d16; 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+
+        /* Full Screen Login Screen */
+        .login-screen { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: #090d16; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
+
+        .login-card { 
+            background: #151c2c; 
+            padding: 32px 24px; 
+            border-radius: 20px; 
+            width: 90%; 
+            max-width: 340px; 
+            text-align: center; 
+        }
+
+        .login-card img {
+            width: 130px;
+            height: auto;
+            margin-bottom: 20px;
+            object-fit: contain;
+        }
+
+        .login-card input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 12px 0; 
+            background: #0f172a; 
+            border-radius: 12px; 
+            color: #fff; 
+            font-size: 14px; 
+            text-align: center;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .login-card button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #2563eb; 
+            border-radius: 12px; 
+            color: #fff; 
+            font-weight: 700; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-top: 6px;
+        }
+
+        /* App Mobile Shell & Sidebar Layout */
+        .admin-panel { 
+            display: none; 
+            width: 100%; 
+            min-height: 100vh; 
+            flex-direction: column;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .mobile-header .menu-btn {
+            background: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-header img {
+            height: 28px;
+            object-fit: contain;
+        }
+
+        /* Sidebar Navigation Container */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+        }
+
+        .sidebar-overlay.active { display: block; }
+
+        .sidebar { 
+            width: 260px; 
+            background: #0f172a; 
+            height: 100vh; 
+            position: fixed; 
+            top: 0;
+            left: -260px;
+            z-index: 2100; 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-overlay.active .sidebar {
+            transform: translateX(260px);
+        }
+
+        .sidebar h2 { 
+            padding: 20px; 
+            text-align: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            font-size: 15px; 
+            font-weight: 800; 
+            color: #f8fafc; 
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item { 
+            padding: 16px 20px; 
+            color: #cbd5e1; 
+            cursor: pointer; 
+            font-size: 13.5px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .sidebar-item:active { background: #151c2c; color: #3b82f6; }
+
+        .notification-badge { 
+            background: #ef4444; 
+            color: #fff; 
+            border-radius: 10px; 
+            padding: 2px 8px; 
+            font-size: 10px; 
+            font-weight: 800; 
+        }
+
+        /* Main Content View Container */
+        .main-content { 
+            padding: 16px; 
+            flex: 1; 
+            background: #090d16; 
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card { 
+            background: #151c2c; 
+            border-radius: 18px; 
+            padding: 18px; 
+            margin-bottom: 16px; 
+        }
+
+        .card h3 { 
+            margin-bottom: 16px; 
+            color: #f8fafc; 
+            font-size: 14px; 
+            font-weight: 700; 
+            letter-spacing: 0.5px; 
+            text-transform: uppercase; 
+            border-left: 4px solid #2563eb; 
+            padding-left: 10px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        input, select, textarea { 
+            padding: 12px 14px; 
+            margin: 6px 0; 
+            background: #0f172a; 
+            border-radius: 10px; 
+            width: 100%; 
+            color: #fff; 
+            font-size: 13.5px; 
+            font-weight: 500; 
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        label { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            display: inline-block; 
+            margin-top: 6px; 
+        }
+
+        button { 
+            background: #2563eb; 
+            padding: 12px; 
+            border-radius: 10px; 
+            color: #fff; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin: 4px 0; 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+
         .btn-success { background: #10b981; }
-        .btn-success:hover { background: #059669; }
-        .btn-warning { background: #f59e0b; color: #0f172a; }
-        .btn-warning:hover { background: #d97706; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 12px; }
-        th { background: #0f172a; color: #94a3b8; text-transform: uppercase; font-size: 11px; }
-        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-        .badge-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-        .table-responsive { overflow-x: auto; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 999; justify-content: center; align-items: center; }
-        .modal-content { background: #1e293b; padding: 20px; border-radius: 12px; max-width: 400px; width: 90%; border: 1px solid #334155; }
+        .btn-danger { background: #ef4444; }
+        .btn-warning { background: #f59e0b; color: #000; }
+        .btn-reset { background: #334155; }
+        .btn-info { background: #0284c7; }
+        .btn-delete { background: #991b1b; color: #fca5a5; }
+        .hidden { display: none !important; }
+
+        /* Item Cards (Markets, Users, Requests) */
+        .market-item, .user-item, .request-item { 
+            background: #0f172a; 
+            padding: 14px; 
+            margin: 10px 0; 
+            border-radius: 14px; 
+        }
+
+        .user-item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-item-blocked {
+            border: 1px solid #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .user-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .market-header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            background: #151c2c; 
+            padding: 12px; 
+            border-radius: 10px; 
+        }
+
+        .market-detail-row { 
+            display: none; 
+            background: #151c2c; 
+            padding: 14px; 
+            border-radius: 10px; 
+            margin-top: 8px; 
+        }
+
+        .market-detail-row.open { display: block; }
+        .market-serial { font-family: monospace; color: #3b82f6; font-weight: 700; }
+
+        .status-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .status-open { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .status-closed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .status-holiday { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+        .results-container { display: flex; gap: 8px; margin: 10px 0; }
+        .result-card { background: #0f172a; border-radius: 8px; padding: 10px; text-align: center; flex: 1; }
+        .result-pana { font-size: 18px; font-weight: 800; color: #3b82f6; font-family: monospace; }
+        .jodi-display { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+        .jodi-display strong { color: #fbbf24; font-size: 14px; font-family: monospace; }
+
+        .request-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #0f172a; padding: 4px; border-radius: 10px; }
+        .request-tab { flex: 1; padding: 8px; cursor: pointer; border-radius: 8px; font-size: 11px; font-weight: 700; text-align: center; color: #64748b; text-transform: uppercase; }
+        .request-tab.active { background: #2563eb; color: #fff; }
+
+        .search-container { display: flex; gap: 8px; margin-bottom: 12px; }
+        .sort-bar { display: flex; gap: 8px; flex-direction: column; margin: 12px 0; padding: 10px; background: #0f172a; border-radius: 10px; font-size: 12px; color: #64748b; font-weight: 600; }
+        
+        .today-bidder-badge { background: #2563eb; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 700; }
+        .bid-highlight { border-left: 3px solid #2563eb; }
+        .user-count { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; }
+        .user-status { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 6px; display: inline-block; }
+        .status-online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-offline { background: rgba(100, 116, 139, 0.2); color: #64748b; }
+        .last-login { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+        .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
+        .bank-details-box { background: #0f172a; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #cbd5e1; line-height: 1.5; }
+        .bank-details-box span { font-weight: 700; color: #64748b; }
+
+        /* Desktop Layout Adaptations */
+        @media (min-width: 769px) {
+            .admin-panel { flex-direction: row; }
+            .mobile-header { display: none; }
+            .sidebar-overlay { display: block !important; position: static; width: 260px; height: auto; }
+            .sidebar { position: fixed; left: 0; transform: none !important; }
+            .main-content { margin-left: 260px; max-width: 100%; padding: 24px; }
+            .user-actions-grid { grid-template-columns: repeat(4, 1fr); }
+            .sort-bar { flex-direction: row; align-items: center; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>👑 GOGAMI ADMIN PANEL</h1>
-
-    <!-- 1. SETTINGS & NOTICE -->
-    <div class="card">
-        <h2>📢 Platform Settings & Notice Bar</h2>
-        <div class="grid">
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">UPI ID for Deposits</label>
-                <input type="text" id="upiInput" placeholder="e.g. gogami@axl">
-                <button onclick="saveUpi()" style="margin-top: 6px;">Save UPI ID</button>
-            </div>
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">Global Notice Text</label>
-                <input type="text" id="noticeInput" placeholder="Welcome Notice Text">
-                <button onclick="saveNotice()" style="margin-top: 6px;">Update Notice</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. ONESIGNAL PUSH NOTIFICATION CONSOLE -->
-    <div class="card">
-        <h2>🔔 Send Push Notification (OneSignal)</h2>
-        <div class="grid" style="grid-template-columns: 1fr;">
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">OneSignal App ID</label>
-                <input type="text" id="oneSignalAppId" placeholder="Enter your OneSignal App ID">
-            </div>
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">OneSignal REST API Key</label>
-                <input type="password" id="oneSignalApiKey" placeholder="Enter your OneSignal REST API Key">
-            </div>
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">Notification Title</label>
-                <input type="text" id="notifTitle" placeholder="e.g. KALYAN RESULT DECLARED! 🎉">
-            </div>
-            <div>
-                <label style="font-size: 11px; color: #94a3b8;">Notification Message Body</label>
-                <textarea id="notifMsg" placeholder="e.g. Open result is out now! Check your app passbook for winning amount."></textarea>
-            </div>
-        </div>
-        <div style="display: flex; gap: 10px; margin-top: 8px;">
-            <button class="btn-success" onclick="sendBroadcastNotification()">🚀 Send Broadcast Push Notification</button>
-            <button class="btn-warning" onclick="saveOneSignalConfig()">Save API Keys</button>
-        </div>
-    </div>
-
-    <!-- 3. RESULT DECLARATION CONSOLE -->
-    <div class="card">
-        <h2>🎯 Result Declaration Console</h2>
-        <div class="grid">
-            <select id="resultMarketSelect">
-                <option value="">Select Market</option>
-            </select>
-            <input type="text" id="openPanaInput" placeholder="Open Pana (e.g. 123)">
-            <input type="text" id="openDigitInput" placeholder="Open Digit (e.g. 6)">
-            <input type="text" id="closePanaInput" placeholder="Close Pana (e.g. 456)">
-            <input type="text" id="closeDigitInput" placeholder="Close Digit (e.g. 5)">
-        </div>
-        <button class="btn-success" onclick="declareResult()">Declare & Publish Result</button>
-    </div>
-
-    <!-- 4. MARKET MANAGEMENT -->
-    <div class="card">
-        <h2>🎰 Market Management</h2>
-        <div class="grid">
-            <input type="text" id="mName" placeholder="Market Name (e.g. KALYAN NIGHT)">
-            <input type="number" id="mSerial" placeholder="Serial No. (e.g. 1)">
-            <input type="text" id="mOpenEnd" placeholder="Open Bid End (e.g. 09:00 PM)">
-            <input type="text" id="mCloseEnd" placeholder="Close Bid End (e.g. 11:00 PM)">
-        </div>
-        <button onclick="addMarket()">Add New Market</button>
-        
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Serial</th>
-                        <th>Market Name</th>
-                        <th>Display Result</th>
-                        <th>Open / Close End</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="marketsList"><tr><td colspan="6">Loading markets...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 5. USER MANAGEMENT (BALANCE ADD/DEDUCT & BLOCK) -->
-    <div class="card">
-        <h2>👥 User Management & Wallet Control</h2>
-        <input type="text" id="userSearchInput" placeholder="Search user by Name or Phone..." onkeyup="filterUsers()" style="margin-bottom: 12px;">
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>User Name</th>
-                        <th>Phone</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="usersList"><tr><td colspan="5">Loading users...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 6. DEPOSIT REQUESTS -->
-    <div class="card">
-        <h2>💰 Deposit Requests (Credits)</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>User ID</th>
-                        <th>Amount</th>
-                        <th>UTR Number</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="depositList"><tr><td colspan="6">Loading deposits...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 7. WITHDRAWAL REQUESTS -->
-    <div class="card">
-        <h2>💸 Withdrawal Requests (Debits)</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>User ID</th>
-                        <th>Amount</th>
-                        <th>Bank Details</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="withdrawList"><tr><td colspan="6">Loading withdrawals...</td></tr></tbody>
-            </table>
-        </div>
+<!-- Login Overlay Screen -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo">
+        <input type="password" id="adminPass" placeholder="Enter Control Password">
+        <button onclick="login()">Sign In</button>
+        <div id="loginError" style="color:#f87171; margin-top:12px; font-size:12px; font-weight:600;"></div>
     </div>
 </div>
 
-<!-- Balance Edit Modal -->
-<div class="modal" id="balanceModal">
-    <div class="modal-content">
-        <h3 style="margin-bottom: 12px;" id="modalUserTitle">Update Wallet Balance</h3>
-        <input type="number" id="modalAmountInput" placeholder="Enter Amount">
-        <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button class="btn-success" onclick="modifyUserBalance('add')">+ Add</button>
-            <button class="btn-danger" onclick="modifyUserBalance('deduct')">- Deduct</button>
+<!-- Main Admin App Container -->
+<div id="adminPanel" class="admin-panel">
+    
+    <!-- Mobile Navigation Top Header -->
+    <div class="mobile-header">
+        <button class="menu-btn" onclick="toggleSidebar(true)">☰</button>
+        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo">
+        <div style="width: 24px;"></div>
+    </div>
+
+    <!-- Sidebar Menu Layer -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)">
+        <div class="sidebar" onclick="event.stopPropagation()">
+            <h2>GOMAGI ADMIN</h2>
+            <div class="sidebar-item" onclick="showSection('markets')">🎮 Markets</div>
+            <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
+            <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
+            <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
+            <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
+            <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
+            <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat <span id="chatBadge" class="notification-badge" style="display:none;">0</span></div>
+            <div class="sidebar-item" onclick="logout()" style="color:#ef4444;">🚪 Logout</div>
         </div>
-        <button class="btn-warning" onclick="closeBalanceModal()" style="margin-top: 8px;">Cancel</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        
+        <!-- Markets Section -->
+        <div id="marketsSection">
+            <div class="card">
+                <h3>➕ Add New Market</h3>
+                <input type="text" id="marketNameInput" placeholder="Market Name">
+                <input type="text" id="marketNumbersInput" placeholder="Numbers (e.g., 440-8*-***)">
+                <div><label>🟢 Open Bid End Time:</label> <input type="time" id="openBidEnd" step="60"></div>
+                <div><label>🟡 Close Bid End Time:</label> <input type="time" id="closeBidEnd" step="60"></div>
+                <div><label>🔴 Market Closed Time:</label> <input type="time" id="closedTime" step="60"></div>
+                <select id="marketStatus">
+                    <option value="open">🟢 OPEN</option>
+                    <option value="close">🟡 CLOSE</option>
+                    <option value="closed">🔴 CLOSED</option>
+                    <option value="holiday">🎪 HOLIDAY</option>
+                </select>
+                <button onclick="addMarket()">Add Market</button>
+                <button onclick="deleteAllMarkets()" class="btn-danger">🗑️ Delete All</button>
+                <button onclick="resetAllMarketsResults()" class="btn-warning">🔄 Reset All Results</button>
+            </div>
+            <div class="card">
+                <h3>📋 Manage Markets</h3>
+                <div id="marketsList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Users Management Section -->
+        <div id="usersSection" class="hidden">
+            <div class="card">
+                <h3>👥 Users Management 
+                    <button onclick="deleteAllUsers()" class="btn-delete" style="font-size:10px; padding:6px 10px;">🗑️ DELETE ALL</button>
+                </h3>
+                <div style="margin-bottom:12px; color:#f87171; font-size:11px; font-weight:600;">⚠️ Deleting users removes all bids, history & chat data!</div>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="🔍 Search name or phone...">
+                    <button onclick="searchUsers()" class="btn-info">Search</button>
+                    <button onclick="clearSearch()" class="btn-reset">Clear</button>
+                </div>
+                <div class="sort-bar">
+                    <label>Sort By:</label>
+                    <select id="sortUsersSelect" onchange="applyUserSort()">
+                        <option value="todayBidders">📈 Today Bidders</option>
+                        <option value="newest">🕒 Newest First</option>
+                        <option value="balanceHigh">💰 Balance High-Low</option>
+                        <option value="balanceLow">💰 Balance Low-High</option>
+                        <option value="lastActive">⏰ Last Active</option>
+                    </select>
+                    <button onclick="refreshTodayBidsForUsers()" class="btn-info">🔄 Refresh Bids</button>
+                </div>
+                <div id="userCount" class="user-count"></div>
+                <div id="usersList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Deposits Section -->
+        <div id="depositsSection" class="hidden">
+            <div class="card">
+                <h3>💰 Deposit Requests</h3>
+                <div class="request-tabs">
+                    <div class="request-tab active" onclick="showDepositTab('pending')">⏳ Pending</div>
+                    <div class="request-tab" onclick="showDepositTab('completed')">✅ Approved</div>
+                    <div class="request-tab" onclick="showDepositTab('rejected')">❌ Rejected</div>
+                </div>
+                <div id="depositsList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Withdrawals Section -->
+        <div id="withdrawalsSection" class="hidden">
+            <div class="card">
+                <h3>💸 Withdrawal Requests</h3>
+                <div class="request-tabs">
+                    <div class="request-tab active" onclick="showWithdrawalTab('pending')">⏳ Pending</div>
+                    <div class="request-tab" onclick="showWithdrawalTab('completed')">✅ Approved</div>
+                    <div class="request-tab" onclick="showWithdrawalTab('rejected')">❌ Rejected</div>
+                </div>
+                <div id="withdrawalsList">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Notice Section -->
+        <div id="noticeSection" class="hidden">
+            <div class="card">
+                <h3>📢 Notice Board</h3>
+                <textarea id="noticeText" rows="3" style="width:100%; padding:12px;"></textarea>
+                <button onclick="updateNotice()">Update Broadcast Notice</button>
+                <div id="noticeMsg" style="margin-top:6px; color:#10b981; font-weight:700; font-size:12px;"></div>
+            </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div id="settingsSection" class="hidden">
+            <div class="card">
+                <h3>🔐 Change Password</h3>
+                <input type="password" id="oldPass" placeholder="Old Password">
+                <input type="password" id="newPass" placeholder="New Password">
+                <button onclick="changePassword()">Update Password</button>
+                <div id="passMsg" style="margin-top:6px; font-weight:600; font-size:12px;"></div>
+            </div>
+            <div class="card">
+                <h3>🏧 UPI ID Settings</h3>
+                <input type="text" id="upiId" placeholder="UPI ID" value="gomagi@axl">
+                <button onclick="updateUPI()">Update UPI ID</button>
+                <div id="upiMsg"></div>
+            </div>
+        </div>
+        
+        <!-- Live Chat Section -->
+        <div id="livechatSection" class="hidden">
+            <div class="card">
+                <h3>💬 Live Support Chat</h3>
+                <iframe src="admin-chat.html" class="chat-iframe" id="chatIframe"></iframe>
+                <div style="margin-top:10px;">
+                    <button onclick="clearAllChats()" class="btn-danger">🗑️ Delete All Chat History</button>
+                    <button onclick="refreshChat()" class="btn-info">🔄 Refresh Chat</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const SUPABASE_URL = "https://lcrzohaqjzwjhsyncaim.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_2iAoTgXx8S5XeWy04oiICA_nedHJR_R";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let allUsers = [];
-    let activeSelectedUserId = null;
-
-    // --- ONESIGNAL SDK INIT ---
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        let appId = document.getElementById('oneSignalAppId').value || "YOUR_ONESIGNAL_APP_ID";
-        await OneSignal.init({
-            appId: appId,
-            safari_web_id: "sb_safari_web_id",
-            notifyButton: { enable: true },
-        });
-    });
-
-    window.onload = () => {
-        loadSettings();
-        loadOneSignalConfig();
-        loadMarkets();
-        loadUsers();
-        loadDeposits();
-        loadWithdrawals();
+    const firebaseConfig = {
+        apiKey: "AIzaSyDLZdlEN9SEb6Z4dsuuMGsRNIzVBMwky_c",
+        authDomain: "gogami-877be.firebaseapp.com",
+        databaseURL: "https://gogami-877be-default-rtdb.firebaseio.com",
+        projectId: "gogami-877be",
+        storageBucket: "gogami-877be.firebasestorage.app",
+        messagingSenderId: "220921167245",
+        appId: "1:220921167245:web:3ccc8b424e5bc927c291c4",
+        measurementId: "G-2Q572T3D8J"
     };
 
-    // --- 1. SETTINGS & NOTICE ---
-    async function loadSettings() {
-        const { data: upi } = await supabaseClient.from('settings').select('value').eq('id', 'upi').single();
-        if (upi) document.getElementById('upiInput').value = upi.value || '';
-        
-        const { data: notice } = await supabaseClient.from('settings').select('text').eq('id', 'notice').single();
-        if (notice) document.getElementById('noticeInput').value = notice.text || '';
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    let dbPassword = "Gani99@@", allUsers = [], currentSearchTerm = "", currentSortType = "todayBidders", todayBidMap = new Map(), userLastBidTime = new Map();
+    let depositCount = 0, withdrawalCount = 0, chatUnreadCount = 0, depositListener = null, withdrawalListener = null, chatListener = null, currentDepositTab = "pending", currentWithdrawalTab = "pending", openMarketId = null;
+    let userLastActive = new Map();
+    let onlineStatusListener = null;
+    
+    const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
+    
+    function toggleSidebar(open) {
+        const overlay = document.getElementById('sidebarOverlay');
+        if (open) overlay.classList.add('active');
+        else overlay.classList.remove('active');
     }
 
-    async function saveUpi() {
-        const val = document.getElementById('upiInput').value.trim();
-        await supabaseClient.from('settings').upsert({ id: 'upi', value: val });
-        alert('✅ UPI ID Saved Successfully!');
-    }
-
-    async function saveNotice() {
-        const txt = document.getElementById('noticeInput').value.trim();
-        await supabaseClient.from('settings').upsert({ id: 'notice', text: txt });
-        alert('✅ Notice Updated Successfully!');
-    }
-
-    // --- 2. ONESIGNAL PUSH NOTIFICATIONS ---
-    async function loadOneSignalConfig() {
-        const { data: appIdData } = await supabaseClient.from('settings').select('value').eq('id', 'onesignal_appid').single();
-        if(appIdData) document.getElementById('oneSignalAppId').value = appIdData.value || '';
-
-        const { data: apiKeyData } = await supabaseClient.from('settings').select('value').eq('id', 'onesignal_apikey').single();
-        if(apiKeyData) document.getElementById('oneSignalApiKey').value = apiKeyData.value || '';
-    }
-
-    async function saveOneSignalConfig() {
-        const appId = document.getElementById('oneSignalAppId').value.trim();
-        const apiKey = document.getElementById('oneSignalApiKey').value.trim();
-
-        await supabaseClient.from('settings').upsert({ id: 'onesignal_appid', value: appId });
-        await supabaseClient.from('settings').upsert({ id: 'onesignal_apikey', value: apiKey });
-
-        alert('✅ OneSignal Credentials Saved!');
-    }
-
-    async function sendBroadcastNotification() {
-        const appId = document.getElementById('oneSignalAppId').value.trim();
-        const apiKey = document.getElementById('oneSignalApiKey').value.trim();
-        const title = document.getElementById('notifTitle').value.trim();
-        const message = document.getElementById('notifMsg').value.trim();
-
-        if(!appId || !apiKey) return alert('Please save OneSignal App ID and REST API Key first!');
-        if(!title || !message) return alert('Please fill Title and Message body!');
-
+    async function syncAdminCredentials() {
         try {
-            const response = await fetch("https://onesignal.com/api/v1/notifications", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                    "Authorization": `Basic ${apiKey}`
-                },
-                body: JSON.stringify({
-                    app_id: appId,
-                    included_segments: ["Subscribed Users"],
-                    headings: { "en": title },
-                    contents: { "en": message }
-                })
-            });
-
-            const resData = await response.json();
-            if(resData.id) {
-                alert('🚀 Push Notification Sent Successfully!');
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifMsg').value = '';
+            const adminDoc = await db.collection('settings').doc('admin').get();
+            if(adminDoc.exists && adminDoc.data().password) {
+                dbPassword = adminDoc.data().password;
             } else {
-                alert('Failed to send: ' + JSON.stringify(resData));
+                await db.collection('settings').doc('admin').set({ password: dbPassword });
             }
-        } catch(e) {
-            alert('Error sending notification: ' + e.message);
-        }
+        } catch(e) { console.error("Database connection fault during credential processing."); }
     }
 
-    // --- 3. MARKETS & RESULT DECLARATION ---
-    async function loadMarkets() {
-        const { data: markets } = await supabaseClient.from('markets').select('*').order('serial_no', { ascending: true });
-        
-        let selectEl = document.getElementById('resultMarketSelect');
-        selectEl.innerHTML = '<option value="">Select Market</option>';
-        
-        let tbody = document.getElementById('marketsList');
-        if (!markets || markets.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="6">No markets found</td></tr>'; 
-            return; 
+    syncAdminCredentials().then(() => {
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') { 
+            document.getElementById('loginScreen').style.display = 'none'; 
+            document.getElementById('adminPanel').style.display = 'flex'; 
+            loadMarkets(); loadUsersWithTodayBids(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings(); startNotificationListeners(); startAutoCleanup(); startOnlineStatusTracking(); 
         }
-
-        tbody.innerHTML = '';
-        markets.forEach(m => {
-            selectEl.innerHTML += `<option value="${m.id}">${m.name}</option>`;
-            
-            let displayNum = `${m.open_pana || '***'}-${m.open_digit || '*'}${m.close_digit || '*'}-${m.close_pana || '***'}`;
-            
-            tbody.innerHTML += `
-                <tr>
-                    <td>${m.serial_no || '-'}</td>
-                    <td><strong>${m.name}</strong></td>
-                    <td><strong style="color:#38bdf8; font-family:monospace;">${displayNum}</strong></td>
-                    <td>${m.open_bid_end || '-'} / ${m.close_bid_end || '-'}</td>
-                    <td><span class="badge badge-success">${m.status || 'open'}</span></td>
-                    <td>
-                        <button class="btn-sm btn-danger" onclick="deleteMarket('${m.id}')">Delete</button>
-                    </td>
-                </tr>
-            `;
+    });
+    
+    function startOnlineStatusTracking() {
+        if (onlineStatusListener) onlineStatusListener();
+        onlineStatusListener = db.collection('users').onSnapshot((snapshot) => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.lastActive) {
+                    let lastActive = data.lastActive.toDate ? data.lastActive.toDate() : new Date(data.lastActive);
+                    userLastActive.set(doc.id, lastActive);
+                }
+            });
+            if (!document.getElementById('usersSection').classList.contains('hidden')) {
+                displayFilteredUsers();
+            }
         });
     }
-
-    async function addMarket() {
-        const name = document.getElementById('mName').value.trim();
-        const serial = parseInt(document.getElementById('mSerial').value) || 1;
-        const openEnd = document.getElementById('mOpenEnd').value.trim();
-        const closeEnd = document.getElementById('mCloseEnd').value.trim();
-        if(!name) return alert('Enter market name');
-
-        await supabaseClient.from('markets').insert([{
-            name, serial_no: serial, open_bid_end: openEnd, close_bid_end: closeEnd, status: 'open'
-        }]);
-        alert('✅ Market Created!');
-        loadMarkets();
+    
+    function isUserOnline(user) {
+        return user.isOnline === true;
+    }
+    
+    function formatLastLogin(userId) {
+        const lastActive = userLastActive.get(userId);
+        if (!lastActive) return 'Never';
+        const now = new Date();
+        const diffMinutes = Math.floor((now - lastActive) / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes} min ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
+    
+    async function login() { 
+        let pwd = document.getElementById('adminPass').value; 
+        await syncAdminCredentials();
+        if(pwd === dbPassword){ 
+            sessionStorage.setItem('adminLoggedIn','true'); 
+            document.getElementById('loginScreen').style.display='none'; 
+            document.getElementById('adminPanel').style.display='flex'; 
+            loadMarkets(); loadUsersWithTodayBids(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings(); startNotificationListeners(); startAutoCleanup(); startOnlineStatusTracking(); 
+        } else { 
+            document.getElementById('loginError').innerText='Invalid password!'; 
+        } 
+    }
+    
+    function startNotificationListeners(){ 
+        if(depositListener) depositListener(); 
+        depositListener = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); if(currentDepositTab==='pending') loadDeposits(); }); 
+        if(withdrawalListener) withdrawalListener(); 
+        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
+        if(chatListener) chatListener(); 
+        chatListener = db.collection('chats').where('unread','==',true).onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); }); 
     }
 
-    async function deleteMarket(id) {
-        if(!confirm('Delete this market permanently?')) return;
-        await supabaseClient.from('markets').delete().eq('id', id);
-        loadMarkets();
-    }
-
-    async function declareResult() {
-        const marketId = document.getElementById('resultMarketSelect').value;
-        const openPana = document.getElementById('openPanaInput').value.trim();
-        const openDigit = document.getElementById('openDigitInput').value.trim();
-        const closePana = document.getElementById('closePanaInput').value.trim();
-        const closeDigit = document.getElementById('closeDigitInput').value.trim();
-
-        if(!marketId) return alert('Please select a market');
-
-        let updateObj = {};
-        if(openPana) updateObj.open_pana = openPana;
-        if(openDigit) updateObj.open_digit = openDigit;
-        if(closePana) updateObj.close_pana = closePana;
-        if(closeDigit) updateObj.close_digit = closeDigit;
-        
-        if(openDigit && closeDigit) {
-            updateObj.jodi = `${openDigit}${closeDigit}`;
+    function updateDepositBadge(){ let b=document.getElementById('depositBadge'); if(depositCount>0){ b.style.display='inline-block'; b.innerText=depositCount>99?'99+':depositCount; } else b.style.display='none'; }
+    function updateWithdrawalBadge(){ let b=document.getElementById('withdrawalBadge'); if(withdrawalCount>0){ b.style.display='inline-block'; b.innerText=withdrawalCount>99?'99+':withdrawalCount; } else b.style.display='none'; }
+    function updateChatBadge(){ let b=document.getElementById('chatBadge'); if(chatUnreadCount>0){ b.style.display='inline-block'; b.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else b.style.display='none'; }
+    function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
+    function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
+    
+    async function deleteAllUsers() {
+        if (confirm("⚠️ DANGER: Delete ALL USERS permanently?")) {
+            const confirmText = prompt('Type "DELETE ALL USERS" to confirm:');
+            if (confirmText === 'DELETE ALL USERS') {
+                const loadingMsg = document.getElementById('usersList');
+                loadingMsg.innerHTML = '<div style="text-align:center;padding:30px;">🗑️ Deleting all users...</div>';
+                try {
+                    const usersSnapshot = await db.collection('users').get();
+                    let totalDeleted = 0;
+                    for (const userDoc of usersSnapshot.docs) {
+                        const userId = userDoc.id;
+                        await db.collection('users').doc(userId).delete();
+                        totalDeleted++;
+                    }
+                    alert(`✅ Deleted ${totalDeleted} users!`);
+                    loadUsersWithTodayBids();
+                } catch (error) { alert("❌ Error: " + error.message); }
+            }
         }
-
-        let combinedString = `${updateObj.open_pana || '***'}-${updateObj.open_digit || '*'}${updateObj.close_digit || '*'}-${updateObj.close_pana || '***'}`;
-        updateObj.numbers = combinedString;
-
-        const { error } = await supabaseClient.from('markets').update(updateObj).eq('id', marketId);
-        if(!error) {
-            alert('🎉 Result Declared & Published!');
-            loadMarkets();
-        } else {
-            alert('Error declaring result: ' + error.message);
-        }
+    }
+    
+    async function deleteOldRecords(){ 
+        let thirtyDaysAgo=new Date(); 
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30); 
+        try{ 
+            let oldDeposits=await db.collection('transactions').where('type','==','credit').where('status','in',['Completed','Rejected']).get(); 
+            let batch=db.batch(); 
+            let count=0; 
+            oldDeposits.forEach(doc=>{ 
+                let d=doc.data(); 
+                let reqDate=d.date?.toDate?d.date.toDate():(d.date?.seconds?new Date(d.date.seconds*1000):null); 
+                if(reqDate && reqDate<thirtyDaysAgo){ batch.delete(doc.ref); count++; } 
+            }); 
+            if(count>0) await batch.commit(); 
+        }catch(e){ console.error(e); } 
     }
 
-    // --- 4. USER MANAGEMENT & BALANCE CONTROL ---
-    async function loadUsers() {
-        const { data: users } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
-        allUsers = users || [];
-        renderUsers(allUsers);
+    function startAutoCleanup(){ setInterval(()=>deleteOldRecords(),86400000); deleteOldRecords(); }
+    
+    async function clearAllChats(){ 
+        if(confirm("DELETE ALL CHAT HISTORY?")){ 
+            if(prompt('Type "DELETE" to confirm:')==='DELETE'){ 
+                let chats=await db.collection('chats').get(); 
+                let batch=db.batch(); 
+                for(let c of chats.docs){ 
+                    let msgs=await db.collection('chats').doc(c.id).collection('messages').get(); 
+                    for(let m of msgs.docs) batch.delete(m.ref); 
+                    batch.delete(c.ref); 
+                } 
+                await batch.commit(); 
+                alert('✅ Deleted chat history!'); 
+                refreshChat(); 
+            } 
+        } 
     }
 
-    function renderUsers(users) {
-        let tbody = document.getElementById('usersList');
-        if(!users || users.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5">No users found</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td><strong>${u.name || 'Unnamed'}</strong></td>
-                <td>${u.phone || 'N/A'}</td>
-                <td><strong style="color:#10b981;">₹${(u.balance || 0).toLocaleString()}</strong></td>
-                <td>
-                    <span class="badge ${u.blocked ? 'badge-danger' : 'badge-success'}">
-                        ${u.blocked ? 'BLOCKED' : 'ACTIVE'}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn-sm btn-success" onclick="openBalanceModal('${u.id}', '${u.name}')">Edit Balance</button>
-                    <button class="btn-sm ${u.blocked ? 'btn-success' : 'btn-warning'}" onclick="toggleUserBlock('${u.id}', ${u.blocked})">
-                        ${u.blocked ? 'Unblock' : 'Block'}
-                    </button>
-                    <button class="btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
-                </td>
-            </tr>
-        `).join('');
+    function refreshChat(){ let iframe=document.getElementById('chatIframe'); if(iframe) iframe.src=iframe.src; }
+    
+    async function resetAllMarketsResults(){ 
+        if(confirm("RESET ALL MARKETS RESULTS?")){ 
+            if(prompt('Type "RESET" to confirm:')==='RESET'){ 
+                let markets=await db.collection('markets').get(); 
+                let batch=db.batch(); 
+                markets.forEach(d=>batch.update(d.ref,{openPana:'***',openDigit:'*',closePana:'***',closeDigit:'*',jodi:'**',closeDeclared:false})); 
+                await batch.commit(); 
+                alert(`✅ Reset ${markets.size} markets!`); 
+                loadMarkets(); 
+            } 
+        } 
+    }
+    
+    async function loadUsersWithTodayBids(){ 
+        let today=new Date(); 
+        today.setHours(0,0,0,0); 
+        let bids=await db.collection('bids').where('createdAt','>=',today).get(); 
+        todayBidMap.clear(); 
+        userLastBidTime.clear(); 
+        bids.forEach(d=>{ 
+            let bid=d.data(); 
+            let uid=bid.userId; 
+            let pts=bid.points||0; 
+            todayBidMap.set(uid,(todayBidMap.get(uid)||0)+pts); 
+            let bidDate=bid.createdAt?.toDate?bid.createdAt.toDate():(bid.createdAt?.seconds?new Date(bid.createdAt.seconds*1000):null); 
+            if(bidDate){ 
+                let existing=userLastBidTime.get(uid); 
+                if(!existing || bidDate>existing) userLastBidTime.set(uid,bidDate); 
+            } 
+        }); 
+        db.collection('users').orderBy('createdAt','desc').onSnapshot(s=>{ 
+            allUsers=[]; 
+            s.forEach(d=>{ 
+                let ud=d.data(); 
+                allUsers.push({uid:d.id,...ud,todayBidTotal:todayBidMap.get(d.id)||0,lastBidTime:userLastBidTime.get(d.id)||null}); 
+            }); 
+            displayFilteredUsers(); 
+        }); 
     }
 
-    function filterUsers() {
-        let q = document.getElementById('userSearchInput').value.toLowerCase();
-        let filtered = allUsers.filter(u => (u.name || '').toLowerCase().includes(q) || (u.phone || '').includes(q));
-        renderUsers(filtered);
+    async function refreshTodayBidsForUsers(){ 
+        let today=new Date(); 
+        today.setHours(0,0,0,0); 
+        let bids=await db.collection('bids').where('createdAt','>=',today).get(); 
+        todayBidMap.clear(); 
+        userLastBidTime.clear(); 
+        bids.forEach(d=>{ 
+            let bid=d.data(); 
+            let uid=bid.userId; 
+            todayBidMap.set(uid,(todayBidMap.get(uid)||0)+(bid.points||0)); 
+            let bidDate=bid.createdAt?.toDate?bid.createdAt.toDate():(bid.createdAt?.seconds?new Date(bid.createdAt.seconds*1000):null); 
+            if(bidDate){ 
+                let existing=userLastBidTime.get(uid); 
+                if(!existing || bidDate>existing) userLastBidTime.set(uid,bidDate); 
+            } 
+        }); 
+        allUsers=allUsers.map(u=>({...u,todayBidTotal:todayBidMap.get(u.uid)||0,lastBidTime:userLastBidTime.get(u.uid)||null})); 
+        displayFilteredUsers(); 
     }
 
-    function openBalanceModal(userId, userName) {
-        activeSelectedUserId = userId;
-        document.getElementById('modalUserTitle').innerText = `Update Wallet: ${userName}`;
-        document.getElementById('modalAmountInput').value = '';
-        document.getElementById('balanceModal').style.display = 'flex';
-    }
-
-    function closeBalanceModal() {
-        document.getElementById('balanceModal').style.display = 'none';
-        activeSelectedUserId = null;
-    }
-
-    async function modifyUserBalance(type) {
-        const amt = parseFloat(document.getElementById('modalAmountInput').value);
-        if(!amt || amt <= 0) return alert('Enter a valid amount');
-
-        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', activeSelectedUserId).single();
-        let currentBal = user?.balance || 0;
-        let newBal = type === 'add' ? (currentBal + amt) : (currentBal - amt);
-
-        if(newBal < 0) newBal = 0;
-
-        await supabaseClient.from('users').update({ balance: newBal }).eq('id', activeSelectedUserId);
+    function applyUserSort(){ let sel=document.getElementById('sortUsersSelect'); currentSortType=sel.value; displayFilteredUsers(); }
+    function searchUsers(){ currentSearchTerm=document.getElementById('searchInput').value.trim().toLowerCase(); displayFilteredUsers(); }
+    function clearSearch(){ document.getElementById('searchInput').value=''; currentSearchTerm=''; displayFilteredUsers(); }
+    
+    function displayFilteredUsers(){ 
+        let filtered=[...allUsers]; 
+        if(currentSearchTerm) filtered=filtered.filter(u=>(u.name||'').toLowerCase().includes(currentSearchTerm)||(u.phone||'').toLowerCase().includes(currentSearchTerm)); 
+        if(currentSortType==='todayBidders') filtered.sort((a,b)=>{ if(a.todayBidTotal!==b.todayBidTotal) return (b.todayBidTotal||0)-(a.todayBidTotal||0); let ta=a.lastBidTime?a.lastBidTime.getTime():0, tb=b.lastBidTime?b.lastBidTime.getTime():0; return tb-ta; }); 
+        else if(currentSortType==='newest') filtered.sort((a,b)=>(b.createdAt?.toDate?.()||new Date(0))-(a.createdAt?.toDate?.()||new Date(0))); 
+        else if(currentSortType==='balanceHigh') filtered.sort((a,b)=>(b.balance||0)-(a.balance||0)); 
+        else if(currentSortType==='balanceLow') filtered.sort((a,b)=>(a.balance||0)-(b.balance||0)); 
+        else if(currentSortType==='lastActive') filtered.sort((a,b)=>{ let la=a.lastActive?.toDate?a.lastActive.toDate():new Date(0); let lb=b.lastActive?.toDate?b.lastActive.toDate():new Date(0); return lb-la; }); 
         
-        await supabaseClient.from('transactions').insert([{
-            user_id: activeSelectedUserId,
-            type: type === 'add' ? 'credit' : 'debit',
-            amount: amt,
-            status: 'Completed',
-            description: `Admin ${type === 'add' ? 'Added' : 'Deducted'} Funds`
-        }]);
-
-        alert(`✅ Balance ${type === 'add' ? 'added' : 'deducted'} successfully!`);
-        closeBalanceModal();
-        loadUsers();
-    }
-
-    async function toggleUserBlock(userId, currentBlockedStatus) {
-        await supabaseClient.from('users').update({ blocked: !currentBlockedStatus }).eq('id', userId);
-        loadUsers();
-    }
-
-    async function deleteUser(userId) {
-        if(!confirm('Are you sure you want to delete this user?')) return;
-        await supabaseClient.from('users').delete().eq('id', userId);
-        loadUsers();
-    }
-
-    // --- 5. DEPOSIT APPROVALS ---
-    async function loadDeposits() {
-        const { data: deposits } = await supabaseClient.from('transactions').select('*').eq('type', 'credit').order('created_at', { ascending: false });
-        let tbody = document.getElementById('depositList');
-        if (!deposits || deposits.length === 0) { tbody.innerHTML = '<tr><td colspan="6">No deposits found</td></tr>'; return; }
-
-        tbody.innerHTML = deposits.map(d => `
-            <tr>
-                <td>${new Date(d.created_at).toLocaleString()}</td>
-                <td>${d.user_id}</td>
-                <td><strong>₹${d.amount}</strong></td>
-                <td>${d.utr || 'N/A'}</td>
-                <td><span class="badge badge-${d.status === 'Completed' ? 'success' : (d.status === 'Rejected' ? 'danger' : 'pending')}">${d.status}</span></td>
-                <td>
-                    ${d.status === 'Pending' ? `
-                        <button class="btn-sm btn-success" onclick="approveDeposit('${d.id}', '${d.user_id}', ${d.amount})">Approve</button>
-                        <button class="btn-sm btn-danger" onclick="rejectDeposit('${d.id}')">Reject</button>
-                    ` : '-'}
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    async function approveDeposit(txId, userId, amount) {
-        await supabaseClient.from('transactions').update({ status: 'Completed' }).eq('id', txId);
+        let todayBidders=filtered.filter(u=>u.todayBidTotal>0).length; 
+        document.getElementById('userCount').innerHTML=`👥 Total: ${filtered.length} ${currentSortType==='todayBidders'?`| 🎲 Today: ${todayBidders}`:''}`; 
         
-        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
-        const currentBal = user?.balance || 0;
+        if(filtered.length===0){ document.getElementById('usersList').innerHTML='<p style="color:#64748b; text-align:center; padding:30px;">No users found</p>'; return; } 
         
-        await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
-        alert('✅ Deposit Approved & Balance Credited!');
-        loadDeposits();
-        loadUsers();
+        let html=''; 
+        filtered.forEach(u=>{ 
+            let isBlocked = u.blocked === true; 
+            let hasBid = (u.todayBidTotal||0) > 0; 
+            let online = isUserOnline(u); 
+            let lastLogin = formatLastLogin(u.uid); 
+            
+            html += `
+                <div class="user-item ${isBlocked ? 'user-item-blocked' : ''} ${hasBid ? 'bid-highlight' : ''}">
+                    <div>
+                        <b>👤 ${escapeHtml(u.name||'Unknown')}</b>
+                        ${hasBid ? `<span class="today-bidder-badge">🎲 Today: ₹${u.todayBidTotal}</span>` : ''}
+                        <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span>
+                        <br>📞 ${u.phone||'No phone'}
+                        <br>💰 Wallet: ₹${u.balance||0}
+                        <div class="last-login">📅 Last active: ${lastLogin}</div>
+                        ${isBlocked ? '<span style="color:#ef4444; font-weight:800; font-size:11px;">🚫 USER BLOCKED</span>' : ''}
+                    </div>
+                    <div class="user-actions-grid">
+                        <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add</button>
+                        <button onclick="updateBalance('${u.uid}','remove')" class="btn-danger">➖ Remove</button>
+                        <button onclick="openUserBidsPage('${u.uid}','${escapeHtml(u.name)}')" class="btn-info">📋 Bids</button>
+                        <button onclick="toggleBlockUser('${u.uid}','${escapeHtml(u.name)}', ${isBlocked})" class="btn-warning">${isBlocked ? 'Unblock' : 'Block'}</button>
+                        <button onclick="clearUserBids('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Bids</button>
+                        <button onclick="clearUserTransactions('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Txn</button>
+                        <button onclick="deleteUser('${u.uid}','${escapeHtml(u.name)}')" class="btn-delete" style="grid-column: span 2;">❌ Delete User</button>
+                    </div>
+                </div>`; 
+        }); 
+        document.getElementById('usersList').innerHTML = html; 
+    }
+    
+    function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
+    function openUserBidsPage(uid,name){ window.open(`user-bids.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
+    function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div){ if(openMarketId===mid){ div.classList.remove('open'); openMarketId=null; }else{ if(openMarketId){ let prev=document.getElementById(`market_detail_${openMarketId}`); if(prev) prev.classList.remove('open'); } div.classList.add('open'); openMarketId=mid; } } }
+    function formatTimeTo12Hour(t){ if(!t) return '--:--'; let [h,m]=t.split(':'); let hr=parseInt(h); let ampm=hr>=12?'PM':'AM'; hr=hr%12||12; return `${hr}:${m} ${ampm}`; }
+    
+    function loadMarkets(){ 
+        db.collection('markets').orderBy('serialNo','asc').onSnapshot(s=>{ 
+            let html=''; 
+            s.forEach(d=>{ 
+                let m=d.data(); 
+                let statusClass='',statusText=''; 
+                if(m.status==='open'){ statusClass='status-open'; statusText='OPEN'; }
+                else if(m.status==='close'){ statusClass='status-close'; statusText='CLOSE'; }
+                else if(m.status==='holiday'){ statusClass='status-holiday'; statusText='HOLIDAY'; }
+                else{ statusClass='status-closed'; statusText='CLOSED'; } 
+                
+                let openPana=m.openPana||'***', openDigit=m.openDigit||'*', closePana=m.closePana||'***', closeDigit=m.closeDigit||'*', jodi=m.jodi||'**', isCloseDeclared=m.closeDeclared||false; 
+                let jodiDisplay=(!isCloseDeclared && openPana!=='***')?openDigit+'*':jodi; 
+                
+                html+=`<div class="market-item"><div class="market-header-row" onclick="toggleMarketDetails('${d.id}')"><span class="toggle-icon">${openMarketId===d.id?'▼':'▶'}</span><span><span class="market-serial" onclick="event.stopPropagation(); changeSerialNumber('${d.id}',${m.serialNo||0})">#${m.serialNo||'?'}</span> ${m.name||'No name'}</span><span class="status-badge ${statusClass}">${statusText}</span><button onclick="event.stopPropagation(); deleteMarket('${d.id}')" class="btn-danger" style="padding:4px 8px;">🗑️</button></div><div id="market_detail_${d.id}" class="market-detail-row"><div><div>🎲 Numbers: ${m.numbers||'***'}</div><div>⏰ Open: ${formatTimeTo12Hour(m.openBidEnd)} | Close: ${formatTimeTo12Hour(m.closeBidEnd)}</div><div class="results-container"><div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div><div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div></div><div class="jodi-display">JODI: <strong>${jodiDisplay}</strong></div><div><input type="time" id="openBidEnd_${d.id}" value="${m.openBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','openBidEnd',document.getElementById('openBidEnd_${d.id}').value)">Save Open</button></div><div><input type="time" id="closeBidEnd_${d.id}" value="${m.closeBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','closeBidEnd',document.getElementById('closeBidEnd_${d.id}').value)">Save Close</button></div><div style="display:flex; gap:4px; flex-wrap:wrap;"><button onclick="setMarketStatus('${d.id}','open')" class="btn-success">🟢 OPEN</button><button onclick="setMarketStatus('${d.id}','close')" class="btn-warning">🟡 CLOSE</button><button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">🔴 CLOSED</button><button onclick="setMarketHoliday('${d.id}','${m.name}','${m.status}')" class="btn-warning">🎪 ${m.status==='holiday'?'Remove':'Set Holiday'}</button></div><div><input type="text" id="openPana_${d.id}" placeholder="Open Pana" maxlength="3" value="${openPana!=='***'?openPana:''}"><input type="text" id="openDigit_${d.id}" placeholder="Digit" maxlength="1" value="${openDigit!=='*'?openDigit:''}"><button onclick="declareOpenResult('${d.id}','${m.name}')">Declare OPEN</button></div><div><input type="text" id="closePana_${d.id}" placeholder="Close Pana" maxlength="3" value="${closePana!=='***'?closePana:''}"><input type="text" id="closeDigit_${d.id}" placeholder="Digit" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}"><button onclick="declareCloseResult('${d.id}','${m.name}')">Declare CLOSE</button></div><div><button onclick="editMarket('${d.id}','${m.name}','${m.numbers||''}')">✏️ Edit</button><button onclick="resetMarketResult('${d.id}','${m.name}')" class="btn-reset">⟳ Reset</button></div></div></div></div>`; 
+            }); 
+            if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
+            document.getElementById('marketsList').innerHTML=html; 
+        }); 
     }
 
-    async function rejectDeposit(txId) {
-        await supabaseClient.from('transactions').update({ status: 'Rejected' }).eq('id', txId);
-        loadDeposits();
+    async function setMarketStatus(mid,st){ await db.collection('markets').doc(mid).update({status:st,isHoliday:st==='holiday'}); alert(`✅ Status changed to ${st.toUpperCase()}`); }
+    async function updateMarketTime(mid,fld,val){ await db.collection('markets').doc(mid).update({[fld]:val}); alert(`✅ ${fld} updated`); }
+    async function changeSerialNumber(mid,curr){ let newS=prompt(`New serial number (current #${curr})`,curr); if(newS && !isNaN(newS) && parseInt(newS)>0){ await db.collection('markets').doc(mid).update({serialNo:parseInt(newS)}); alert('✅ Changed!'); loadMarkets(); } }
+    async function deleteAllMarkets(){ if(confirm("DELETE ALL MARKETS?")){ await db.collection('markets').get().then(s=>s.forEach(d=>d.ref.delete())); alert('Deleted!'); loadMarkets(); } }
+    async function setMarketHoliday(mid,name,st){ let isH=st==='holiday'; await db.collection('markets').doc(mid).update({status:isH?'closed':'holiday',isHoliday:!isH}); loadMarkets(); }
+    
+    async function declareOpenResult(mid,name){ 
+        let openPana=document.getElementById(`openPana_${mid}`).value.trim(), openDigit=document.getElementById(`openDigit_${mid}`).value.trim(); 
+        if(!openPana||!/^\d{3}$/.test(openPana)){ alert('Enter valid 3-digit Open Pana'); return; } 
+        if(!openDigit||!/^\d$/.test(openDigit)){ alert('Enter valid Open Digit'); return; } 
+        if(confirm(`Declare OPEN result for ${name}?\nPana: ${openPana}\nDigit: ${openDigit}`)){ 
+            await db.collection('markets').doc(mid).update({openPana,openDigit,closeDeclared:false}); 
+            await creditOpenWinners(mid,name,openPana,openDigit); 
+            alert('✅ OPEN result declared!'); 
+        } 
+    }
+    
+    async function declareCloseResult(mid,name){ 
+        let closePana=document.getElementById(`closePana_${mid}`).value.trim(), closeDigit=document.getElementById(`closeDigit_${mid}`).value.trim(); 
+        if(!closePana||!/^\d{3}$/.test(closePana)){ alert('Enter valid 3-digit Close Pana'); return; } 
+        if(!closeDigit||!/^\d$/.test(closeDigit)){ alert('Enter valid Close Digit'); return; } 
+        let market=await db.collection('markets').doc(mid).get(); 
+        let m=market.data(); 
+        if(m.openPana==='***'){ alert('Please declare OPEN result first!'); return; } 
+        let jodi=m.openDigit+closeDigit; 
+        if(confirm(`Declare CLOSE result for ${name}?\nClose Pana: ${closePana}\nClose Digit: ${closeDigit}\nJODI: ${jodi}`)){ 
+            await db.collection('markets').doc(mid).update({closePana,closeDigit,jodi,closeDeclared:true}); 
+            await creditCloseWinners(mid,name,m.openPana,m.openDigit,closePana,closeDigit,jodi); 
+            alert('✅ CLOSE result declared!'); 
+        } 
+    }
+    
+    async function resetMarketResult(mid,name){ if(confirm(`Reset "${name}" results?`)){ await db.collection('markets').doc(mid).update({openPana:'***',openDigit:'*',closePana:'***',closeDigit:'*',jodi:'**',closeDeclared:false}); alert(`✅ Reset!`); } }
+    
+    async function creditOpenWinners(mid,name,openPana,openDigit){ 
+        let bids=await db.collection('bids').where('marketId','==',mid).where('status','==','pending').get(); 
+        for(let b of bids.docs){ 
+            let bid=b.data(); let winning=false; 
+            let normalizedGame = (bid.gameType || bid.type || '').trim();
+            if (bid.bidType === 'Open') {
+                if(normalizedGame==='Single Digit' && bid.value===openDigit) winning=true;
+                if(['Single Pana','Double Pana','Triple Pana'].includes(normalizedGame) && bid.value===openPana) winning=true;
+            }
+            if(winning){ 
+                let win=bid.points*(gameRates[normalizedGame]||10); 
+                await b.ref.update({status:'won'}); 
+                let user=await db.collection('users').doc(bid.userId).get(); 
+                await db.collection('users').doc(bid.userId).update({balance:(user.data().balance||0)+win}); 
+                await db.collection('transactions').add({userId:bid.userId,type:'credit',amount:win,status:'Completed',description:`Won on ${name} (OPEN) - ${normalizedGame}: ${bid.value}`,date:new Date()}); 
+            } else { if (bid.bidType === 'Open') { await b.ref.update({status:'lost'}); } } 
+        } 
+    }
+    
+    async function creditCloseWinners(mid,name,openPana,openDigit,closePana,closeDigit,jodi){ 
+        let bids=await db.collection('bids').where('marketId','==',mid).where('status','==','pending').get(); 
+        for(let b of bids.docs){ 
+            let bid=b.data(); let winning=false; 
+            let normalizedGame = (bid.gameType || bid.type || '').trim();
+            if(normalizedGame==='Single Digit' && bid.bidType==='Close' && bid.value===closeDigit) winning=true; 
+            else if(normalizedGame==='Jodi' && bid.value===jodi) winning=true; 
+            else if(['Single Pana','Double Pana','Triple Pana'].includes(normalizedGame) && bid.bidType==='Close' && bid.value===closePana) winning=true; 
+            else if(normalizedGame==='Half Sangam A' && bid.value===''+openPana+'-'+closeDigit) winning=true; 
+            else if(normalizedGame==='Half Sangam B' && bid.value===''+openDigit+'-'+closePana) winning=true; 
+            else if(normalizedGame==='Full Sangam' && bid.value===''+openPana+'-'+closePana) winning=true; 
+            
+            if(winning){ 
+                let win=bid.points*(gameRates[normalizedGame]||10); 
+                await b.ref.update({status:'won'}); 
+                let user=await db.collection('users').doc(bid.userId).get(); 
+                await db.collection('users').doc(bid.userId).update({balance:(user.data().balance||0)+win}); 
+                await db.collection('transactions').add({userId:bid.userId,type:'credit',amount:win,status:'Completed',description:`Won on ${name} - ${normalizedGame}: ${bid.value}`,date:new Date()}); 
+            }else{ await b.ref.update({status:'lost'}); } 
+        } 
+    }
+    
+    async function addMarket(){ let name=document.getElementById('marketNameInput').value; if(!name){ alert('Enter market name'); return; } await db.collection('markets').add({name, numbers:document.getElementById('marketNumbersInput').value||'***-**-***', openBidEnd:document.getElementById('openBidEnd').value, closeBidEnd:document.getElementById('closeBidEnd').value, closedTime:document.getElementById('closedTime').value, status:document.getElementById('marketStatus').value, serialNo:1, isHoliday:false, openPana:'***', openDigit:'*', closePana:'***', closeDigit:'*', jodi:'**', closeDeclared:false }); alert('Market added!'); }
+    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
+    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
+    
+    async function loadDeposits(){ 
+        let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
+        let snap=await db.collection('transactions').where('type','==','credit').where('status','==',status).get(); 
+        let deposits=[]; 
+        for(let d of snap.docs){ 
+            let t=d.data(); 
+            let user=await db.collection('users').doc(t.userId).get(); 
+            deposits.push({id:d.id,userId:t.userId,amount:t.amount,userUTR:t.utr,date:t.date?.toDate()||new Date(0),userName:user.data()?.name||'Unknown'}); 
+        } 
+        deposits.sort((a,b)=>b.date-a.date); 
+        let html=''; 
+        for(let d of deposits){ 
+            let isPending=currentDepositTab==='pending'; 
+            html+=`<div class="request-item"><div><b>👤 ${d.userName}</b><br><b>💰 Amount:</b> ₹${d.amount}<br><b>📋 UTR/Ref:</b> ${d.userUTR||'N/A'}<br><b>📅 Date:</b> ${d.date.toLocaleString()}</div><div style="margin-top:8px;">${isPending?`<button onclick="approveDeposit('${d.id}',${d.amount},'${d.userId}')" class="btn-success">Approve</button><button onclick="rejectDeposit('${d.id}')" class="btn-danger">Reject</button>`:`<button onclick="deleteDepositRecord('${d.id}')" class="btn-delete">Delete</button>`}</div></div>`; 
+        } 
+        document.getElementById('depositsList').innerHTML=html||'<p style="color:#64748b;">No deposits found</p>'; 
     }
 
-    // --- 6. WITHDRAWAL APPROVALS ---
-    async function loadWithdrawals() {
-        const { data: withdrawals } = await supabaseClient.from('withdraw_requests').select('*').order('created_at', { ascending: false });
-        let tbody = document.getElementById('withdrawList');
-        if (!withdrawals || withdrawals.length === 0) { tbody.innerHTML = '<tr><td colspan="6">No withdrawal requests</td></tr>'; return; }
-
-        tbody.innerHTML = withdrawals.map(w => {
-            let bank = w.bank_details || {};
-            return `
-            <tr>
-                <td>${new Date(w.created_at).toLocaleString()}</td>
-                <td>${w.user_id}</td>
-                <td><strong>₹${w.amount}</strong></td>
-                <td>${bank.bankName || ''} - ${bank.accountNumber || ''}</td>
-                <td><span class="badge badge-${w.status === 'Completed' ? 'success' : (w.status === 'Rejected' ? 'danger' : 'pending')}">${w.status}</span></td>
-                <td>
-                    ${w.status === 'Pending' ? `
-                        <button class="btn-sm btn-success" onclick="approveWithdrawal('${w.id}')">Complete</button>
-                        <button class="btn-sm btn-danger" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
-                    ` : '-'}
-                </td>
-            </tr>`;
-        }).join('');
+    async function approveDeposit(id,amount,uid){ if(confirm(`Approve deposit of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); await db.collection('users').doc(uid).update({balance:(user.data().balance||0)+amount}); await db.collection('transactions').doc(id).update({status:'Completed'}); alert('✅ Deposit approved!'); loadDeposits(); } }
+    async function rejectDeposit(id){ if(confirm('Reject this deposit?')){ await db.collection('transactions').doc(id).update({status:'Rejected'}); alert('❌ Deposit rejected!'); loadDeposits(); } }
+    async function deleteDepositRecord(id){ if(confirm('Delete record?')){ await db.collection('transactions').doc(id).delete(); loadDeposits(); } }
+    
+    async function loadWithdrawals(){ 
+        let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
+        let snap=await db.collection('withdrawRequests').where('status','==',status).get(); 
+        let withdrawals=[]; 
+        for(let d of snap.docs){ 
+            let w=d.data(); 
+            let user=await db.collection('users').doc(w.userId).get(); 
+            withdrawals.push({id:d.id, userId:w.userId, amount:w.amount, bankDetails:w.bankDetails||{}, date:w.date?.toDate()||new Date(0), userName:user.data()?.name||'Unknown', userPhone:user.data()?.phone||'N/A'}); 
+        } 
+        withdrawals.sort((a,b)=>b.date-a.date); 
+        let html=''; 
+        for(let w of withdrawals){ 
+            let isPending=currentWithdrawalTab==='pending'; 
+            html+=`<div class="request-item"><div><b>👤 ${w.userName}</b><br><b>📞 Phone:</b> ${w.userPhone}<br><b>💰 Amount:</b> ₹${w.amount}<br><div class="bank-details-box"><span>🏦 BANK DETAILS:</span><br><span>Holder:</span> ${w.bankDetails.accountHolder||'N/A'}<br><span>Bank:</span> ${w.bankDetails.bankName||'N/A'}<br><span>Account:</span> ${w.bankDetails.accountNumber||'N/A'}<br><span>IFSC:</span> ${w.bankDetails.ifscCode||'N/A'}</div><b>📅 ${w.date.toLocaleString()}</b></div><div style="margin-top:8px;">${isPending?`<button onclick="approveWithdraw('${w.id}',${w.amount},'${w.userId}')" class="btn-success">Approve</button><button onclick="rejectWithdraw('${w.id}')" class="btn-danger">Reject</button>`:`<button onclick="deleteWithdrawalRecord('${w.id}')" class="btn-delete">Delete</button>`}</div></div>`; 
+        } 
+        document.getElementById('withdrawalsList').innerHTML=html||'<p style="color:#64748b;">No withdrawals found</p>'; 
     }
 
-    async function approveWithdrawal(wId) {
-        await supabaseClient.from('withdraw_requests').update({ status: 'Completed' }).eq('id', wId);
-        alert('✅ Withdrawal marked as completed!');
-        loadWithdrawals();
+    async function approveWithdraw(id,amount,uid){ if(confirm(`Approve withdrawal of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); if((user.data().balance||0)<amount){ alert('User has insufficient balance!'); return; } await db.collection('users').doc(uid).update({balance:(user.data().balance||0)-amount}); await db.collection('withdrawRequests').doc(id).update({status:'Completed'}); alert('✅ Withdrawal approved!'); loadWithdrawals(); } }
+    async function rejectWithdraw(id){ if(confirm('Reject withdrawal?')){ await db.collection('withdrawRequests').doc(id).update({status:'Rejected'}); alert('❌ Rejected!'); loadWithdrawals(); } }
+    async function deleteWithdrawalRecord(id){ if(confirm('Delete record?')){ await db.collection('withdrawRequests').doc(id).delete(); loadWithdrawals(); } }
+    
+    async function updateBalance(uid,action){ 
+        let amt=prompt(`Enter amount to ${action==='add'?'ADD':'REMOVE'}:`); 
+        if(!amt||isNaN(amt)||parseInt(amt)<=0) return; 
+        let amtNum=parseInt(amt); 
+        let user=await db.collection('users').doc(uid).get(); 
+        let curr=user.data().balance||0; 
+        let newBal=action==='add'?curr+amtNum:curr-amtNum; 
+        await db.collection('users').doc(uid).update({balance:newBal}); 
+        alert(`✅ Balance updated to ₹${newBal}`); 
     }
 
-    async function rejectWithdrawal(wId, userId, amount) {
-        await supabaseClient.from('withdraw_requests').update({ status: 'Rejected' }).eq('id', wId);
+    // FIXED: Block/Unblock Function Logic
+    async function toggleBlockUser(uid, name, isBlocked) { 
+        let targetState = !isBlocked; 
+        let actionText = targetState ? "BLOCK" : "UNBLOCK"; 
         
-        const { data: user } = await supabaseClient.from('users').select('balance').eq('id', userId).single();
-        const currentBal = user?.balance || 0;
-        await supabaseClient.from('users').update({ balance: currentBal + amount }).eq('id', userId);
-        
-        alert('✅ Withdrawal Rejected & Amount Refunded!');
-        loadWithdrawals();
-        loadUsers();
+        if (confirm(`Are you sure you want to ${actionText} user "${name}"?`)) { 
+            try {
+                await db.collection('users').doc(uid).update({ blocked: targetState }); 
+                alert(`✅ User "${name}" has been ${targetState ? 'BLOCKED' : 'UNBLOCKED'} successfully!`); 
+                loadUsersWithTodayBids(); // Refresh List
+            } catch(e) {
+                alert("❌ Failed to update user status: " + e.message);
+            }
+        } 
     }
+
+    async function clearUserBids(uid,name){ if(confirm(`Clear bid history for "${name}"?`)){ let bids=await db.collection('bids').where('userId','==',uid).get(); bids.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
+    async function clearUserTransactions(uid,name){ if(confirm(`Clear transactions for "${name}"?`)){ let trans=await db.collection('transactions').where('userId','==',uid).get(); trans.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
+    async function deleteUser(uid,name){ if(confirm(`Delete user "${name}"?`)){ await db.collection('users').doc(uid).delete(); alert('User deleted!'); loadUsersWithTodayBids(); } }
+    
+    function loadSettings(){ db.collection('settings').doc('upi').get().then(d=>{ if(d.exists) document.getElementById('upiId').value=d.data().upiId; }); }
+    async function updateUPI(){ await db.collection('settings').doc('upi').set({upiId:document.getElementById('upiId').value}); alert("UPI Updated"); }
+    function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome to GOMAGI!'; }); }
+    async function updateNotice(){ await db.collection('settings').doc('notice').set({text:document.getElementById('noticeText').value,updatedAt:new Date()}); alert('✅ Notice updated!'); }
+    
+    async function changePassword(){ 
+        let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
+        if(old===dbPassword){ 
+            await db.collection('settings').doc('admin').set({ password: newP.trim() }); 
+            dbPassword=newP.trim(); 
+            alert('✅ Password updated!'); 
+        } else { alert('❌ Wrong old password!'); } 
+    }
+    
+    function showSection(section){ 
+        toggleSidebar(false);
+        ['markets','users','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
+        document.getElementById(`${section}Section`).classList.remove('hidden'); 
+        if(section==='users') refreshTodayBidsForUsers(); 
+        if(section==='deposits') loadDeposits(); 
+        if(section==='withdrawals') loadWithdrawals(); 
+        if(section==='livechat') markAllChatsAsRead(); 
+    }
+
+    async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); }
+    function logout(){ sessionStorage.removeItem('adminLoggedIn'); document.getElementById('loginScreen').style.display='flex'; document.getElementById('adminPanel').style.display='none'; }
 </script>
 </body>
 </html>
