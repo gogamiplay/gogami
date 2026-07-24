@@ -563,7 +563,7 @@
         return 'Single Pana';
     }
 
-    // Direct Instant Add to Bids
+    // Direct Instant Add to Bids WITH MERGE LOGIC
     function addToBidsDirectly(resolvedGameType, val, pts) {
         const check = isBettingAllowedFast(); 
         if (!check.allowed) { alert(check.message); return; }
@@ -571,8 +571,13 @@
         
         let targetType = (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana', 'Family Pana'].includes(resolvedGameType)) ? ((currentStatus === 'close') ? 'Close' : selectedOpenClose) : 'Close';
 
-        const exists = bids.some(b => b.type === resolvedGameType && b.value === val && b.bidType === targetType);
-        if(!exists) {
+        // Check if bid already exists
+        const existingBid = bids.find(b => b.type === resolvedGameType && b.value === val && b.bidType === targetType);
+        if(existingBid) {
+            // Merge logic: Add points to existing entry
+            existingBid.points += pts;
+        } else {
+            // New bid entry
             bids.push({ type: resolvedGameType, gameType: resolvedGameType, bidType: targetType, value: val, points: pts, market: currentMarket, marketId: currentMarketId });
         }
         updateSummary(); 
@@ -593,7 +598,7 @@
                 return;
             }
             addToBidsDirectly('Jodi', val, pts);
-            el.value = ''; // Auto clear Jodi digit input for fast continuous entry
+            el.value = ''; // Clear input for next entry while points remain fixed
         }
     }
 
@@ -788,7 +793,7 @@
             <div class="bid-item">
                 <div class="bid-info">
                     <span class="bid-value">${b.value}</span>
-                    <span class="bid-points">${b.points}</span>
+                    <span class="bid-points">₹${b.points}</span>
                     <span class="bid-resolved-type-label">${b.type}</span>
                 </div>
                 <button class="remove-bid" onclick="removeBid(${i})">✕</button>
