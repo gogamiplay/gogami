@@ -30,6 +30,13 @@
             position: relative;
         }
 
+        /* Firebase reCAPTCHA Badge को छुपाने के लिए */
+        .grecaptcha-badge {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         /* Full Screen Android Native Splash Screen */
         #splashScreen {
             position: fixed;
@@ -301,8 +308,12 @@
                 }).then(otp => {
                     if (otp && otp.code) {
                         const otpInput = document.getElementById('otpCode');
-                        otpInput.value = otp.code;
-                        document.getElementById('verifyOtpBtn').click();
+                        if(otpInput) {
+                            otpInput.value = otp.code;
+                            otpInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            otpInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            document.getElementById('verifyOtpBtn').click();
+                        }
                     }
                 }).catch(err => {
                     console.log('WebOTP Error/Cancelled:', err);
