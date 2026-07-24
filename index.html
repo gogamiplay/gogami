@@ -3,303 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOMAGI - Official</title>
+    <title>Official App</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        }
 
         body {
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0b132b 0%, #1c2541 50%, #0b132b 100%);
             overflow: hidden;
-            background-color: #0f172a;
         }
 
-        /* Full Screen Android Style Splash Screen */
+        /* Full Screen Android App Style Splash Screen */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #0f172a;
+            background: #0b132b;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
         .splash-logo {
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             object-fit: contain;
-            margin-bottom: 20px;
-            animation: pulseLogo 2s infinite ease-in-out;
-        }
-
-        .splash-title {
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: 4px;
-            color: #ffffff;
             margin-bottom: 25px;
+            animation: pulse 1.8s infinite ease-in-out;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulseLogo {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-
-        /* Continuous Sliding Notice Top Marquee */
-        .ticker-container {
-            width: 100%;
-            background: #0f172a;
-            color: #fbbf24;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 6px 0;
+        .loader-bar {
+            width: 120px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
             overflow: hidden;
             position: relative;
-            z-index: 30;
-            border-bottom: 1px solid #1e293b;
-            white-space: nowrap;
-            height: 30px;
         }
 
-        .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: tickerScroll 20s linear infinite;
+        .loader-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #3a86ff;
+            animation: loading 1.2s infinite ease-in-out;
         }
 
-        @keyframes tickerScroll {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
+        @keyframes loading {
+            0% { left: -100%; }
+            50% { left: 0%; }
+            100% { left: 100%; }
         }
 
-        /* 40% Viewport Height Login Panel */
-        .top-half {
-            height: calc(40vh - 30px);
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.95; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* Main Container Card */
+        .app-container {
+            width: 100%;
+            max-width: 380px;
+            padding: 30px 24px;
+            background: rgba(28, 37, 65, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            position: relative;
-            z-index: 10;
-            padding: 12px 20px;
         }
 
         .main-logo {
-            width: 50px;
-            height: 50px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
-            margin-bottom: 4px;
+            margin-bottom: 24px;
         }
 
-        /* Centered High-Visibility Branding Title Layout */
-        .logo-text {
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            background: linear-gradient(45deg, #3b82f6, #f43f5e, #10b981, #fbbf24, #3b82f6);
-            background-size: 400% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 6s ease infinite;
-            margin-bottom: 1px;
-            text-shadow: 0 2px 10px rgba(59, 130, 246, 0.15);
+        .screen { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .hidden { 
+            display: none !important; 
         }
-
-        .tagline {
-            font-size: 10px;
-            color: #64748b;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-        }
-
-        /* Mobile Form Card Elements Stack */
-        .screen { width: 100%; max-width: 320px; display: flex; flex-direction: column; }
-        .hidden { display: none !important; }
 
         .input-field {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 20px;
-            padding: 10px 16px;
+            background: #0b132b;
+            border: 1px solid #2a385b;
+            border-radius: 14px;
+            padding: 14px 16px;
             width: 100%;
             color: #ffffff;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 14px;
             outline: none;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s, box-shadow 0.2s;
             text-align: center;
             font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .input-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+            border-color: #3a86ff;
+            box-shadow: 0 0 12px rgba(58, 134, 255, 0.3);
         }
 
-        .input-field::placeholder { color: #475569; }
+        .input-field::placeholder { 
+            color: #5c6b89; 
+            font-weight: 400;
+        }
 
         .btn {
             width: 100%;
-            padding: 11px;
-            background: #3b82f6;
+            padding: 14px;
+            background: linear-gradient(135deg, #3a86ff 0%, #2563eb 100%);
             border: none;
-            border-radius: 20px;
+            border-radius: 14px;
             color: #ffffff;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-            transition: background 0.15s;
-        }
-        .btn:active { background: #2563eb; transform: scale(0.98); }
-
-        .welcome-text { color: #e2e8f0; font-size: 13px; margin-bottom: 8px; text-align: center; font-weight: 600; }
-        .timer { color: #f59e0b; font-size: 12px; font-weight: 700; margin-bottom: 8px; text-align: center; font-family: monospace; }
-        .error-text { color: #f87171; font-size: 11px; text-align: center; margin-top: 4px; font-weight: 700; }
-
-        /* Seamless Flat Joint Line */
-        .professional-divider {
-            width: 100%;
-            height: 1px;
-            background: #1e293b;
-            position: relative;
-            z-index: 20;
+            box-shadow: 0 6px 16px rgba(58, 134, 255, 0.35);
+            transition: transform 0.1s, background 0.2s;
         }
 
-        /* 60% Viewport Height Lower Real-Time Results Container */
-        .bottom-half {
-            height: 60vh;
-            background: #0f172a;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        .btn:active { 
+            transform: scale(0.98); 
         }
 
-        .marquee-wrapper {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
+        .btn:disabled {
+            background: #2a385b;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
-        .marquee-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 14px 16px;
-            animation: scrollUp 20s linear infinite;
+        .welcome-text { 
+            color: #d1d5db; 
+            font-size: 14px; 
+            margin-bottom: 12px; 
+            text-align: center; 
+            font-weight: 500; 
         }
 
-        .marquee-wrapper:hover .marquee-content { animation-play-state: paused; }
-
-        @keyframes scrollUp {
-            0% { transform: translateY(0%); }
-            100% { transform: translateY(-50%); }
+        .timer { 
+            color: #ffb703; 
+            font-size: 13px; 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            text-align: center; 
+            font-family: monospace; 
         }
 
-        .market-card {
-            background: #1e293b;
-            border-left: 4px solid #3b82f6;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.02);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        .error-text { 
+            color: #ff4d6d; 
+            font-size: 12px; 
+            text-align: center; 
+            margin-top: 8px; 
+            font-weight: 600; 
+            min-height: 16px;
         }
-
-        .market-name { font-size: 14px; font-weight: 700; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.3px; }
-        .market-time { font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 600; }
-        .market-number { font-size: 18px; font-weight: 800; color: #3b82f6; letter-spacing: 0.5px; font-family: monospace; }
     </style>
 </head>
 <body>
 
-    <!-- Full Screen Android Style Splash Screen -->
+    <!-- Android App Style Splash Screen -->
     <div id="splashScreen">
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo" class="splash-logo">
-        <div class="splash-title">GOMAGI</div>
-        <div class="spinner"></div>
+        <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="splash-logo">
+        <div class="loader-bar"></div>
     </div>
 
-    <div class="ticker-container">
-        <div class="ticker-text">Welcome to GOMAGI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Welcome to GOMAGI 👑 Full Rates ⚡ Fast Withdrawal within 10 mins 🎯 Fast Results 💎 Trusted App</div>
-    </div>
-
-    <div class="top-half">
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo" class="main-logo">
-        <div class="logo-text">GOMAGI</div>
-        <div class="tagline">Official Online Platform</div>
+    <!-- Main App Container -->
+    <div class="app-container">
+        <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="main-logo">
         
+        <!-- Phone Number Input Screen -->
         <div id="phoneScreen" class="screen">
             <input type="tel" id="phoneNumber" class="input-field" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
             <button class="btn" id="sendOtpBtn">Login with OTP</button>
             <div id="phoneError" class="error-text"></div>
         </div>
 
+        <!-- OTP Verification Screen -->
         <div id="otpScreen" class="screen hidden">
-            <div class="welcome-text">Enter OTP sent to your mobile</div>
-            <div class="timer" id="timer">Second Remaining 60</div>
+            <div class="welcome-text">Enter 6-digit OTP sent to your phone</div>
+            <div class="timer" id="timer">Seconds Remaining: 60</div>
             <input type="text" id="otpCode" class="input-field" placeholder="Enter OTP" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g,'')">
             <button class="btn" id="verifyOtpBtn">VERIFY OTP</button>
             <div id="otpError" class="error-text"></div>
         </div>
 
+        <!-- Profile Setup Screen -->
         <div id="registerScreen" class="screen hidden">
             <div class="welcome-text">Complete Your Profile</div>
             <input type="text" id="regName" class="input-field" placeholder="Full Name">
             <button class="btn" id="registerBtn">Create Account & Login</button>
             <div id="regError" class="error-text"></div>
-        </div>
-    </div>
-
-    <div class="professional-divider"></div>
-
-    <div class="bottom-half">
-        <div class="marquee-wrapper">
-            <div class="marquee-content" id="liveMarqueeResultsContainer">
-                <div style="text-align:center; padding-top:40px; color:#64748b; font-size:13px; font-weight:600;">Streaming live panel records...</div>
-            </div>
         </div>
     </div>
 
@@ -326,7 +250,7 @@
                 splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.visibility = 'hidden';
-                }, 500);
+                }, 400);
             }
         }
         
@@ -339,7 +263,13 @@
             screen.className = 'screen';
         }
         
-        function showError(elementId, message) { const el = document.getElementById(elementId); if (el) { el.innerText = message; setTimeout(() => el.innerText = '', 4000); } }
+        function showError(elementId, message) { 
+            const el = document.getElementById(elementId); 
+            if (el) { 
+                el.innerText = message; 
+                setTimeout(() => el.innerText = '', 4000); 
+            } 
+        }
         
         function initRecaptcha() { 
             if (!recaptchaVerifier) { 
@@ -356,48 +286,30 @@
         function startTimer(seconds, timerElementId) { 
             countdown = seconds; 
             if (timerInterval) clearInterval(timerInterval); 
-            timerInterval = setInterval(() => { if (countdown <= 1) clearInterval(timerInterval); const timerEl = document.getElementById(timerElementId); if (timerEl && countdown > 0) timerEl.innerText = `Second Remaining ${countdown}`; countdown--; }, 1000); 
-        }
-
-        function formatTimeTo12Hour(t) {
-            if (!t) return '--:--'; let [h, m] = t.split(':'); let hr = parseInt(h);
-            let ampm = hr >= 12 ? 'PM' : 'AM'; hr = hr % 12 || 12;
-            return `${hr.toString().padStart(2, '0')}:${m} ${ampm}`;
-        }
-        
-        function listenToLiveResults() {
-            db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
-                const container = document.getElementById('liveMarqueeResultsContainer');
-                if (snapshot.empty) { container.innerHTML = '<div style="text-align:center; padding-top:40px; color:#64748b;">No active entries found.</div>'; return; }
-                
-                let cardsHtml = snapshot.docs.map(doc => {
-                    let m = doc.data();
-                    let op = m.openPana || '***', od = m.openDigit || '*', cp = m.closePana || '***', cd = m.closeDigit || '*';
-                    let liveCombination = `${op}-${od}${cd}-${cp}`;
-                    
-                    return `
-                        <div class="market-card">
-                            <div>
-                                <div class="market-name">${m.name || 'Market'}</div>
-                                <div class="market-time">${formatTimeTo12Hour(m.openBidEnd)} - ${formatTimeTo12Hour(m.closeBidEnd)}</div>
-                            </div>
-                            <div class="market-number">${liveCombination}</div>
-                        </div>`;
-                }).join('');
-                
-                container.innerHTML = cardsHtml + cardsHtml;
-            });
+            timerInterval = setInterval(() => { 
+                if (countdown <= 1) clearInterval(timerInterval); 
+                const timerEl = document.getElementById(timerElementId); 
+                if (timerEl && countdown > 0) timerEl.innerText = `Seconds Remaining: ${countdown}`; 
+                countdown--; 
+            }, 1000); 
         }
         
         document.getElementById('sendOtpBtn').onclick = function() {
             const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
-            if (!phone || phone.length !== 10) { showError('phoneError', 'Enter a valid 10-digit mobile number'); return; }
+            if (!phone || phone.length !== 10) { 
+                showError('phoneError', 'Enter a valid 10-digit mobile number'); 
+                return; 
+            }
+            
+            // Immediate UI Feedback for fast feel
+            this.disabled = true;
+            this.innerText = 'Sending OTP...';
+            
             currentPhone = '+91' + phone;
             sendVerificationPhone(currentPhone, this, 'phoneError');
         };
 
         function sendVerificationPhone(phoneNumber, btnElement, errorId) {
-            btnElement.disabled = true; btnElement.innerText = 'Sending...';
             const verifier = initRecaptcha();
             auth.signInWithPhoneNumber(phoneNumber, verifier).then(confirmation => { 
                 confirmationResult = confirmation; 
@@ -405,13 +317,22 @@
                 startTimer(60, 'timer'); 
                 btnElement.disabled = false; 
                 btnElement.innerText = 'Login with OTP'; 
-            }).catch(error => { showError(errorId, error.message); btnElement.disabled = false; });
+            }).catch(error => { 
+                showError(errorId, error.message || 'Failed to send OTP. Try again.'); 
+                btnElement.disabled = false; 
+                btnElement.innerText = 'Login with OTP'; 
+            });
         }
         
         document.getElementById('verifyOtpBtn').onclick = function() {
             const code = document.getElementById('otpCode').value;
-            if (!code || code.length !== 6) { showError('otpError', 'Enter 6-digit OTP'); return; }
-            const btn = this; btn.disabled = true; btn.innerText = 'Verifying...';
+            if (!code || code.length !== 6) { 
+                showError('otpError', 'Enter 6-digit OTP'); 
+                return; 
+            }
+            const btn = this; 
+            btn.disabled = true; 
+            btn.innerText = 'Verifying...';
             
             confirmationResult.confirm(code).then(result => { 
                 const user = result.user; 
@@ -420,18 +341,35 @@
                         window.location.href = 'dashboard.html';
                     } else {
                         showScreen(document.getElementById('registerScreen'));
-                        btn.disabled = false; btn.innerText = 'VERIFY OTP';
+                        btn.disabled = false; 
+                        btn.innerText = 'VERIFY OTP';
                     }
-                }).catch(() => { showScreen(document.getElementById('registerScreen')); btn.disabled = false; }); 
-            }).catch(error => { showError('otpError', 'Invalid OTP'); btn.disabled = false; });
+                }).catch(() => { 
+                    showScreen(document.getElementById('registerScreen')); 
+                    btn.disabled = false; 
+                }); 
+            }).catch(() => { 
+                showError('otpError', 'Invalid OTP. Please check and try again.'); 
+                btn.disabled = false; 
+                btn.innerText = 'VERIFY OTP';
+            });
         };
         
         document.getElementById('registerBtn').onclick = function() {
             const name = document.getElementById('regName').value.trim();
-            if (!name) { showError('regError', 'Enter your name'); return; } 
+            if (!name) { 
+                showError('regError', 'Enter your name'); 
+                return; 
+            } 
             
-            const user = auth.currentUser; if (!user) { showError('regError', 'Session expired'); return; }
-            const btn = this; btn.disabled = true; btn.innerText = 'Creating Account...';
+            const user = auth.currentUser; 
+            if (!user) { 
+                showError('regError', 'Session expired. Try again.'); 
+                return; 
+            }
+            const btn = this; 
+            btn.disabled = true; 
+            btn.innerText = 'Creating Account...';
             
             db.collection('users').doc(user.uid).set({ 
                 uid: user.uid, 
@@ -444,12 +382,12 @@
                 window.location.href = 'dashboard.html'; 
             }).catch(error => { 
                 showError('regError', error.message); 
-                btn.disabled = false; btn.innerText = 'Create Account & Login'; 
+                btn.disabled = false; 
+                btn.innerText = 'Create Account & Login'; 
             });
         };
-        
-        listenToLiveResults();
 
+        // Automatic Backend Check on Load while Splash Screen is visible
         auth.onAuthStateChanged(user => { 
             if (user) { 
                 db.collection('users').doc(user.uid).get().then(doc => { 
@@ -457,8 +395,8 @@
                         window.location.href = 'dashboard.html'; 
                     } else { 
                         showScreen(document.getElementById('registerScreen')); 
+                        hideSplashScreen();
                     } 
-                    hideSplashScreen();
                 }).catch(() => {
                     showScreen(document.getElementById('phoneScreen'));
                     hideSplashScreen();
@@ -469,8 +407,8 @@
             } 
         });
 
-        // Fallback safety timeout for Splash Screen
-        setTimeout(hideSplashScreen, 3000);
+        // Fallback safety timeout for splash screen (max 2.5 seconds)
+        setTimeout(hideSplashScreen, 2500);
     </script>
 </body>
 </html>
