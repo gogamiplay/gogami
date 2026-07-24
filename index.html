@@ -357,7 +357,6 @@
                 const user = result.user; 
                 db.collection('users').doc(user.uid).get().then(doc => { 
                     if (doc.exists) {
-                        // USER BLOCK CHECK
                         if (doc.data().blocked === true) {
                             alert('🚫 Your account has been blocked by Admin.');
                             auth.signOut().then(() => {
@@ -417,12 +416,10 @@
             });
         };
 
-        // Automatic Backend & Block Guard Check on Load
         auth.onAuthStateChanged(user => { 
             if (user) { 
                 db.collection('users').doc(user.uid).get().then(doc => { 
                     if (doc.exists) { 
-                        // USER BLOCK CHECK GUARD
                         if (doc.data().blocked === true) {
                             alert('🚫 Your account has been blocked by Admin.');
                             auth.signOut().then(() => {
