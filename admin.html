@@ -112,6 +112,19 @@
             color: #fff;
             font-size: 24px;
             cursor: pointer;
+            position: relative;
+        }
+
+        /* मेनू बटन पर रेड डॉट इंडिकेटर */
+        .menu-notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #dc2626;
+            border-radius: 50%;
+            display: none;
         }
 
         .mobile-header img {
@@ -263,7 +276,7 @@
         .hidden { display: none !important; }
 
         /* Item Cards (Markets, Users, Requests) */
-        .market-item, .user-item, .request-item { 
+        .market-item, .request-item { 
             background: #f8fafc; 
             padding: 14px; 
             margin: 10px 0; 
@@ -271,16 +284,33 @@
             border: 1px solid #cbd5e1;
         }
 
+        /* Collapsible User Item Styles */
         .user-item {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            background: #f8fafc;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: background 0.15s ease;
         }
-
+        .user-item:active { background: #f1f5f9; }
         .user-item-blocked {
             border: 1px solid #dc2626;
             background: rgba(220, 38, 38, 0.05);
         }
+        .user-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-collapsible-details {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #cbd5e1;
+        }
+        .user-collapsible-details.open { display: block; }
 
         .user-actions-grid {
             display: grid;
@@ -344,10 +374,15 @@
         .bank-details-box span { font-weight: 700; color: #64748b; }
 
         /* Total Bids Section Styles */
-        .total-bids-card { background: #ffffff; padding: 14px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; }
-        .total-bids-title { font-size: 13px; font-weight: 800; color: #025922; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-        .total-bids-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; font-weight: 600; color: #334155; }
-        .total-bids-row span:last-child { font-family: monospace; font-weight: 800; color: #0284c7; }
+        .total-bids-market-card { background: #ffffff; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .total-bids-market-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .total-bids-market-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+        .total-bids-market-body.open { display: block; }
+        .game-type-block { margin-top: 8px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .game-type-title { font-size: 12px; font-weight: 700; color: #025922; text-transform: uppercase; margin-bottom: 6px; }
+        .bid-detail-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .bid-badge-pill { background: #ffffff; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #334155; font-family: monospace; }
+        .bid-badge-pill span { color: #0284c7; font-weight: 800; }
 
         /* Desktop Layout Adaptations */
         @media (min-width: 769px) {
@@ -378,7 +413,10 @@
     
     <!-- Mobile Navigation Top Header -->
     <div class="mobile-header">
-        <button class="menu-btn" onclick="toggleSidebar(true)">☰</button>
+        <button class="menu-btn" onclick="toggleSidebar(true)">
+            ☰
+            <div class="menu-notification-dot" id="menuNotificationDot"></div>
+        </button>
         <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
         <div style="width: 24px;"></div>
     </div>
@@ -552,6 +590,7 @@
     let depositCount = 0, withdrawalCount = 0, chatUnreadCount = 0, depositListener = null, withdrawalListener = null, chatListener = null, currentDepositTab = "pending", currentWithdrawalTab = "pending", openMarketId = null;
     let userLastActive = new Map();
     let onlineStatusListener = null;
+    let openTotalBidsMarketId = null;
     
     const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
     
@@ -573,7 +612,6 @@
     }
 
     syncAdminCredentials().then(() => {
-        // sessionStorage की जगह localStorage का उपयोग ताकि लॉगिन याद रहे
         if (localStorage.getItem('adminLoggedIn') === 'true') { 
             document.getElementById('loginScreen').style.display = 'none'; 
             document.getElementById('adminPanel').style.display = 'flex'; 
@@ -618,7 +656,7 @@
         let pwd = document.getElementById('adminPass').value; 
         await syncAdminCredentials();
         if(pwd === dbPassword){ 
-            localStorage.setItem('adminLoggedIn','true'); // localStorage में सेव किया गया
+            localStorage.setItem('adminLoggedIn','true');
             document.getElementById('loginScreen').style.display='none'; 
             document.getElementById('adminPanel').style.display='flex'; 
             loadMarkets(); loadUsersWithTodayBids(); loadDeposits(); loadWithdrawals(); loadNotice(); loadSettings(); startNotificationListeners(); startAutoCleanup(); startOnlineStatusTracking(); 
@@ -629,16 +667,27 @@
     
     function startNotificationListeners(){ 
         if(depositListener) depositListener(); 
-        depositListener = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); if(currentDepositTab==='pending') loadDeposits(); }); 
+        depositListener = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); updateMenuDot(); if(currentDepositTab==='pending') loadDeposits(); }); 
         if(withdrawalListener) withdrawalListener(); 
-        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
+        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); updateMenuDot(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
         if(chatListener) chatListener(); 
-        chatListener = db.collection('chats').where('unread','==','true').onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); }); 
+        chatListener = db.collection('chats').where('unread','==',true).onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); updateMenuDot(); }); 
     }
 
     function updateDepositBadge(){ let b=document.getElementById('depositBadge'); if(depositCount>0){ b.style.display='inline-block'; b.innerText=depositCount>99?'99+':depositCount; } else b.style.display='none'; }
     function updateWithdrawalBadge(){ let b=document.getElementById('withdrawalBadge'); if(withdrawalCount>0){ b.style.display='inline-block'; b.innerText=withdrawalCount>99?'99+':withdrawalCount; } else b.style.display='none'; }
     function updateChatBadge(){ let b=document.getElementById('chatBadge'); if(chatUnreadCount>0){ b.style.display='inline-block'; b.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else b.style.display='none'; }
+
+    // तीन लाइनों वाले मेनू बटन पर रेड डॉट अपडेट करने का फंक्शन
+    function updateMenuDot() {
+        const dot = document.getElementById('menuNotificationDot');
+        if (depositCount > 0 || withdrawalCount > 0 || chatUnreadCount > 0) {
+            dot.style.display = 'block';
+        } else {
+            dot.style.display = 'none';
+        }
+    }
+
     function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
     function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
     
@@ -764,6 +813,13 @@
     function searchUsers(){ currentSearchTerm=document.getElementById('searchInput').value.trim().toLowerCase(); displayFilteredUsers(); }
     function clearSearch(){ document.getElementById('searchInput').value=''; currentSearchTerm=''; displayFilteredUsers(); }
     
+    function toggleUserDetails(uid) {
+        let detailsDiv = document.getElementById(`user_detail_${uid}`);
+        if(detailsDiv) {
+            detailsDiv.classList.toggle('open');
+        }
+    }
+
     function displayFilteredUsers(){ 
         let filtered=[...allUsers]; 
         if(currentSearchTerm) filtered=filtered.filter(u=>(u.name||'').toLowerCase().includes(currentSearchTerm)||(u.phone||'').toLowerCase().includes(currentSearchTerm)); 
@@ -785,32 +841,38 @@
             let online = isUserOnline(u); 
             let lastLogin = formatLastLogin(u.uid); 
             
+            // केवल नाम, मोबाइल नंबर, टुडेज़ बिड और ऑनलाइन/ऑफलाइन शो होगा, क्लिक करने पर बाकी फीचर्स एक्सपेंड होंगे
             html += `
-                <div class="user-item ${isBlocked ? 'user-item-blocked' : ''} ${hasBid ? 'bid-highlight' : ''}">
-                    <div>
-                        <b>👤 ${escapeHtml(u.name||'Unknown')}</b>
-                        ${hasBid ? `<span class="today-bidder-badge">🎲 Today: ₹${u.todayBidTotal}</span>` : ''}
-                        <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span>
-                        <br>📞 ${u.phone||'No phone'}
-                        <br>💰 Wallet: ₹${u.balance||0}
-                        <div class="last-login">📅 Last active: ${lastLogin}</div>
-                        ${isBlocked ? '<span style="color:#dc2626; font-weight:800; font-size:11px;">🚫 USER BLOCKED</span>' : ''}
+                <div class="user-item ${isBlocked ? 'user-item-blocked' : ''} ${hasBid ? 'bid-highlight' : ''}" onclick="toggleUserDetails('${u.uid}')">
+                    <div class="user-summary-row">
+                        <div>
+                            <b>👤 ${escapeHtml(u.name||'Unknown')}</b>
+                            ${hasBid ? `<span class="today-bidder-badge">🎲 Today: ₹${u.todayBidTotal}</span>` : ''}
+                            <span class="user-status ${online ? 'status-online' : 'status-offline'}">${online ? 'ONLINE' : 'OFFLINE'}</span>
+                            <br>📞 ${u.phone||'No phone'}
+                        </div>
+                        <div style="font-size:12px; color:#64748b; font-weight:700;">▼ Tap</div>
                     </div>
-                    <div class="user-actions-grid">
-                        <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add</button>
-                        <button onclick="updateBalance('${u.uid}','remove')" class="btn-danger">➖ Remove</button>
-                        <button onclick="openUserBidsPage('${u.uid}','${escapeHtml(u.name)}')" class="btn-info">📋 Bids</button>
-                        <button onclick="toggleBlockUser('${u.uid}','${escapeHtml(u.name)}', ${isBlocked})" class="btn-warning">${isBlocked ? 'Unblock' : 'Block'}</button>
-                        <button onclick="clearUserBids('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Bids</button>
-                        <button onclick="clearUserTransactions('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Txn</button>
-                        <button onclick="deleteUser('${u.uid}','${escapeHtml(u.name)}')" class="btn-delete" style="grid-column: span 2;">❌ Delete User</button>
+                    <div id="user_detail_${u.uid}" class="user-collapsible-details" onclick="event.stopPropagation()">
+                        <div>💰 Wallet: ₹${u.balance||0}</div>
+                        <div class="last-login">📅 Last active: ${lastLogin}</div>
+                        ${isBlocked ? '<span style="color:#dc2626; font-weight:800; font-size:11px;">🚫 USER BLOCKED</span><br>' : ''}
+                        <div class="user-actions-grid">
+                            <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add</button>
+                            <button onclick="updateBalance('${u.uid}','remove')" class="btn-danger">➖ Remove</button>
+                            <button onclick="openUserBidsPage('${u.uid}','${escapeHtml(u.name)}')" class="btn-info">📋 Bids</button>
+                            <button onclick="toggleBlockUser('${u.uid}','${escapeHtml(u.name)}', ${isBlocked})" class="btn-warning">${isBlocked ? 'Unblock' : 'Block'}</button>
+                            <button onclick="clearUserBids('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Bids</button>
+                            <button onclick="clearUserTransactions('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Txn</button>
+                            <button onclick="deleteUser('${u.uid}','${escapeHtml(u.name)}')" class="btn-delete" style="grid-column: span 2;">❌ Delete User</button>
+                        </div>
                     </div>
                 </div>`; 
         }); 
         document.getElementById('usersList').innerHTML = html; 
     }
     
-    // Total Bids Calculation Feature
+    // Total Bids Calculation Feature (मार्केट लिस्ट, क्लिक करने पर एक्सपेंड और अलग-अलग Open/Close/Jodi डिटेल्स)
     async function loadTotalBidsSummary() {
         const container = document.getElementById('totalBidsContent');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Calculating total bids...</div>';
@@ -819,62 +881,115 @@
             let today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            let snapshot = await db.collection('bids').where('createdAt', '>=', today).get();
-            let marketSummary = {};
-            
-            snapshot.forEach(doc => {
-                let bid = doc.data();
-                let market = bid.market || 'Unknown Market';
-                let gameType = bid.gameType || bid.type || 'Other';
-                let points = bid.points || 0;
-                
-                if (!marketSummary[market]) {
-                    marketSummary[market] = {
-                        'Single Digit': 0,
-                        'Jodi': 0,
-                        'Single Pana': 0,
-                        'Double Pana': 0,
-                        'Triple Pana': 0,
-                        'Half Sangam A': 0,
-                        'Half Sangam B': 0,
-                        'Full Sangam': 0,
-                        'Other': 0,
-                        totalPoints: 0
-                    };
-                }
-                
-                if (marketSummary[market][gameType] !== undefined) {
-                    marketSummary[market][gameType] += points;
-                } else {
-                    marketSummary[market]['Other'] += points;
-                }
-                marketSummary[market].totalPoints += points;
+            // केवल वही मार्केट्स लाएँ जो डेटाबेस में एक्टिव हैं
+            let marketsSnap = await db.collection('markets').orderBy('serialNo', 'asc').get();
+            let marketsList = [];
+            marketsSnap.forEach(doc => {
+                marketsList.push({ id: doc.id, name: doc.data().name || 'Unknown Market' });
             });
             
-            if (snapshot.empty) {
-                container.innerHTML = '<p style="color:#64748b; text-align:center; padding:30px;">No bids placed today</p>';
+            let bidsSnap = await db.collection('bids').where('createdAt', '>=', today).get();
+            let bidsData = [];
+            bidsSnap.forEach(doc => {
+                bidsData.push(doc.data());
+            });
+            
+            if (marketsList.length === 0) {
+                container.innerHTML = '<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>';
                 return;
             }
             
             let html = '';
-            for (let market in marketSummary) {
-                let mData = marketSummary[market];
+            marketsList.forEach(marketObj => {
+                let mName = marketObj.name;
+                let mBids = bidsData.filter(b => (b.market || '').toLowerCase() === mName.toLowerCase());
+                
+                // समरी ऑब्जेक्ट
+                let summary = {
+                    'Single Digit Open': {},
+                    'Single Digit Close': {},
+                    'Jodi': {},
+                    'Single Pana Open': {},
+                    'Single Pana Close': {},
+                    'Double Pana Open': {},
+                    'Double Pana Close': {},
+                    'Triple Pana Open': {},
+                    'Triple Pana Close': {},
+                    'Half Sangam A': {},
+                    'Half Sangam B': {},
+                    'Full Sangam': {}
+                };
+                
+                let marketTotalPts = 0;
+                
+                mBids.forEach(b => {
+                    let gType = b.gameType || b.type || 'Other';
+                    let bType = b.bidType || 'Open';
+                    let val = b.value || '';
+                    let pts = b.points || 0;
+                    marketTotalPts += pts;
+                    
+                    let key = gType;
+                    if (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana'].includes(gType)) {
+                        key = `${gType} ${bType}`;
+                    }
+                    
+                    if (!summary[key]) summary[key] = {};
+                    summary[key][val] = (summary[key][val] || 0) + pts;
+                });
+                
+                let isOpen = openTotalBidsMarketId === marketObj.id;
+                
                 html += `
-                    <div class="total-bids-card">
-                        <div class="total-bids-title">🎮 ${escapeHtml(market)} (Total: ₹${mData.totalPoints})</div>
-                        <div class="total-bids-row"><span>Single Digit:</span> <span>₹${mData['Single Digit']}</span></div>
-                        <div class="total-bids-row"><span>Jodi:</span> <span>₹${mData['Jodi']}</span></div>
-                        <div class="total-bids-row"><span>Single Pana:</span> <span>₹${mData['Single Pana']}</span></div>
-                        <div class="total-bids-row"><span>Double Pana:</span> <span>₹${mData['Double Pana']}</span></div>
-                        <div class="total-bids-row"><span>Triple Pana:</span> <span>₹${mData['Triple Pana']}</span></div>
-                        <div class="total-bids-row"><span>Half Sangam A:</span> <span>₹${mData['Half Sangam A']}</span></div>
-                        <div class="total-bids-row"><span>Half Sangam B:</span> <span>₹${mData['Half Sangam B']}</span></div>
-                        <div class="total-bids-row"><span>Full Sangam:</span> <span>₹${mData['Full Sangam']}</span></div>
-                    </div>`;
-            }
+                    <div class="total-bids-market-card">
+                        <div class="total-bids-market-header" onclick="toggleTotalBidsMarket('${marketObj.id}')">
+                            <span>🎮 ${escapeHtml(mName)} (Total: ₹${marketTotalPts})</span>
+                            <span>${isOpen ? '▼' : '▶'}</span>
+                        </div>
+                        <div id="total_bids_market_${marketObj.id}" class="total-bids-market-body ${isOpen ? 'open' : ''}">`;
+                
+                let hasAnyBid = mBids.length > 0;
+                if (!hasAnyBid) {
+                    html += `<p style="color:#64748b; font-size:12px; text-align:center; padding:10px;">No bids placed for this market today.</p>`;
+                } else {
+                    for (let gameKey in summary) {
+                        let gameObj = summary[gameKey];
+                        let keysArr = Object.keys(gameObj);
+                        if (keysArr.length > 0) {
+                            html += `
+                                <div class="game-type-block">
+                                    <div class="game-type-title">${gameKey}</div>
+                                    <div class="bid-detail-grid">`;
+                            keysArr.sort().forEach(val => {
+                                html += `<div class="bid-badge-pill">${val}: <span>₹${gameObj[val]}</span></div>`;
+                            });
+                            html += `</div></div>`;
+                        }
+                    }
+                }
+                html += `</div></div>`;
+            });
+            
             container.innerHTML = html;
         } catch (e) {
             container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${e.message}</div>`;
+        }
+    }
+
+    function toggleTotalBidsMarket(mid) {
+        let bodyDiv = document.getElementById(`total_bids_market_${mid}`);
+        if(bodyDiv) {
+            if(openTotalBidsMarketId === mid) {
+                bodyDiv.classList.remove('open');
+                openTotalBidsMarketId = null;
+            } else {
+                if(openTotalBidsMarketId) {
+                    let prevDiv = document.getElementById(`total_bids_market_${openTotalBidsMarketId}`);
+                    if(prevDiv) prevDiv.classList.remove('open');
+                }
+                bodyDiv.classList.add('open');
+                openTotalBidsMarketId = mid;
+            }
         }
     }
     
@@ -1082,9 +1197,9 @@
         if(section==='livechat') markAllChatsAsRead(); 
     }
 
-    async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==','true').get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); }
+    async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
     function logout(){ 
-        localStorage.removeItem('adminLoggedIn'); // localStorage से हटाया गया
+        localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
         document.getElementById('adminPanel').style.display='none'; 
     }
