@@ -554,7 +554,6 @@
         if(upiDoc.exists && upiDoc.data().upiId) upiId=upiDoc.data().upiId; 
     }
 
-    // चेक करें कि क्या यूजर का पहले से कोई पेंडिंग डिपॉजिट रिक्वेस्ट लॉक है या नहीं
     async function checkActiveDepositLock(){
         let snapshot = await db.collection('transactions')
             .where('userId', '==', currentUser.uid)
@@ -605,7 +604,6 @@
     async function generateQR(){
         let amt=getAmount(); 
         if(!amt || isNaN(amt) || amt < 200){ 
-            // रिक्वायरमेंट: बिना अमाउंट या गलत अमाउंट पर क्लिक करने पर अलर्ट और पूरा सिलेक्शन फील्ड क्लियर करना
             alert('⚠️ Please select or enter a valid amount (Min ₹200)');
             selectedAmount=null;
             document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('active'));
@@ -624,7 +622,6 @@
         
         document.getElementById('qrAmount').innerText=amt;
         
-        // रिक्वायरमेंट: सिलेक्शन सेक्शन को पूरी तरह हटाकर केवल क्यूआर कोड पेज दिखाना
         document.getElementById('amountSelectionGrid').style.display = 'none';
         document.getElementById('customAmountWrapper').style.display = 'none';
         document.getElementById('generateBtn').style.display = 'none';
@@ -632,7 +629,7 @@
         document.getElementById('qrSection').style.display='block';
         document.getElementById('utrNumberInput').value = '';
         
-        startTimer(300); // 5 मिनट का टाइमर
+        startTimer(300);
     }
     
     function startTimer(seconds){
@@ -652,7 +649,6 @@
                 clearInterval(timerInterval); 
                 timerBox.style.display='none'; 
                 document.getElementById('qrSection').style.display='none'; 
-                // रीसेट करें ताकि दोबारा नया अमाउंट चुन सकें
                 document.getElementById('amountSelectionGrid').style.display = 'grid';
                 document.getElementById('customAmountWrapper').style.display = 'block';
                 document.getElementById('generateBtn').style.display='block'; 
@@ -693,7 +689,6 @@
             activeTransactionId = docRef.id;
             if(timerInterval) clearInterval(timerInterval);
             
-            // 3 मिनट का एडमिन अप्रूवल फुल-स्क्रीन काउंटर चालू करें और बैक/रिफ्रेश लॉक करें
             startAdminApprovalCountdown(180, activeTransactionId);
 
         }catch(e){ 
@@ -703,22 +698,21 @@
         }
     }
 
-    // 3 मिनट (180 सेकंड) का एडमिन अप्रूवल ट्रैकिंग काउंटर और रियलटाइम लिसनर
     function startAdminApprovalCountdown(seconds, txId){
         let timeLeft = seconds;
         let modal = document.getElementById('pendingVerificationModal');
         let display = document.getElementById('adminApprovalCountdown');
         modal.style.display = 'flex';
-        isLockedForVerification = true; // बैक/रिफ्रेश और नेविगेशन लॉक
+        isLockedForVerification = true;
 
         if(adminApprovalInterval) clearInterval(adminApprovalInterval);
         if(transactionUnsubscribe) transactionUnsubscribe();
 
-        // Realtime Firestore listener ताकि एडमिन के अप्रूव/रिजेक्ट करते ही तुरंत स्टेटस मिल जाए
         transactionUnsubscribe = db.collection('transactions').doc(txId).onSnapshot(doc => {
             if(doc.exists){
                 let status = doc.data().status;
-                if(status === 'Approved' || status === 'Success'){
+                // Added 'Completed' so admin approval triggers immediately
+                if(status === 'Approved' || status === 'Success' || status === 'Completed'){
                     cleanupLockAndExit();
                     modal.style.display = 'none';
                     alert('🎉 Deposit Approved Successfully! Balance updated.');
@@ -739,7 +733,6 @@
             
             timeLeft--;
 
-            // समय समाप्त (3 मिनट खत्म) होने पर पॉपअप शो करना
             if(timeLeft < 0){
                 cleanupLockAndExit();
                 modal.style.display = 'none';
@@ -758,7 +751,6 @@
     document.getElementById('generateBtn').onclick=generateQR;
     document.getElementById('paidBtn').onclick=confirmPayment;
     
-    // बैक बटन और रिफ्रेश लॉक हैंडलर
     function goBack() { 
         if(isLockedForVerification){
             alert('⚠️ Cannot go back. Deposit verification in progress.');
