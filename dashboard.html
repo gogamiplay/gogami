@@ -426,10 +426,9 @@
             height: 70px; 
         }
 
-        /* Updated Round Circle Navigation Buttons Style */
+        /* All Bottom Nav Buttons styled exactly like Home button */
         .nav-item { 
             text-align: center; 
-            color: #64748b; 
             cursor: pointer; 
             font-size: 10px; 
             flex: 1; 
@@ -441,8 +440,8 @@
             align-items: center; 
             position: relative;
             top: -14px; 
-            background: #151c2c; 
-            color: #64748b !important; 
+            background: #2563eb; 
+            color: #fff !important; 
             width: 52px; 
             height: 52px; 
             max-width: 52px; 
@@ -452,10 +451,6 @@
             transition: all 0.2s ease; 
         }
         
-        .nav-item.active { 
-            background: #2563eb; 
-            color: #fff !important; 
-        }
         .nav-item:active { transform: scale(0.95); }
         
         .nav-item span { 
@@ -627,7 +622,7 @@
     <div class="bottom-nav">
         <a href="chart.html" class="nav-item"><span>Chart</span></a>
         <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
-        <a href="dashboard.html" class="nav-item active"><span>Home</span></a>
+        <a href="dashboard.html" class="nav-item"><span>Home</span></a>
         <a href="funds.html" class="nav-item"><span>Fund</span></a>
         <a href="chat.html" class="nav-item">
             <div class="notification-dot" id="chatAlertDot"></div>
