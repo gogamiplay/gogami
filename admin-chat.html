@@ -269,6 +269,7 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.firestore();
     const storage = firebase.storage();
 
@@ -276,6 +277,16 @@
     let activeUserName = '';
     let messageListener = null;
     let chatMetaListener = null;
+
+    // Admin Authentication State Check Guard (Storage permissions ke liye zaroori hai)
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            // Agar admin login nahi hai toh anonymous sign-in karwa lenge taaki storage rules pass ho jayein
+            auth.signInAnonymously().catch((error) => {
+                console.error("Auth fallback error:", error);
+            });
+        }
+    });
 
     function loadUserChatRooms() {
         db.collection('chats').orderBy('lastUpdated', 'desc').onSnapshot(snapshot => {
