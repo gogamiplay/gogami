@@ -406,7 +406,7 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.6); 
+            background: rgba(0, 0, 0, 0.7); 
             z-index: 2000; 
             justify-content: center; 
             align-items: center; 
@@ -424,40 +424,11 @@
         }
 
         .modal-content h3 { color: #0f172a; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
-        .modal-btn { 
-            width: 100%; 
-            padding: 14px; 
-            background: #025922; 
-            border: none; 
-            border-radius: 12px; 
-            color: #fff; 
-            font-weight: 700; 
-            cursor: pointer; 
-            margin-top: 10px; 
-            font-size: 13px; 
-            text-transform: uppercase; 
-        }
-
-        .close-modal { background: #e2e8f0; color: #334155; }
-        .modal-input { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 8px 0; 
-            background: #f8fafc; 
-            border-radius: 12px; 
-            font-size: 14px; 
-            color: #0f172a; 
-            border: 1px solid #cbd5e1;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-
-        .rate-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<!-- Android App Style Splash Loader Screen - डार्क ग्रीन -->
+<!-- Android App Style Splash Loader Screen -->
 <div id="splashScreen">
     <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
@@ -476,17 +447,17 @@
         <button class="close-notice" onclick="event.stopPropagation(); closeNotice()">✕</button>
     </div>
     
-    <div class="deposit-card">
+    <div class="deposit-card" id="depositConsoleCard">
         <div class="deposit-title">Add Funds to Wallet</div>
-        <div class="amount-grid">
-            <div class="amount-btn active" onclick="selectAmount(200)">+ ₹200</div>
+        <div class="amount-grid" id="amountSelectionGrid">
+            <div class="amount-btn" onclick="selectAmount(200)">+ ₹200</div>
             <div class="amount-btn" onclick="selectAmount(500)">+ ₹500</div>
             <div class="amount-btn" onclick="selectAmount(1000)">+ ₹1000</div>
             <div class="amount-btn" onclick="selectAmount(2000)">+ ₹2000</div>
             <div class="amount-btn" onclick="selectAmount(5000)">+ ₹5000</div>
             <div class="amount-btn" onclick="selectAmount(10000)">+ ₹10000</div>
         </div>
-        <div class="custom-amount">
+        <div class="custom-amount" id="customAmountWrapper">
             <input type="number" id="customAmount" placeholder="Enter custom value (Min ₹200)" oninput="updateAmount()">
         </div>
         <button class="generate-btn" id="generateBtn">Generate Payment QR</button>
@@ -520,13 +491,13 @@
     </div>
 </div>
 
-<!-- Admin Verification 3-Minute Live Tracking Modal -->
+<!-- Admin Verification 3-Minute Live Tracking Fullscreen Modal -->
 <div id="pendingVerificationModal" class="modal" style="display:none;">
     <div class="modal-content" style="text-align:center;">
         <h3>⏳ Verification in Progress</h3>
         <p style="font-size:13px; color:#475569; margin-bottom:14px;">Your deposit is being reviewed by Admin. Please wait...</p>
         <div style="font-size:32px; font-weight:800; color:#025922; font-family:monospace; margin-bottom:14px;" id="adminApprovalCountdown">03:00</div>
-        <div style="font-size:12px; color:#64748b; font-weight:600;">Do not close this page or press back.</div>
+        <div style="font-size:12px; color:#64748b; font-weight:600;">Do not close this page or refresh. Back button is locked.</div>
     </div>
 </div>
 
@@ -556,19 +527,7 @@
         }
     }
     
-    function updateLastActive() {
-        if (auth.currentUser) {
-            db.collection('users').doc(auth.currentUser.uid).update({
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(() => {});
-        }
-    }
-    setInterval(updateLastActive, 30000);
-    updateLastActive();
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateLastActive(); });
-    ['click', 'touchstart', 'scroll'].forEach(ev => document.addEventListener(ev, () => updateLastActive()));
-    
-    let currentUser=null, currentUserData=null, selectedAmount=200, timerInterval=null, adminApprovalInterval=null, upiId="gogami@axl", pendingAmount=0, activeTransactionId=null;
+    let currentUser=null, currentUserData=null, selectedAmount=null, timerInterval=null, adminApprovalInterval=null, transactionUnsubscribe=null, upiId="gogami@axl", pendingAmount=0, activeTransactionId=null, isLockedForVerification=false;
     
     auth.onAuthStateChanged(async (user) => { 
         if (!user) {
@@ -578,7 +537,6 @@
             await loadUserData(); 
             await loadPaymentSettings(); 
             checkActiveDepositLock();
-            updateAmount(); 
             hideSplashScreen(); 
         } 
     });
@@ -618,20 +576,22 @@
         document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('active')); 
         if(event && event.target) event.target.classList.add('active'); 
         document.getElementById('customAmount').value=''; 
-        updateAmount(); 
     }
 
     function updateAmount(){ 
-        let amt=selectedAmount; 
         let custom=parseInt(document.getElementById('customAmount').value); 
-        if(custom && custom >= 200) amt=custom; 
+        if(custom && custom >= 200){ 
+            selectedAmount=custom; 
+            document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('active')); 
+        } else {
+            selectedAmount=null;
+        }
     }
 
     function getAmount(){ 
-        let amt=selectedAmount; 
         let custom=parseInt(document.getElementById('customAmount').value); 
-        if(custom && custom >= 200) amt=custom; 
-        return amt; 
+        if(custom && custom >= 200) return custom; 
+        return selectedAmount; 
     }
 
     function showMessage(msg,type){ 
@@ -645,15 +605,15 @@
     async function generateQR(){
         let amt=getAmount(); 
         if(!amt || isNaN(amt) || amt < 200){ 
-            showMessage('Please enter or select amount (Min ₹200)','error'); 
-            // रिक्वायरमेंट के अनुसार बिना अमाउंट के क्लिक करने पर सिलेक्शन क्लियर करना और केवल क्यूआर पेज रोक देना
-            selectedAmount=200;
+            // रिक्वायरमेंट: बिना अमाउंट या गलत अमाउंट पर क्लिक करने पर अलर्ट और पूरा सिलेक्शन फील्ड क्लियर करना
+            alert('⚠️ Please select or enter a valid amount (Min ₹200)');
+            selectedAmount=null;
             document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('active'));
             document.getElementById('customAmount').value='';
             document.getElementById('qrSection').style.display='none';
             return; 
         } 
-        if(amt>50000){ showMessage('Maximum deposit amount is ₹50,000','error'); return; }
+        if(amt>50000){ alert('Maximum deposit amount is ₹50,000'); return; }
         
         pendingAmount=amt;
         await loadPaymentSettings();
@@ -663,12 +623,16 @@
         new QRCode(document.getElementById("qrcode"),{ text:upiString, width:170, height:170, colorDark:"#000000", colorLight:"#ffffff" });
         
         document.getElementById('qrAmount').innerText=amt;
+        
+        // रिक्वायरमेंट: सिलेक्शन सेक्शन को पूरी तरह हटाकर केवल क्यूआर कोड पेज दिखाना
+        document.getElementById('amountSelectionGrid').style.display = 'none';
+        document.getElementById('customAmountWrapper').style.display = 'none';
+        document.getElementById('generateBtn').style.display = 'none';
+        
         document.getElementById('qrSection').style.display='block';
-        document.getElementById('generateBtn').style.display='none';
         document.getElementById('utrNumberInput').value = '';
         
         startTimer(300); // 5 मिनट का टाइमर
-        showMessage(`QR for ₹${amt} generated. Please pay & enter UTR below.`,'success');
     }
     
     function startTimer(seconds){
@@ -688,19 +652,22 @@
                 clearInterval(timerInterval); 
                 timerBox.style.display='none'; 
                 document.getElementById('qrSection').style.display='none'; 
+                // रीसेट करें ताकि दोबारा नया अमाउंट चुन सकें
+                document.getElementById('amountSelectionGrid').style.display = 'grid';
+                document.getElementById('customAmountWrapper').style.display = 'block';
                 document.getElementById('generateBtn').style.display='block'; 
-                showMessage('⏰ Session expired! Please generate a new QR.','error'); 
+                alert('⏰ QR Session expired! Please generate a new QR.'); 
             }
         },1000);
     }
     
     async function confirmPayment(){
         let amt=pendingAmount;
-        if(!amt){ showMessage('Please generate QR first','error'); return; }
+        if(!amt){ alert('Please generate QR first'); return; }
         
         let utrValue = document.getElementById('utrNumberInput').value.trim();
         if(!utrValue || utrValue.length !== 12){
-            showMessage('Enter valid 12-digit UTR / Reference Number','error');
+            alert('Enter valid 12-digit UTR / Reference Number');
             return;
         }
 
@@ -726,68 +693,89 @@
             activeTransactionId = docRef.id;
             if(timerInterval) clearInterval(timerInterval);
             
-            showMessage('✅ Deposit request sent! Awaiting admin approval.','success');
-            
-            // 3 मिनट का एडमिन अप्रूवल काउंटर चालू करें
+            // 3 मिनट का एडमिन अप्रूवल फुल-स्क्रीन काउंटर चालू करें और बैक/रिफ्रेश लॉक करें
             startAdminApprovalCountdown(180, activeTransactionId);
 
         }catch(e){ 
-            showMessage('Error: '+e.message,'error'); 
+            alert('Error: '+e.message); 
             btn.disabled=false; 
             btn.innerText='Submit Deposit Request'; 
         }
     }
 
-    // 3 मिनट (180 सेकंड) का एडमिन अप्रूवल ट्रैकिंग काउंटर
+    // 3 मिनट (180 सेकंड) का एडमिन अप्रूवल ट्रैकिंग काउंटर और रियलटाइम लिसनर
     function startAdminApprovalCountdown(seconds, txId){
         let timeLeft = seconds;
         let modal = document.getElementById('pendingVerificationModal');
         let display = document.getElementById('adminApprovalCountdown');
         modal.style.display = 'flex';
+        isLockedForVerification = true; // बैक/रिफ्रेश और नेविगेशन लॉक
 
         if(adminApprovalInterval) clearInterval(adminApprovalInterval);
+        if(transactionUnsubscribe) transactionUnsubscribe();
 
-        adminApprovalInterval = setInterval(async () => {
+        // Realtime Firestore listener ताकि एडमिन के अप्रूव/रिजेक्ट करते ही तुरंत स्टेटस मिल जाए
+        transactionUnsubscribe = db.collection('transactions').doc(txId).onSnapshot(doc => {
+            if(doc.exists){
+                let status = doc.data().status;
+                if(status === 'Approved' || status === 'Success'){
+                    cleanupLockAndExit();
+                    modal.style.display = 'none';
+                    alert('🎉 Deposit Approved Successfully! Balance updated.');
+                    window.location.href = 'dashboard.html';
+                } else if(status === 'Rejected'){
+                    cleanupLockAndExit();
+                    modal.style.display = 'none';
+                    alert('❌ Your deposit request was rejected by Admin.');
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
+
+        adminApprovalInterval = setInterval(() => {
             let mins = Math.floor(timeLeft / 60);
             let secs = timeLeft % 60;
             display.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
             
-            let txDoc = await db.collection('transactions').doc(txId).get();
-            if(txDoc.exists){
-                let status = txDoc.data().status;
-                if(status === 'Approved' || status === 'Success'){
-                    clearInterval(adminApprovalInterval);
-                    modal.style.display = 'none';
-                    alert('🎉 Deposit Approved Successfully!');
-                    window.location.href = 'dashboard.html';
-                    return;
-                } else if(status === 'Rejected'){
-                    clearInterval(adminApprovalInterval);
-                    modal.style.display = 'none';
-                    alert('❌ Your deposit request was rejected by Admin.');
-                    window.location.href = 'dashboard.html';
-                    return;
-                }
-            }
-
             timeLeft--;
 
-            // समय समाप्त होने पर पॉपअप मैसेज शो होना
+            // समय समाप्त (3 मिनट खत्म) होने पर पॉपअप शो करना
             if(timeLeft < 0){
-                clearInterval(adminApprovalInterval);
+                cleanupLockAndExit();
                 modal.style.display = 'none';
                 alert('⏳ Your deposit is pending verification. It will be credited soon.');
                 window.location.href = 'dashboard.html';
             }
         }, 1000);
     }
+
+    function cleanupLockAndExit(){
+        isLockedForVerification = false;
+        if(adminApprovalInterval) clearInterval(adminApprovalInterval);
+        if(transactionUnsubscribe) transactionUnsubscribe();
+    }
     
     document.getElementById('generateBtn').onclick=generateQR;
     document.getElementById('paidBtn').onclick=confirmPayment;
     
+    // बैक बटन और रिफ्रेश लॉक हैंडलर
+    function goBack() { 
+        if(isLockedForVerification){
+            alert('⚠️ Cannot go back. Deposit verification in progress.');
+            return;
+        }
+        window.location.href = 'dashboard.html'; 
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        if (isLockedForVerification) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
     function showNoticeModal(){ db.collection('settings').doc('notice').get().then(d => { alert(d.exists ? d.data().text : 'Welcome to GOGAMI!'); }); }
     function closeNotice(){ document.getElementById('noticeBoard').style.display='none'; }
-    function goBack() { window.location.href = 'dashboard.html'; }
     
     db.collection('settings').doc('notice').onSnapshot(doc=>{ document.getElementById('noticeText').innerHTML=doc.exists?doc.data().text:'Welcome to GOGAMI!'; });
     
