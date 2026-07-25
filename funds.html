@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOMAGI - Funds & Passbook</title>
+    <title>GOGAMI - Funds & Passbook</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -21,8 +21,8 @@
         }
 
         body { 
-            background: #090d16; 
-            color: #f8fafc; 
+            background: #f0f6ff; 
+            color: #1e293b; 
             padding-bottom: 90px; 
             min-height: 100vh;
         }
@@ -30,19 +30,19 @@
         .app-container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #090d16; 
+            background: #f0f6ff; 
             min-height: 100vh; 
             position: relative; 
         }
 
-        /* Full Screen Android App Style Splash Screen */
+        /* Full Screen Android App Style Splash Screen - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #090d16;
+            background: #025922;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,7 +61,7 @@
         .loader-bar {
             width: 120px;
             height: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
@@ -74,7 +74,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #2563eb;
+            background: #ffffff;
             border-radius: 10px;
             animation: loading 1.2s infinite linear;
         }
@@ -85,7 +85,7 @@
             100% { left: 100%; }
         }
 
-        /* Fixed Top Header Panel */
+        /* Fixed Top Header Panel - डार्क ग्रीन */
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -94,14 +94,15 @@
             max-width: 480px; 
             margin: 0 auto;
             min-height: 120px;
-            background: #0f172a; 
+            background: #025922; 
             color: #fff; 
             z-index: 1000;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between;
             padding: 12px 16px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .header-action-line { 
@@ -122,7 +123,6 @@
             align-items: center; 
         }
 
-        /* FIXED LOGO VISIBILITY STYLING */
         .header-logo-container {
             display: flex;
             align-items: center;
@@ -141,7 +141,7 @@
         .action-shortcuts { display: flex; gap: 6px; align-items: center; }
         
         .shortcut-btn { 
-            background: #151c2c; 
+            background: #013b15; 
             color: #fff; 
             padding: 6px 10px; 
             border-radius: 10px; 
@@ -149,31 +149,33 @@
             font-weight: 700; 
             text-decoration: none; 
             text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.15);
         }
 
         .balance-box { 
-            background: #151c2c; 
+            background: #013b15; 
             padding: 6px 10px; 
             border-radius: 10px; 
-            color: #10b981; 
+            color: #34d399; 
             font-weight: 800; 
             font-size: 12px; 
             cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.15);
         }
 
         .panel-info-row { 
             display: flex; 
             justify-content: space-between; 
             align-items: flex-end; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
+            border-top: 1px solid rgba(255,255,255,0.15); 
             padding-top: 8px; 
             margin-top: 10px;
         }
 
         .user-meta { display: flex; flex-direction: column; gap: 2px; }
         .user-meta .name { font-size: 14px; font-weight: 700; color: #f8fafc; }
-        .user-meta .phone { font-size: 11px; color: #64748b; font-weight: 600; }
-        .funds-header-label { font-size: 11px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
+        .user-meta .phone { font-size: 11px; color: #cbd5e1; font-weight: 600; }
+        .funds-header-label { font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Scrollable Content Container */
         .main-scroll-content { margin-top: 125px; padding: 14px; }
@@ -181,22 +183,24 @@
 
         /* Card Elements */
         .fund-card { 
-            background: #151c2c; 
+            background: #ffffff; 
             border-radius: 18px; 
             padding: 18px; 
             display: flex; 
             flex-direction: column; 
             gap: 14px; 
             margin-bottom: 14px; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .fund-row-details { display: flex; justify-content: space-between; align-items: center; }
-        .fund-title { font-size: 15px; font-weight: 700; color: #f8fafc; }
-        .fund-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: 500; }
+        .fund-title { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .fund-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: 500; display: none; }
         
         .fund-action-btn { 
             padding: 12px 24px; 
-            background: #2563eb; 
+            background: #025922; 
             border: none; 
             border-radius: 12px; 
             color: #fff; 
@@ -209,13 +213,13 @@
             text-align: center; 
         }
 
-        .btn-withdraw-theme { background: #10b981; }
+        .btn-withdraw-theme { background: #059669; }
 
         /* Form Inputs */
         .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
         .form-row:last-child { margin-bottom: 0; }
         .form-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .form-input-field { background: #0f172a; border-radius: 12px; padding: 12px 14px; }
+        .form-input-field { background: #f8fafc; border-radius: 12px; padding: 12px 14px; border: 1px solid #cbd5e1; }
         .form-input { 
             width: 100%; 
             background: transparent; 
@@ -223,30 +227,32 @@
             outline: none; 
             font-size: 14px; 
             font-weight: 600; 
-            color: #fff; 
+            color: #0f172a; 
             -webkit-user-select: text;
             user-select: text;
         }
 
-        .form-input::placeholder { color: #52607a; }
+        .form-input::placeholder { color: #94a3b8; }
 
         /* History List Elements */
         .history-list { display: flex; flex-direction: column; gap: 8px; }
         .history-item { 
-            background: #151c2c; 
+            background: #ffffff; 
             border-radius: 14px; 
             padding: 14px 16px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
 
         .history-meta { display: flex; flex-direction: column; gap: 2px; }
-        .history-desc { font-size: 13px; font-weight: 700; color: #f8fafc; }
+        .history-desc { font-size: 13px; font-weight: 700; color: #0f172a; }
         .history-date { font-size: 11px; color: #64748b; font-weight: 500; }
         .history-amount { font-size: 15px; font-weight: 800; text-align: right; }
-        .amount-credit { color: #10b981; }
-        .amount-debit { color: #f87171; }
+        .amount-credit { color: #059669; }
+        .amount-debit { color: #dc2626; }
 
         /* Navigation Dock */
         .bottom-nav { 
@@ -256,54 +262,50 @@
             right: 0; 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #0f172a; 
+            background: #ffffff; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            padding: 8px 12px 10px 12px; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
+            padding: 6px 10px 8px 10px; 
+            border-top: 1px solid #e2e8f0; 
             z-index: 1000; 
-            height: 70px; 
+            height: 72px; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
         .nav-item { 
             text-align: center; 
-            color: #64748b; 
             cursor: pointer; 
-            font-size: 11px; 
+            font-size: 9px; 
             flex: 1; 
-            font-weight: 700; 
+            font-weight: 800; 
             text-decoration: none; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            height: 48px; 
-            border-radius: 12px; 
+            position: relative;
+            top: -16px; 
+            background: #025922; 
+            color: #fff !important; 
+            width: 58px; 
+            height: 58px; 
+            max-width: 58px; 
+            border-radius: 50%; 
+            border: 4px solid #ffffff; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px; 
             transition: all 0.2s ease; 
+            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.3);
         }
 
-        .nav-item.active { color: #3b82f6; }
         .nav-item:active { transform: scale(0.95); }
 
-        .nav-item-home { 
-            position: relative; 
-            top: -14px; 
-            background: #2563eb; 
-            color: #fff !important; 
-            width: 52px; 
-            height: 52px; 
-            max-width: 52px; 
-            border-radius: 50%; 
-            border: 4px solid #090d16; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+        .nav-item span { 
+            font-size: 9px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-top: 2px; 
         }
-
-        .nav-item-home span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
 
         /* Modal Overlays */
         .modal { 
@@ -313,26 +315,28 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.75); 
+            background: rgba(0, 0, 0, 0.6); 
             z-index: 2000; 
             justify-content: center; 
             align-items: center; 
         }
 
         .modal-content { 
-            background: #151c2c; 
+            background: #ffffff; 
             border-radius: 20px; 
             padding: 24px; 
             width: 90%; 
             max-width: 340px; 
-            color: #f8fafc;
+            color: #0f172a; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        .modal-content h3 { color: #fff; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
+        .modal-content h3 { color: #0f172a; margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; }
         .modal-btn { 
             width: 100%; 
             padding: 14px; 
-            background: #2563eb; 
+            background: #025922; 
             border: none; 
             border-radius: 12px; 
             color: #fff; 
@@ -340,18 +344,18 @@
             cursor: pointer; 
             margin-top: 10px; 
             font-size: 13px; 
-            text-transform: uppercase;
+            text-transform: uppercase; 
         }
 
-        .close-modal { background: #334155; color: #cbd5e1; }
-        .logout-btn { background: #ef4444; color: #fff; }
+        .close-modal { background: #e2e8f0; color: #334155; }
+        .logout-btn { background: #dc2626; color: #fff; }
     </style>
 </head>
 <body>
 
-<!-- Android App Style Splash Loader Screen -->
+<!-- Android App Style Splash Loader Screen - डार्क ग्रीन -->
 <div id="splashScreen">
-    <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="splash-logo">
+    <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
 </div>
 
@@ -362,7 +366,7 @@
         <div class="header-action-line">
             <button class="menu-btn" onclick="showProfileModal()">☰</button>
             <div class="header-logo-container">
-                <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo" class="header-logo-img">
+                <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo" class="header-logo-img">
             </div>
             <div class="action-shortcuts">
                 <a href="deposit.html" class="shortcut-btn">Deposit</a>
@@ -386,8 +390,7 @@
         <div class="fund-card">
             <div class="fund-row-details">
                 <div>
-                    <div class="fund-title">Add Cash Gateway</div>
-                    <div class="fund-subtitle">Instant automatic UPI transfers</div>
+                    <div class="fund-title">Deposit Funds</div>
                 </div>
                 <a href="deposit.html" class="fund-action-btn">Deposit</a>
             </div>
@@ -396,8 +399,7 @@
         <div class="fund-card">
             <div class="fund-row-details">
                 <div>
-                    <div class="fund-title">Request Cash Out</div>
-                    <div class="fund-subtitle">Direct safe bank settlements</div>
+                    <div class="fund-title">Withdraw Cash</div>
                 </div>
                 <a href="withdraw.html" class="fund-action-btn btn-withdraw-theme">Withdraw</a>
             </div>
@@ -434,7 +436,7 @@
     
     <!-- Navigation Bar -->
     <div class="bottom-nav">
-        <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
+        <a href="chart.html" class="nav-item"><span>Chart</span></a>
         <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
         <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
         <a href="funds.html" class="nav-item active"><span>Fund</span></a>
@@ -559,7 +561,7 @@
     
     function showProfileModal() { 
         if(currentUserData){ 
-            document.getElementById('profileInfo').innerHTML = `<div style="text-align:center; margin-bottom:14px;"><div style="font-size:18px; font-weight:700; color:#f8fafc;">${currentUserData.name}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone}</div><div style="font-size:20px; font-weight:800; color:#10b981;">₹${currentUserData.balance}</div></div>`; 
+            document.getElementById('profileInfo').innerHTML = `<div style="text-align:center; margin-bottom:14px;"><div style="font-size:18px; font-weight:700; color:#0f172a;">${currentUserData.name}</div><div style="color:#64748b; font-size:13px; margin:2px 0 6px 0;">${currentUserData.phone}</div><div style="font-size:20px; font-weight:800; color:#059669;">₹${currentUserData.balance}</div></div>`; 
             document.getElementById('profileModal').style.display='flex'; 
         } 
     }
