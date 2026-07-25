@@ -23,7 +23,7 @@
         }
         
         body { 
-            background: #f0f6ff; /* लाइट ब्लू बैकग्राउंड */
+            background: #f0f6ff; 
             color: #1e293b; 
             padding-bottom: 85px; 
             min-height: 100vh; 
@@ -38,14 +38,14 @@
             position: relative; 
         }
         
-        /* Android App Style Splash Loader Overlay */
+        /* Android App Style Splash Loader Overlay - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #ffffff;
+            background: #025922;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -64,7 +64,7 @@
         .loader-bar {
             width: 110px;
             height: 3px;
-            background: rgba(2, 132, 199, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
@@ -77,7 +77,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #0284c7;
+            background: #ffffff;
             border-radius: 10px;
             animation: loading 1.2s infinite linear;
         }
@@ -88,7 +88,7 @@
             100% { left: 100%; }
         }
         
-        /* फिक्स्ड टॉप स्क्रीन / पैनल - लाइट ग्रीन बैकग्राउंड */
+        /* फिक्स्ड टॉप स्क्रीन / पैनल - डार्क ग्रीन बैकग्राउंड */
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -98,15 +98,15 @@
             margin: 0 auto;
             height: 12vh; 
             min-height: 85px;
-            background: #e8f5e9; /* लाइट ग्रीन */
-            color: #1e293b; 
+            background: #025922; /* डार्क ग्रीन */
+            color: #ffffff; 
             z-index: 1000;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between;
             padding: 10px 14px; 
-            border-bottom: 1px solid #c8e6c9;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .header-action-line { 
@@ -121,7 +121,7 @@
         .menu-toggle-btn { 
             background: none; 
             border: none; 
-            color: #2e7d32; 
+            color: #ffffff; 
             font-size: 22px; 
             cursor: pointer; 
             display: flex; 
@@ -161,19 +161,19 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-deposit-pill { background: #2e7d32; }
+        .btn-deposit-pill { background: #047857; }
         .btn-withdraw-pill { background: #dc2626; }
         .shortcut-action-btn:active { transform: scale(0.96); }
         
         .balance-pill { 
-            background: #c8e6c9; 
+            background: #013b15; 
             padding: 5px 12px; 
             border-radius: 10px; 
-            color: #1b5e20; 
+            color: #34d399; 
             font-weight: 800; 
             font-size: 12px; 
             cursor: pointer; 
-            border: 1px solid #a5d6a7;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .marquee-notice-banner {
@@ -234,7 +234,7 @@
             100% { transform: translateX(200%); }
         }
 
-        /* मार्केट कार्ड्स - लाइट ब्लू बैकग्राउंड */
+        /* मार्केट कार्ड्स */
         .market-card-wrapper { 
             background: #ffffff; 
             border-radius: 12px; 
@@ -243,50 +243,45 @@
             position: relative; 
             border: 1px solid #cbd5e1;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            cursor: pointer; /* कार्ड पर क्लिक करने योग्य दिखने के लिए कर्सर */
+            transition: transform 0.1s ease;
+        }
+        .market-card-wrapper:active {
+            transform: scale(0.98);
         }
 
         .market-main-row { 
             display: flex; 
             justify-content: space-between; 
-            align-items: flex-start; 
+            align-items: center; /* सेंटर एलाइनमेंट */
         }
 
         .market-identity-box { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
+            align-items: center; /* मार्केट नेम सेंटर में */
+            text-align: center;
             gap: 2px; 
         }
 
         .market-title-line { 
             display: flex; 
             align-items: center; 
-            gap: 6px; 
+            justify-content: center;
+            width: 100%;
         }
 
-        /* मार्केट का नाम - व्हाइट कलर (कलर कंट्रास्ट के लिए पीछे हल्का डार्क ब्लू बैज या डायरेक्ट व्हाइट) */
+        /* मार्केट का नाम सेंटर में और 'i' लोगो हटाया गया */
         .market-name-label { 
             font-size: 15px; 
             font-weight: 700; 
             color: #ffffff; 
-            background: #0284c7; /* नाम को साफ दिखाने के लिए साफ सुथरा ब्लू बैज */
-            padding: 2px 8px;
+            background: #025922; /* डार्क ग्रीन थीम से मेल खाता हुआ नाम टैग */
+            padding: 3px 12px;
             border-radius: 6px;
             letter-spacing: 0.3px; 
             text-transform: uppercase; 
-        }
-
-        .info-bubble-icon { 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            width: 14px; 
-            height: 14px; 
-            border: 1px solid #94a3b8; 
-            color: #64748b; 
-            border-radius: 50%; 
-            font-size: 8px; 
-            font-weight: bold; 
         }
 
         .market-numbers-display { 
@@ -318,7 +313,7 @@
         }
 
         .market-action-btn-circle:active { transform: scale(0.95); }
-        .btn-active-play { background: #0284c7; color: #fff; }
+        .btn-active-play { background: #025922; color: #fff; }
         .btn-active-play::after { 
             content: ''; 
             display: block; 
@@ -392,7 +387,7 @@
         .drawer-avatar-badge { 
             width: 40px; 
             height: 40px; 
-            background: #0284c7; 
+            background: #025922; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
@@ -420,7 +415,7 @@
             cursor: pointer; 
         }
 
-        .drawer-menu-item:active { background: #f1f5f9; color: #0284c7; }
+        .drawer-menu-item:active { background: #f1f5f9; color: #025922; }
         .drawer-arrow-label { color: #94a3b8; font-weight: bold; font-size: 11px; }
         .drawer-logout-btn { color: #dc2626; border-top: 1px solid #e2e8f0; margin-top: 10px; }
 
@@ -442,7 +437,7 @@
             box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
-        /* बॉटम नेविगेशन के राउंड बटन्स - टेक्स्ट ओवरफ्लो रोकने के लिए बड़े किए गए */
+        /* बॉटम नेविगेशन के राउंड बटन्स - बड़े किए गए ताकि टेक्स्ट बाहर न जाए */
         .nav-item { 
             text-align: center; 
             cursor: pointer; 
@@ -456,7 +451,7 @@
             align-items: center; 
             position: relative;
             top: -16px; 
-            background: #0284c7; 
+            background: #025922; 
             color: #fff !important; 
             width: 58px;  
             height: 58px; 
@@ -465,7 +460,7 @@
             border: 4px solid #ffffff; 
             text-transform: uppercase; 
             transition: all 0.2s ease; 
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.3);
         }
         
         .nav-item:active { transform: scale(0.95); }
@@ -517,7 +512,7 @@
         .modal-action-button { 
             width: 100%; 
             padding: 12px; 
-            background: #0284c7; 
+            background: #025922; 
             border: none; 
             border-radius: 10px; 
             color: #fff; 
@@ -571,16 +566,16 @@
             border: 1px solid #e2e8f0;
         }
 
-        .alert-popup-title { font-size: 15px; font-weight: 800; color: #0284c7; margin-bottom: 6px; }
+        .alert-popup-title { font-size: 15px; font-weight: 800; color: #025922; margin-bottom: 6px; }
         .alert-popup-desc { font-size: 12px; color: #64748b; line-height: 1.4; margin-bottom: 16px; }
         .alert-action-row { display: flex; flex-direction: column; gap: 6px; }
-        .alert-btn-primary { background: #0284c7; border: none; padding: 10px; border-radius: 10px; color: #fff; font-weight: 700; font-size: 12px; text-transform: uppercase; cursor: pointer; width: 100%; }
+        .alert-btn-primary { background: #025922; border: none; padding: 10px; border-radius: 10px; color: #fff; font-weight: 700; font-size: 12px; text-transform: uppercase; cursor: pointer; width: 100%; }
         .alert-btn-secondary { background: #e2e8f0; border: none; padding: 10px; border-radius: 10px; color: #334155; font-weight: 600; font-size: 12px; text-transform: uppercase; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
 
-<!-- Android App Style Full Screen Splash Loader -->
+<!-- Android App Style Full Screen Splash Loader (डार्क ग्रीन) -->
 <div id="splashScreen">
     <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
@@ -814,19 +809,18 @@
                 let buttonStyleClass = calculatedState.allow ? 'btn-active-play' : 'btn-inactive-stop';
                 
                 return `
-                    <div class="market-card-wrapper">
+                    <div class="market-card-wrapper" onclick="navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')">
                         <div class="market-main-row">
                             <div class="market-identity-box">
                                 <div class="market-title-line">
                                     <span class="market-name-label">${m.name || 'Market'}</span>
-                                    <span class="info-bubble-icon">i</span>
                                 </div>
                                 <div class="market-numbers-display">${combinedNumbers}</div>
                                 <span class="market-status-text ${calculatedState.css}">${calculatedState.text}</span>
                             </div>
-                            <button class="market-action-btn-circle ${buttonStyleClass}" onclick="navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')"></button>
+                            <button class="market-action-btn-circle ${buttonStyleClass}" onclick="event.stopPropagation(); navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')"></button>
                         </div>
-                        <div class="market-timing-footer-row">
+                        <div class="market-timing-footer-row" onclick="event.stopPropagation()">
                             <div class="time-node">Open Bids : <span>${formatTimeTo12Hour(m.openBidEnd)}</span></div>
                             <div class="time-node">Close Bids : <span>${formatTimeTo12Hour(m.closeBidEnd)}</span></div>
                         </div>
