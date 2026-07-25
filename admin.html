@@ -21,8 +21,8 @@
         }
 
         body { 
-            background: #090d16; 
-            color: #f8fafc; 
+            background: #f0f6ff; 
+            color: #1e293b; 
             min-height: 100vh; 
             overflow-x: hidden; 
         }
@@ -34,7 +34,7 @@
             left: 0; 
             width: 100vw; 
             height: 100vh; 
-            background: #090d16; 
+            background: #025922; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -42,12 +42,14 @@
         }
 
         .login-card { 
-            background: #151c2c; 
+            background: #ffffff; 
             padding: 32px 24px; 
             border-radius: 20px; 
             width: 90%; 
             max-width: 340px; 
             text-align: center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border: 1px solid #cbd5e1;
         }
 
         .login-card img {
@@ -61,11 +63,12 @@
             width: 100%; 
             padding: 14px; 
             margin: 12px 0; 
-            background: #0f172a; 
+            background: #f8fafc; 
             border-radius: 12px; 
-            color: #fff; 
+            color: #0f172a; 
             font-size: 14px; 
             text-align: center;
+            border: 1px solid #cbd5e1;
             -webkit-user-select: text;
             user-select: text;
         }
@@ -73,7 +76,7 @@
         .login-card button { 
             width: 100%; 
             padding: 14px; 
-            background: #2563eb; 
+            background: #025922; 
             border-radius: 12px; 
             color: #fff; 
             font-weight: 700; 
@@ -96,12 +99,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #0f172a;
+            background: #025922;
             padding: 12px 16px;
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .mobile-header .menu-btn {
@@ -123,7 +126,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.6);
             z-index: 2000;
             display: none;
         }
@@ -132,7 +135,7 @@
 
         .sidebar { 
             width: 260px; 
-            background: #0f172a; 
+            background: #ffffff; 
             height: 100vh; 
             position: fixed; 
             top: 0;
@@ -141,6 +144,7 @@
             display: flex; 
             flex-direction: column; 
             transition: transform 0.3s ease;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
         }
 
         .sidebar-overlay.active .sidebar {
@@ -150,29 +154,29 @@
         .sidebar h2 { 
             padding: 20px; 
             text-align: center; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            border-bottom: 1px solid #e2e8f0; 
             font-size: 15px; 
             font-weight: 800; 
-            color: #f8fafc; 
+            color: #0f172a; 
             letter-spacing: 0.5px;
         }
 
         .sidebar-item { 
             padding: 16px 20px; 
-            color: #cbd5e1; 
+            color: #334155; 
             cursor: pointer; 
             font-size: 13.5px; 
             font-weight: 600; 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            border-bottom: 1px solid rgba(255,255,255,0.02);
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        .sidebar-item:active { background: #151c2c; color: #3b82f6; }
+        .sidebar-item:active { background: #f8fafc; color: #025922; }
 
         .notification-badge { 
-            background: #ef4444; 
+            background: #dc2626; 
             color: #fff; 
             border-radius: 10px; 
             padding: 2px 8px; 
@@ -184,27 +188,29 @@
         .main-content { 
             padding: 16px; 
             flex: 1; 
-            background: #090d16; 
+            background: #f0f6ff; 
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
         }
 
         .card { 
-            background: #151c2c; 
+            background: #ffffff; 
             border-radius: 18px; 
             padding: 18px; 
             margin-bottom: 16px; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .card h3 { 
             margin-bottom: 16px; 
-            color: #f8fafc; 
+            color: #0f172a; 
             font-size: 14px; 
             font-weight: 700; 
             letter-spacing: 0.5px; 
             text-transform: uppercase; 
-            border-left: 4px solid #2563eb; 
+            border-left: 4px solid #025922; 
             padding-left: 10px; 
             display: flex;
             justify-content: space-between;
@@ -214,12 +220,13 @@
         input, select, textarea { 
             padding: 12px 14px; 
             margin: 6px 0; 
-            background: #0f172a; 
+            background: #f8fafc; 
             border-radius: 10px; 
             width: 100%; 
-            color: #fff; 
+            color: #0f172a; 
             font-size: 13.5px; 
             font-weight: 500; 
+            border: 1px solid #cbd5e1;
             -webkit-user-select: text;
             user-select: text;
         }
@@ -234,7 +241,7 @@
         }
 
         button { 
-            background: #2563eb; 
+            background: #025922; 
             padding: 12px; 
             border-radius: 10px; 
             color: #fff; 
@@ -246,20 +253,21 @@
             letter-spacing: 0.5px; 
         }
 
-        .btn-success { background: #10b981; }
-        .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; color: #000; }
-        .btn-reset { background: #334155; }
+        .btn-success { background: #059669; }
+        .btn-danger { background: #dc2626; }
+        .btn-warning { background: #d97706; color: #fff; }
+        .btn-reset { background: #64748b; }
         .btn-info { background: #0284c7; }
         .btn-delete { background: #991b1b; color: #fca5a5; }
         .hidden { display: none !important; }
 
         /* Item Cards (Markets, Users, Requests) */
         .market-item, .user-item, .request-item { 
-            background: #0f172a; 
+            background: #f8fafc; 
             padding: 14px; 
             margin: 10px 0; 
             border-radius: 14px; 
+            border: 1px solid #cbd5e1;
         }
 
         .user-item {
@@ -269,8 +277,8 @@
         }
 
         .user-item-blocked {
-            border: 1px solid #ef4444;
-            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid #dc2626;
+            background: rgba(220, 38, 38, 0.05);
         }
 
         .user-actions-grid {
@@ -285,51 +293,53 @@
             justify-content: space-between; 
             align-items: center; 
             cursor: pointer; 
-            background: #151c2c; 
+            background: #ffffff; 
             padding: 12px; 
             border-radius: 10px; 
+            border: 1px solid #cbd5e1;
         }
 
         .market-detail-row { 
             display: none; 
-            background: #151c2c; 
+            background: #ffffff; 
             padding: 14px; 
             border-radius: 10px; 
             margin-top: 8px; 
+            border: 1px solid #cbd5e1;
         }
 
         .market-detail-row.open { display: block; }
-        .market-serial { font-family: monospace; color: #3b82f6; font-weight: 700; }
+        .market-serial { font-family: monospace; color: #0284c7; font-weight: 700; }
 
         .status-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .status-open { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .status-close { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-        .status-closed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-        .status-holiday { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+        .status-open { background: rgba(5, 150, 105, 0.15); color: #059669; }
+        .status-close { background: rgba(217, 119, 6, 0.15); color: #d97706; }
+        .status-closed { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
+        .status-holiday { background: rgba(124, 58, 237, 0.15); color: #7c3aed; }
 
         .results-container { display: flex; gap: 8px; margin: 10px 0; }
-        .result-card { background: #0f172a; border-radius: 8px; padding: 10px; text-align: center; flex: 1; }
-        .result-pana { font-size: 18px; font-weight: 800; color: #3b82f6; font-family: monospace; }
-        .jodi-display { font-size: 12px; color: #94a3b8; margin-top: 6px; }
-        .jodi-display strong { color: #fbbf24; font-size: 14px; font-family: monospace; }
+        .result-card { background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center; flex: 1; border: 1px solid #cbd5e1; }
+        .result-pana { font-size: 18px; font-weight: 800; color: #0284c7; font-family: monospace; }
+        .jodi-display { font-size: 12px; color: #64748b; margin-top: 6px; }
+        .jodi-display strong { color: #d97706; font-size: 14px; font-family: monospace; }
 
-        .request-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #0f172a; padding: 4px; border-radius: 10px; }
+        .request-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 4px; border-radius: 10px; border: 1px solid #cbd5e1; }
         .request-tab { flex: 1; padding: 8px; cursor: pointer; border-radius: 8px; font-size: 11px; font-weight: 700; text-align: center; color: #64748b; text-transform: uppercase; }
-        .request-tab.active { background: #2563eb; color: #fff; }
+        .request-tab.active { background: #025922; color: #fff; }
 
         .search-container { display: flex; gap: 8px; margin-bottom: 12px; }
-        .sort-bar { display: flex; gap: 8px; flex-direction: column; margin: 12px 0; padding: 10px; background: #0f172a; border-radius: 10px; font-size: 12px; color: #64748b; font-weight: 600; }
+        .sort-bar { display: flex; gap: 8px; flex-direction: column; margin: 12px 0; padding: 10px; background: #f8fafc; border-radius: 10px; font-size: 12px; color: #64748b; font-weight: 600; border: 1px solid #cbd5e1; }
         
-        .today-bidder-badge { background: #2563eb; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 700; }
-        .bid-highlight { border-left: 3px solid #2563eb; }
+        .today-bidder-badge { background: #025922; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 700; }
+        .bid-highlight { border-left: 3px solid #025922; }
         .user-count { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; }
         .user-status { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 6px; display: inline-block; }
-        .status-online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-online { background: rgba(5, 150, 105, 0.2); color: #059669; }
         .status-offline { background: rgba(100, 116, 139, 0.2); color: #64748b; }
         .last-login { font-size: 11px; color: #64748b; margin-top: 4px; }
 
-        .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #0f172a; }
-        .bank-details-box { background: #0f172a; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #cbd5e1; line-height: 1.5; }
+        .chat-iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; background: #f8fafc; border: 1px solid #cbd5e1; }
+        .bank-details-box { background: #ffffff; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #334155; line-height: 1.5; border: 1px solid #cbd5e1; }
         .bank-details-box span { font-weight: 700; color: #64748b; }
 
         /* Desktop Layout Adaptations */
@@ -349,10 +359,10 @@
 <!-- Login Overlay Screen -->
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo">
+        <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
         <input type="password" id="adminPass" placeholder="Enter Control Password">
         <button onclick="login()">Sign In</button>
-        <div id="loginError" style="color:#f87171; margin-top:12px; font-size:12px; font-weight:600;"></div>
+        <div id="loginError" style="color:#dc2626; margin-top:12px; font-size:12px; font-weight:600;"></div>
     </div>
 </div>
 
@@ -362,14 +372,14 @@
     <!-- Mobile Navigation Top Header -->
     <div class="mobile-header">
         <button class="menu-btn" onclick="toggleSidebar(true)">☰</button>
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo">
+        <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
         <div style="width: 24px;"></div>
     </div>
 
     <!-- Sidebar Menu Layer -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)">
         <div class="sidebar" onclick="event.stopPropagation()">
-            <h2>GOMAGI ADMIN</h2>
+            <h2>GOGAMI ADMIN</h2>
             <div class="sidebar-item" onclick="showSection('markets')">🎮 Markets</div>
             <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
             <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
@@ -377,7 +387,7 @@
             <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
             <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
             <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat <span id="chatBadge" class="notification-badge" style="display:none;">0</span></div>
-            <div class="sidebar-item" onclick="logout()" style="color:#ef4444;">🚪 Logout</div>
+            <div class="sidebar-item" onclick="logout()" style="color:#dc2626;">🚪 Logout</div>
         </div>
     </div>
 
@@ -415,7 +425,7 @@
                 <h3>👥 Users Management 
                     <button onclick="deleteAllUsers()" class="btn-delete" style="font-size:10px; padding:6px 10px;">🗑️ DELETE ALL</button>
                 </h3>
-                <div style="margin-bottom:12px; color:#f87171; font-size:11px; font-weight:600;">⚠️ Deleting users removes all bids, history & chat data!</div>
+                <div style="margin-bottom:12px; color:#dc2626; font-size:11px; font-weight:600;">⚠️ Deleting users removes all bids, history & chat data!</div>
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="🔍 Search name or phone...">
                     <button onclick="searchUsers()" class="btn-info">Search</button>
@@ -469,7 +479,7 @@
                 <h3>📢 Notice Board</h3>
                 <textarea id="noticeText" rows="3" style="width:100%; padding:12px;"></textarea>
                 <button onclick="updateNotice()">Update Broadcast Notice</button>
-                <div id="noticeMsg" style="margin-top:6px; color:#10b981; font-weight:700; font-size:12px;"></div>
+                <div id="noticeMsg" style="margin-top:6px; color:#059669; font-weight:700; font-size:12px;"></div>
             </div>
         </div>
         
@@ -484,7 +494,7 @@
             </div>
             <div class="card">
                 <h3>🏧 UPI ID Settings</h3>
-                <input type="text" id="upiId" placeholder="UPI ID" value="gomagi@axl">
+                <input type="text" id="upiId" placeholder="UPI ID" value="gogami@axl">
                 <button onclick="updateUPI()">Update UPI ID</button>
                 <div id="upiMsg"></div>
             </div>
@@ -765,7 +775,7 @@
                         <br>📞 ${u.phone||'No phone'}
                         <br>💰 Wallet: ₹${u.balance||0}
                         <div class="last-login">📅 Last active: ${lastLogin}</div>
-                        ${isBlocked ? '<span style="color:#ef4444; font-weight:800; font-size:11px;">🚫 USER BLOCKED</span>' : ''}
+                        ${isBlocked ? '<span style="color:#dc2626; font-weight:800; font-size:11px;">🚫 USER BLOCKED</span>' : ''}
                     </div>
                     <div class="user-actions-grid">
                         <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add</button>
@@ -941,7 +951,6 @@
         alert(`✅ Balance updated to ₹${newBal}`); 
     }
 
-    // FIXED: Block/Unblock Function Logic
     async function toggleBlockUser(uid, name, isBlocked) { 
         let targetState = !isBlocked; 
         let actionText = targetState ? "BLOCK" : "UNBLOCK"; 
@@ -950,7 +959,7 @@
             try {
                 await db.collection('users').doc(uid).update({ blocked: targetState }); 
                 alert(`✅ User "${name}" has been ${targetState ? 'BLOCKED' : 'UNBLOCKED'} successfully!`); 
-                loadUsersWithTodayBids(); // Refresh List
+                loadUsersWithTodayBids(); 
             } catch(e) {
                 alert("❌ Failed to update user status: " + e.message);
             }
@@ -963,7 +972,7 @@
     
     function loadSettings(){ db.collection('settings').doc('upi').get().then(d=>{ if(d.exists) document.getElementById('upiId').value=d.data().upiId; }); }
     async function updateUPI(){ await db.collection('settings').doc('upi').set({upiId:document.getElementById('upiId').value}); alert("UPI Updated"); }
-    function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome to GOMAGI!'; }); }
+    function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome to GOGAMI!'; }); }
     async function updateNotice(){ await db.collection('settings').doc('notice').set({text:document.getElementById('noticeText').value,updatedAt:new Date()}); alert('✅ Notice updated!'); }
     
     async function changePassword(){ 
