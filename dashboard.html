@@ -21,8 +21,8 @@
         }
         
         body { 
-            background: #ffffff; 
-            color: #111827; 
+            background: #0b6623; 
+            color: #fef08a; 
             padding-bottom: 95px; 
             min-height: 100vh; 
             overflow-x: hidden; 
@@ -31,7 +31,7 @@
         .app-container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #ffffff; 
+            background: #0b6623; 
             min-height: 100vh; 
             position: relative; 
         }
@@ -43,7 +43,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #ffffff;
+            background: #0b6623;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -62,7 +62,7 @@
         .loader-bar {
             width: 120px;
             height: 3px;
-            background: rgba(2, 89, 34, 0.15);
+            background: rgba(254, 240, 138, 0.2);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
@@ -75,7 +75,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #025922;
+            background: #facc15;
             border-radius: 10px;
             animation: loading 1.2s infinite linear;
         }
@@ -95,14 +95,14 @@
             margin: 0 auto;
             height: 13vh; 
             min-height: 90px;
-            background: #f0fdf4; 
-            color: #025922; 
+            background: #064e1b; 
+            color: #fef08a; 
             z-index: 1000;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between;
             padding: 12px 16px; 
-            border-bottom: 1px solid rgba(2, 89, 34, 0.1);
+            border-bottom: 1px solid rgba(254, 240, 138, 0.1);
         }
         
         .header-action-line { 
@@ -117,7 +117,7 @@
         .menu-toggle-btn { 
             background: none; 
             border: none; 
-            color: #025922; 
+            color: #fef08a; 
             font-size: 24px; 
             cursor: pointer; 
             display: flex; 
@@ -157,28 +157,28 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-deposit-pill { background: #025922; }
-        .btn-withdraw-pill { background: #c20d0d; }
+        .btn-deposit-pill { background: #0b6623; border: 1px solid #10b981; }
+        .btn-withdraw-pill { background: #dc2626; }
         .shortcut-action-btn:active { transform: scale(0.96); }
         
         .balance-pill { 
-            background: #e6f4ea; 
+            background: #053b13; 
             padding: 7px 14px; 
             border-radius: 12px; 
-            color: #025922; 
+            color: #fef08a; 
             font-weight: 800; 
             font-size: 13px; 
             cursor: pointer; 
-            border: 1px solid rgba(2, 89, 34, 0.2);
+            border: 1px solid rgba(254, 240, 138, 0.2);
         }
 
         .marquee-notice-banner {
             margin-top: 13vh; 
-            background: #f0fdf4; 
+            background: #064e1b; 
             height: 36px; 
             display: flex; 
             align-items: center;
-            border-bottom: 1px solid rgba(2, 89, 34, 0.1); 
+            border-bottom: 1px solid rgba(254, 240, 138, 0.1); 
             overflow: hidden; 
             position: relative; 
             cursor: pointer;
@@ -193,7 +193,7 @@
 
         .notice-msg-text { 
             font-size: 12px; 
-            color: #025922; 
+            color: #facc15; 
             font-weight: 600; 
             display: inline-block; 
         }
@@ -207,21 +207,21 @@
 
         /* Modern Skeleton Loader CSS */
         .market-skeleton {
-            background: #f9fafb;
+            background: #064e1b;
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
             height: 105px;
             position: relative;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(254, 240, 138, 0.1);
         }
         .market-skeleton::after {
             content: '';
             position: absolute;
             top: 0; left: -150%;
             height: 100%; width: 150%;
-            background: linear-gradient(90deg, transparent, rgba(2,89,34,0.06), transparent);
+            background: linear-gradient(90deg, transparent, rgba(254,240,138,0.06), transparent);
             animation: shimmer 1.5s infinite;
         }
         @keyframes shimmer {
@@ -230,12 +230,12 @@
         }
 
         .market-card-wrapper { 
-            background: #f9fafb; 
+            background: #064e1b; 
             border-radius: 16px; 
             padding: 16px; 
             margin-bottom: 12px; 
             position: relative; 
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(254, 240, 138, 0.15);
         }
 
         .market-main-row { 
@@ -260,7 +260,7 @@
         .market-name-label { 
             font-size: 17px; 
             font-weight: 700; 
-            color: #025922; 
+            color: #fef08a; 
             letter-spacing: 0.3px; 
             text-transform: uppercase; 
         }
@@ -271,8 +271,8 @@
             justify-content: center; 
             width: 15px; 
             height: 15px; 
-            border: 1px solid #025922; 
-            color: #025922; 
+            border: 1px solid #facc15; 
+            color: #facc15; 
             border-radius: 50%; 
             font-size: 9px; 
             font-weight: bold; 
@@ -281,17 +281,17 @@
         .market-numbers-display { 
             font-size: 20px; 
             font-weight: 800; 
-            color: #111827; 
+            color: #ffffff; 
             letter-spacing: 0.5px; 
             font-family: monospace; 
             margin: 2px 0; 
         }
         
         .market-status-text { font-size: 12px; font-weight: 700; }
-        .status-running-open { color: #059669; }
-        .status-running-close { color: #d97706; }
-        .status-closed-today { color: #dc2626; }
-        .status-holiday-today { color: #7c3aed; }
+        .status-running-open { color: #34d399; }
+        .status-running-close { color: #fbbf24; }
+        .status-closed-today { color: #f87171; }
+        .status-holiday-today { color: #c084fc; }
 
         .market-action-btn-circle { 
             width: 42px; 
@@ -307,7 +307,7 @@
         }
 
         .market-action-btn-circle:active { transform: scale(0.95); }
-        .btn-active-play { background: #025922; color: #fff; }
+        .btn-active-play { background: #dc2626; color: #fff; }
         .btn-active-play::after { 
             content: ''; 
             display: block; 
@@ -315,11 +315,11 @@
             height: 0; 
             border-top: 6px solid transparent; 
             border-bottom: 6px solid transparent; 
-            border-left: 10px solid #fff; 
+            border-left: 10px solid #fef08a; 
             margin-left: 2px; 
         }
 
-        .btn-inactive-stop { background: #e5e7eb; color: #374151; opacity: 0.6; }
+        .btn-inactive-stop { background: #053b13; color: #fff; opacity: 0.6; }
         .btn-inactive-stop::after { 
             content: ''; 
             display: block; 
@@ -327,7 +327,7 @@
             height: 0; 
             border-top: 6px solid transparent; 
             border-bottom: 6px solid transparent; 
-            border-left: 10px solid #374151; 
+            border-left: 10px solid #fef08a; 
             margin-left: 2px; 
         }
 
@@ -337,13 +337,13 @@
             align-items: center; 
             margin-top: 12px; 
             padding-top: 10px; 
-            border-top: 1px solid #e5e7eb; 
+            border-top: 1px solid rgba(254, 240, 138, 0.1); 
             font-size: 12px; 
             font-weight: 600; 
-            color: #4b5563; 
+            color: rgba(254, 240, 138, 0.8); 
         }
 
-        .time-node span { color: #025922; font-weight: 700; }
+        .time-node span { color: #fef08a; font-weight: 700; }
 
         .drawer-nav-backdrop { 
             position: fixed; 
@@ -351,7 +351,7 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.6); 
             z-index: 2000; 
             visibility: hidden; 
             opacity: 0; 
@@ -366,22 +366,21 @@
             left: -280px; 
             width: 280px; 
             height: 100%; 
-            background: #ffffff; 
-            color: #111827; 
+            background: #064e1b; 
+            color: #fef08a; 
             z-index: 2100; 
             display: flex; 
             flex-direction: column; 
             transition: transform 0.3s ease; 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
         }
 
         .drawer-nav-backdrop.drawer-active .native-android-drawer { transform: translateX(280px); }
 
-        .drawer-profile-banner { padding: 24px 20px; background: #f0fdf4; border-bottom: 1px solid rgba(2, 89, 34, 0.1); }
+        .drawer-profile-banner { padding: 24px 20px; background: #053b13; border-bottom: 1px solid rgba(254, 240, 138, 0.1); }
         .drawer-avatar-badge { 
             width: 44px; 
             height: 44px; 
-            background: #025922; 
+            background: #dc2626; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
@@ -389,12 +388,12 @@
             font-size: 18px; 
             font-weight: bold; 
             margin-bottom: 12px; 
-            color: #fff; 
+            color: #fef08a; 
         }
 
-        .drawer-user-name { font-size: 16px; font-weight: 700; color: #025922; }
-        .drawer-user-phone { font-size: 12px; color: #4b5563; margin-top: 2px; }
-        .drawer-user-bal { font-size: 15px; font-weight: 800; color: #059669; margin-top: 6px; }
+        .drawer-user-name { font-size: 16px; font-weight: 700; color: #fef08a; }
+        .drawer-user-phone { font-size: 12px; color: rgba(254, 240, 138, 0.7); margin-top: 2px; }
+        .drawer-user-bal { font-size: 15px; font-weight: 800; color: #34d399; margin-top: 6px; }
 
         .drawer-menu-scroller { flex: 1; overflow-y: auto; padding: 10px 0; }
         .drawer-menu-item { 
@@ -402,16 +401,16 @@
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            color: #374151; 
+            color: #fef08a; 
             font-size: 14px; 
             font-weight: 600; 
             text-decoration: none; 
             cursor: pointer; 
         }
 
-        .drawer-menu-item:active { background: #f0fdf4; color: #025922; }
-        .drawer-arrow-label { color: #025922; font-weight: bold; font-size: 12px; }
-        .drawer-logout-btn { color: #dc2626; border-top: 1px solid #e5e7eb; margin-top: 12px; }
+        .drawer-menu-item:active { background: #053b13; color: #fff; }
+        .drawer-arrow-label { color: #facc15; font-weight: bold; font-size: 12px; }
+        .drawer-logout-btn { color: #f87171; border-top: 1px solid rgba(254, 240, 138, 0.1); margin-top: 12px; }
 
         .bottom-nav { 
             position: fixed; 
@@ -420,12 +419,12 @@
             right: 0; 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #ffffff; 
+            background: #064e1b; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
             padding: 8px 12px 10px 12px; 
-            border-top: 1px solid #e5e7eb; 
+            border-top: 1px solid rgba(254, 240, 138, 0.1); 
             z-index: 1000; 
             height: 70px; 
         }
@@ -443,13 +442,13 @@
             align-items: center; 
             position: relative;
             top: -14px; 
-            background: #025922; 
-            color: #fff !important; 
+            background: #dc2626; 
+            color: #fef08a !important; 
             width: 52px; 
             height: 52px; 
             max-width: 52px; 
             border-radius: 50%; 
-            border: 4px solid #ffffff; 
+            border: 4px solid #0b6623; 
             text-transform: uppercase; 
             transition: all 0.2s ease; 
         }
@@ -482,31 +481,30 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.7); 
             z-index: 3000; 
             justify-content: center; 
             align-items: center; 
         }
 
         .modal-popup-body { 
-            background: #ffffff; 
+            background: #064e1b; 
             border-radius: 20px; 
             padding: 24px; 
             width: 90%; 
             max-width: 340px; 
-            color: #111827; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            border: 1px solid #e5e7eb;
+            color: #fef08a; 
+            border: 1px solid rgba(254, 240, 138, 0.2);
         }
 
-        .modal-popup-body h3 { margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; color: #025922; }
+        .modal-popup-body h3 { margin-bottom: 16px; text-align: center; font-size: 18px; font-weight: 700; color: #fef08a; }
         .modal-action-button { 
             width: 100%; 
             padding: 14px; 
-            background: #025922; 
+            background: #dc2626; 
             border: none; 
             border-radius: 12px; 
-            color: #fff; 
+            color: #fef08a; 
             font-weight: 700; 
             cursor: pointer; 
             margin-top: 12px; 
@@ -514,23 +512,23 @@
             text-transform: uppercase; 
         }
 
-        .modal-close-trigger { background: #e5e7eb; color: #374151; }
+        .modal-close-trigger { background: #053b13; color: #fef08a; border: 1px solid rgba(254, 240, 138, 0.2); }
         .popup-input-element { 
             width: 100%; 
             padding: 14px; 
             margin: 8px 0; 
-            background: #f9fafb; 
+            background: #0b6623; 
             border-radius: 12px; 
             font-size: 14px; 
             outline: none; 
             font-weight: 600; 
-            color: #111827; 
-            border: 1px solid #d1d5db;
+            color: #fef08a; 
+            border: 1px solid rgba(254, 240, 138, 0.3);
             -webkit-user-select: text;
             user-select: text;
         }
 
-        .popup-rate-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; font-weight: 600; color: #374151; }
+        .popup-rate-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(254, 240, 138, 0.1); font-size: 14px; font-weight: 600; color: #fef08a; }
 
         .alert-popup-layer { 
             display: none; 
@@ -539,29 +537,28 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.75); 
             z-index: 5000; 
             justify-content: center; 
             align-items: center; 
         }
 
         .alert-popup-body { 
-            background: #ffffff; 
+            background: #064e1b; 
             border-radius: 20px; 
             padding: 24px; 
             width: 85%; 
             max-width: 320px; 
             text-align: center; 
-            color: #111827; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            border: 1px solid #e5e7eb;
+            color: #fef08a; 
+            border: 1px solid rgba(254, 240, 138, 0.2);
         }
 
-        .alert-popup-title { font-size: 16px; font-weight: 800; color: #025922; margin-bottom: 8px; }
-        .alert-popup-desc { font-size: 13px; color: #4b5563; line-height: 1.5; margin-bottom: 18px; }
+        .alert-popup-title { font-size: 16px; font-weight: 800; color: #facc15; margin-bottom: 8px; }
+        .alert-popup-desc { font-size: 13px; color: rgba(254, 240, 138, 0.8); line-height: 1.5; margin-bottom: 18px; }
         .alert-action-row { display: flex; flex-direction: column; gap: 8px; }
-        .alert-btn-primary { background: #025922; border: none; padding: 12px; border-radius: 12px; color: #fff; font-weight: 700; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; }
-        .alert-btn-secondary { background: #e5e7eb; border: none; padding: 12px; border-radius: 12px; color: #374151; font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; }
+        .alert-btn-primary { background: #dc2626; border: none; padding: 12px; border-radius: 12px; color: #fef08a; font-weight: 700; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; }
+        .alert-btn-secondary { background: #053b13; border: 1px solid rgba(254, 240, 138, 0.2); padding: 12px; border-radius: 12px; color: #fef08a; font-weight: 600; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -787,7 +784,7 @@
         
         db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
             const container = document.getElementById('marketListElementContainer');
-            if (snapshot.empty) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#4b5563;">No active panels.</div>'; hideSplashScreen(); return; }
+            if (snapshot.empty) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#facc15;">No active panels.</div>'; hideSplashScreen(); return; }
             
             const curMin = serverTime.getHours() * 60 + serverTime.getMinutes();
             
@@ -849,7 +846,7 @@
 
         try {
             await db.collection('users').doc(auth.currentUser.uid).update({ bankDetails: { accountHolder: ah, bankName: bn, accountNumber: an, ifscCode: ifsc } });
-            log.innerText = "✅ Banking coordinates saved!"; log.style.color = "#059669";
+            log.innerText = "✅ Banking coordinates saved!"; log.style.color = "#34d399";
             setTimeout(() => { closePopupModal('bankModalPopup'); log.innerText = ""; }, 1200);
         } catch(e) { log.innerText = "Update exception."; log.style.color = "#dc2626"; }
     }
