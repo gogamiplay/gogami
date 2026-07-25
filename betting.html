@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOMAGI - Place Bets</title>
+    <title>GOGAMI - Place Bets</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -563,7 +563,6 @@
         return 'Single Pana';
     }
 
-    // Direct Instant Add to Bids WITH MERGE LOGIC
     function addToBidsDirectly(resolvedGameType, val, pts) {
         const check = isBettingAllowedFast(); 
         if (!check.allowed) { alert(check.message); return; }
@@ -571,13 +570,10 @@
         
         let targetType = (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana', 'Family Pana'].includes(resolvedGameType)) ? ((currentStatus === 'close') ? 'Close' : selectedOpenClose) : 'Close';
 
-        // Check if bid already exists
         const existingBid = bids.find(b => b.type === resolvedGameType && b.value === val && b.bidType === targetType);
         if(existingBid) {
-            // Merge logic: Add points to existing entry
             existingBid.points += pts;
         } else {
-            // New bid entry
             bids.push({ type: resolvedGameType, gameType: resolvedGameType, bidType: targetType, value: val, points: pts, market: currentMarket, marketId: currentMarketId });
         }
         updateSummary(); 
@@ -585,7 +581,6 @@
         if(targetBlock) targetBlock.innerHTML = renderBidsOnly();
     }
 
-    // Instant Fast 2-Digit Auto Add for Jodi Mode
     function handleJodiInput(el) {
         let val = el.value.replace(/\D/g, '');
         el.value = val;
@@ -598,11 +593,10 @@
                 return;
             }
             addToBidsDirectly('Jodi', val, pts);
-            el.value = ''; // Clear input for next entry while points remain fixed
+            el.value = ''; 
         }
     }
 
-    // Super Fast Family and Manual Add Execution
     function handleAutoAddManualButton() {
         let v1El = document.getElementById('v1'); if(!v1El) return;
         const val = v1El.value.trim();
