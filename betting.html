@@ -24,7 +24,7 @@
             background: #f0f6ff; 
             color: #1e293b; 
             padding-top: 56px; 
-            padding-bottom: 85px; 
+            padding-bottom: 75px; /* सबमिट बटन के लिए पर्याप्त स्पेस */
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
@@ -285,7 +285,7 @@
             width: 100%; 
             display: block;
             -webkit-overflow-scrolling: touch; 
-            overscroll-behavior-y: contain; /* पेज रीलोड को रोकने के लिए */
+            overscroll-behavior-y: contain;
         }
         .bids-section { display: flex; flex-direction: column; padding-bottom: 20px; }
         
@@ -340,71 +340,6 @@
 
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Dashboard Style Bottom Navigation Bar */
-        .bottom-nav { 
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            max-width: 480px; 
-            margin: 0 auto; 
-            background: #ffffff; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center; 
-            padding: 6px 10px 8px 10px; 
-            border-top: 1px solid #e2e8f0; 
-            z-index: 2000; 
-            height: 72px; 
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
-        }
-
-        .nav-item { 
-            text-align: center; 
-            cursor: pointer; 
-            font-size: 9px; 
-            flex: 1; 
-            font-weight: 800; 
-            text-decoration: none; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            position: relative;
-            top: -16px; 
-            background: #025922; 
-            color: #fff !important; 
-            width: 58px; 
-            height: 58px; 
-            max-width: 58px; 
-            border-radius: 50%; 
-            border: 4px solid #ffffff; 
-            text-transform: uppercase; 
-            transition: all 0.2s ease; 
-            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.3);
-        }
-        
-        .nav-item:active { transform: scale(0.95); }
-        
-        .nav-item span { 
-            font-size: 9px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            margin-top: 2px; 
-        }
-
-        .notification-dot {
-            position: absolute; 
-            top: 2px; 
-            right: 4px; 
-            width: 8px; 
-            height: 8px;
-            background-color: #dc2626; 
-            border-radius: 50%; 
-            display: none;
-            z-index: 10;
-        }
-
         .message { text-align: center; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; margin: 4px 16px; flex-shrink: 0; }
         .error { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
         .success { background: rgba(16, 185, 129, 0.15); color: #059669; }
@@ -449,18 +384,6 @@
             <div class="summary-block"><span class="summary-label">Points</span><span class="summary-value" id="totalPoints">0</span></div>
         </div>
         <button class="submit-btn" id="submitBtn" onclick="submitBids()">Submit</button>
-    </div>
-
-    <!-- Dashboard Style Bottom Navigation Bar -->
-    <div class="bottom-nav">
-        <a href="chart.html" class="nav-item"><span>Chart</span></a>
-        <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
-        <a href="dashboard.html" class="nav-item"><span>Home</span></a>
-        <a href="funds.html" class="nav-item"><span>Fund</span></a>
-        <a href="chat.html" class="nav-item">
-            <div class="notification-dot" id="chatAlertDot"></div>
-            <span>Support</span>
-        </a>
     </div>
 </div>
 
