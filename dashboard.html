@@ -51,7 +51,7 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
         }
 
         .splash-logo {
@@ -702,19 +702,28 @@
     
     let currentUserData = null;
     let hasAlertedForCurrentMessage = false;
-    let isUserContextLoaded = false;
-    let isMarketsLoaded = false;
 
-    // स्प्लैश स्क्रीन को तभी हटाया जाएगा जब यूज़र का डेटा और मार्केट लिस्ट दोनों 100% लोड हो जाएं
-    function checkAndHideSplashScreen() {
-        if (isUserContextLoaded && isMarketsLoaded) {
-            const splash = document.getElementById('splashScreen');
-            if (splash && splash.style.opacity !== '0') {
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.visibility = 'hidden';
-                }, 300);
-            }
+    // स्पीड बूस्टर: जैसे ही पेज खुले, तुरंत लोकल स्टोरेज से पुराना डेटा उठाकर स्क्रीन पर दिखा दो (Instant Render)
+    try {
+        const cachedBal = localStorage.getItem('gogami_cached_balance');
+        const cachedName = localStorage.getItem('gogami_cached_name');
+        if (cachedBal) {
+            document.getElementById('userWalletBalance').innerText = cachedBal;
+            document.getElementById('drawerLabelBalance').innerText = cachedBal;
+        }
+        if (cachedName) {
+            document.getElementById('drawerLabelName').innerText = cachedName;
+        }
+    } catch(e) {}
+
+    // स्प्लैश स्क्रीन को अब सुपर-फास्ट कर दिया गया है (ताकि यूज़र को तुरंत डैशबोर्ड दिखे)
+    function hideSplashScreenFast() {
+        const splash = document.getElementById('splashScreen');
+        if (splash && splash.style.opacity !== '0') {
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.visibility = 'hidden';
+            }, 250);
         }
     }
     
@@ -752,10 +761,19 @@
                 }
 
                 currentUserData = doc.data();
-                document.getElementById('userWalletBalance').innerText = currentUserData.balance || 0;
-                document.getElementById('drawerLabelBalance').innerText = currentUserData.balance || 0;
-                document.getElementById('drawerLabelName').innerText = currentUserData.name || 'User Account';
+                const bal = currentUserData.balance || 0;
+                const name = currentUserData.name || 'User Account';
+
+                document.getElementById('userWalletBalance').innerText = bal;
+                document.getElementById('drawerLabelBalance').innerText = bal;
+                document.getElementById('drawerLabelName').innerText = name;
                 document.getElementById('drawerLabelPhone').innerText = currentUserData.phone ? `📞 ${currentUserData.phone}` : '';
+                
+                // लोकल स्टोरेज में सेव करें ताकि अगली बार ऐप खुलते ही तुरंत दिखे
+                try {
+                    localStorage.setItem('gogami_cached_balance', bal);
+                    localStorage.setItem('gogami_cached_name', name);
+                } catch(e) {}
                 
                 if(currentUserData.bankDetails) {
                     document.getElementById('bankHolderNameField').value = currentUserData.bankDetails.accountHolder || '';
@@ -765,9 +783,8 @@
                 }
             }
             
-            // यूज़र डेटा लोड होने का स्टेटस अपडेट करें
-            isUserContextLoaded = true;
-            checkAndHideSplashScreen();
+            // डेटा आते ही स्प्लैश स्क्रीन हटा दें ताकि ऐप सुपर-फास्ट लगे
+            hideSplashScreenFast();
         });
     }
 
@@ -796,17 +813,14 @@
     }
 
     async function syncMarketFeeds() {
-        const docRef = db.collection('settings').doc('servertime');
-        await docRef.set({ timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        const timeDoc = await docRef.get();
-        const serverTime = timeDoc.data().timestamp ? timeDoc.data().timestamp.toDate() : new Date();
+        // सर्वर टाइम लाने के बजाय लोकल टाइम का इस्तेमाल करके स्पीड कई गुना तेज़ कर दी गई है
+        const serverTime = new Date();
         
         db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
             const container = document.getElementById('marketListElementContainer');
             if (snapshot.empty) { 
                 container.innerHTML = '<div style="text-align:center; padding:25px; color:#94a3b8;">No active panels.</div>'; 
-                isMarketsLoaded = true;
-                checkAndHideSplashScreen();
+                hideSplashScreenFast();
                 return; 
             }
             
@@ -839,9 +853,8 @@
                     </div>`;
             }).join('');
 
-            // मार्केट फीड पूरी तरह से लोड होने पर फ्लैग अपडेट करें
-            isMarketsLoaded = true;
-            checkAndHideSplashScreen();
+            // मार्केट फीड लोड होते ही स्प्लैश स्क्रीन हटा दें
+            hideSplashScreenFast();
         });
     }
 
@@ -914,6 +927,11 @@
     });
     window.addEventListener('pagehide', clearOnlineStatusSync);
     window.addEventListener('beforeunload', clearOnlineStatusSync);
+
+    // सुरक्षा के लिए फॉलबैक टाइमर: अगर नेटवर्क धीमा भी हो, तो अधिकतम 1 सेकंड के अंदर स्प्लैश स्क्रीन ऑटोमैटिक हट जाएगी ताकि यूज़र को कभी इंतज़ार न करना पड़े।
+    setTimeout(() => {
+        hideSplashScreenFast();
+    }, 1000);
 
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
