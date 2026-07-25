@@ -23,7 +23,7 @@
         }
         
         body { 
-            background: #f0f6ff; /* सॉफ्ट लाइट ब्लू बैकग्राउंड */
+            background: #f0f6ff; /* लाइट ब्लू बैकग्राउंड */
             color: #1e293b; 
             padding-bottom: 85px; 
             min-height: 100vh; 
@@ -88,6 +88,7 @@
             100% { left: 100%; }
         }
         
+        /* फिक्स्ड टॉप स्क्रीन / पैनल - लाइट ग्रीन बैकग्राउंड */
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -97,14 +98,14 @@
             margin: 0 auto;
             height: 12vh; 
             min-height: 85px;
-            background: #ffffff; 
+            background: #e8f5e9; /* लाइट ग्रीन */
             color: #1e293b; 
             z-index: 1000;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between;
             padding: 10px 14px; 
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #c8e6c9;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
         
@@ -120,7 +121,7 @@
         .menu-toggle-btn { 
             background: none; 
             border: none; 
-            color: #0284c7; 
+            color: #2e7d32; 
             font-size: 22px; 
             cursor: pointer; 
             display: flex; 
@@ -160,19 +161,19 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-deposit-pill { background: #0284c7; }
+        .btn-deposit-pill { background: #2e7d32; }
         .btn-withdraw-pill { background: #dc2626; }
         .shortcut-action-btn:active { transform: scale(0.96); }
         
         .balance-pill { 
-            background: #e0f2fe; 
+            background: #c8e6c9; 
             padding: 5px 12px; 
             border-radius: 10px; 
-            color: #0369a1; 
+            color: #1b5e20; 
             font-weight: 800; 
             font-size: 12px; 
             cursor: pointer; 
-            border: 1px solid #bae6fd;
+            border: 1px solid #a5d6a7;
         }
 
         .marquee-notice-banner {
@@ -233,14 +234,14 @@
             100% { transform: translateX(200%); }
         }
 
-        /* Compact Market Card Style */
+        /* मार्केट कार्ड्स - लाइट ब्लू बैकग्राउंड */
         .market-card-wrapper { 
             background: #ffffff; 
             border-radius: 12px; 
             padding: 12px 14px; 
             margin-bottom: 10px; 
             position: relative; 
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
 
@@ -263,10 +264,14 @@
             gap: 6px; 
         }
 
+        /* मार्केट का नाम - व्हाइट कलर (कलर कंट्रास्ट के लिए पीछे हल्का डार्क ब्लू बैज या डायरेक्ट व्हाइट) */
         .market-name-label { 
             font-size: 15px; 
             font-weight: 700; 
-            color: #0284c7; 
+            color: #ffffff; 
+            background: #0284c7; /* नाम को साफ दिखाने के लिए साफ सुथरा ब्लू बैज */
+            padding: 2px 8px;
+            border-radius: 6px;
             letter-spacing: 0.3px; 
             text-transform: uppercase; 
         }
@@ -290,7 +295,7 @@
             color: #0f172a; 
             letter-spacing: 0.5px; 
             font-family: monospace; 
-            margin: 1px 0; 
+            margin: 4px 0 1px 0; 
         }
         
         .market-status-text { font-size: 11px; font-weight: 700; }
@@ -433,11 +438,11 @@
             padding: 6px 10px 8px 10px; 
             border-top: 1px solid #e2e8f0; 
             z-index: 1000; 
-            height: 72px; /* थोड़ी अधिक जगह ताकि बटन फिट आए */
+            height: 72px; 
             box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
-        /* बॉटम नेविगेशन के राउंड बटन्स का साइज़ बड़ा किया गया है ताकि 'Support' या अन्य टेक्स्ट बाहर न जाए */
+        /* बॉटम नेविगेशन के राउंड बटन्स - टेक्स्ट ओवरफ्लो रोकने के लिए बड़े किए गए */
         .nav-item { 
             text-align: center; 
             cursor: pointer; 
@@ -453,8 +458,8 @@
             top: -16px; 
             background: #0284c7; 
             color: #fff !important; 
-            width: 58px;  /* पहले से बड़ा साइज़ */
-            height: 58px; /* पहले से बड़ा साइज़ */
+            width: 58px;  
+            height: 58px; 
             max-width: 58px; 
             border-radius: 50%; 
             border: 4px solid #ffffff; 
