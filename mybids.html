@@ -21,28 +21,28 @@
         }
 
         body { 
-            background: #090d16; 
-            color: #f8fafc; 
-            padding-bottom: 85px; 
+            background: #f0f6ff; 
+            color: #1e293b; 
+            padding-bottom: 90px; 
             min-height: 100vh;
         }
 
         .app-container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #090d16; 
+            background: #f0f6ff; 
             min-height: 100vh; 
             position: relative; 
         }
 
-        /* Full Screen Android App Style Splash Screen */
+        /* Full Screen Android App Style Splash Screen - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #090d16;
+            background: #025922;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,7 +61,7 @@
         .loader-bar {
             width: 120px;
             height: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
@@ -74,7 +74,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #2563eb;
+            background: #ffffff;
             border-radius: 10px;
             animation: loading 1.2s infinite linear;
         }
@@ -85,24 +85,25 @@
             100% { left: 100%; }
         }
 
-        /* Top Bar Header */
+        /* Top Bar Header - डार्क ग्रीन */
         .header { 
-            background: #0f172a; 
+            background: #025922; 
             padding: 12px 16px; 
             display: flex; 
             align-items: center; 
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .back-btn { 
             background: none; 
             border: none; 
             font-size: 22px; 
-            color: #94a3b8; 
+            color: #ffffff; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
@@ -116,11 +117,13 @@
         /* Navigation Tabs */
         .tab-bar { 
             display: flex; 
-            background: #151c2c; 
-            margin: 10px 12px; 
-            border-radius: 10px; 
+            background: #ffffff; 
+            margin: 12px 12px; 
+            border-radius: 12px; 
             padding: 4px; 
             gap: 4px; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .tab { 
@@ -138,31 +141,33 @@
         }
 
         .tab.active { 
-            background: #2563eb; 
+            background: #025922; 
             color: #fff; 
         }
 
         /* Bid Cards - Compact Minimal Styling */
         .bid-card { 
-            background: #151c2c; 
+            background: #ffffff; 
             margin: 8px 12px; 
-            border-radius: 12px; 
+            border-radius: 14px; 
             display: flex; 
             flex-direction: column; 
             gap: 8px; 
             padding: 12px 14px; 
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .bid-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            border-bottom: 1px solid #f1f5f9; 
             padding-bottom: 6px; 
         }
 
         .market-name { 
-            color: #f8fafc; 
+            color: #0f172a; 
             font-size: 13px; 
             font-weight: 700; 
             text-transform: uppercase;
@@ -178,9 +183,9 @@
             letter-spacing: 0.5px; 
         }
 
-        .status-won { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .status-lost { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-        .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .status-won { background: rgba(5, 150, 105, 0.15); color: #059669; }
+        .status-lost { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
+        .status-pending { background: rgba(217, 119, 6, 0.15); color: #d97706; }
 
         .bid-body { 
             display: flex; 
@@ -201,20 +206,20 @@
         }
 
         .bid-value { 
-            color: #cbd5e1; 
+            color: #334155; 
             font-weight: 700; 
             font-size: 12px; 
         }
 
         .bid-id-text {
-            color: #3b82f6;
+            color: #0284c7;
             font-family: monospace;
             font-size: 11px;
             letter-spacing: 0.5px;
         }
 
         .bid-footer { 
-            border-top: 1px solid rgba(255,255,255,0.05); 
+            border-top: 1px solid #f1f5f9; 
             padding-top: 6px; 
             font-size: 10px; 
             color: #64748b; 
@@ -238,71 +243,67 @@
             right: 0; 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #0f172a; 
+            background: #ffffff; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            padding: 8px 12px 10px 12px; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
+            padding: 6px 10px 8px 10px; 
+            border-top: 1px solid #e2e8f0; 
             z-index: 1000; 
-            height: 70px; 
+            height: 72px; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
         .nav-item { 
             text-align: center; 
-            color: #64748b; 
             cursor: pointer; 
-            font-size: 11px; 
+            font-size: 9px; 
             flex: 1; 
-            font-weight: 700; 
+            font-weight: 800; 
             text-decoration: none; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            height: 48px; 
-            border-radius: 12px; 
+            position: relative;
+            top: -16px; 
+            background: #025922; 
+            color: #fff !important; 
+            width: 58px; 
+            height: 58px; 
+            max-width: 58px; 
+            border-radius: 50%; 
+            border: 4px solid #ffffff; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px; 
             transition: all 0.2s ease; 
+            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.3);
         }
 
-        .nav-item.active { color: #3b82f6; }
         .nav-item:active { transform: scale(0.95); }
 
-        .nav-item-home { 
-            position: relative; 
-            top: -14px; 
-            background: #2563eb; 
-            color: #fff !important; 
-            width: 52px; 
-            height: 52px; 
-            max-width: 52px; 
-            border-radius: 50%; 
-            border: 4px solid #090d16; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+        .nav-item span { 
+            font-size: 9px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-top: 2px; 
         }
 
-        .nav-item-home span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
-
         .hidden { display: none !important; }
-        .error-box { background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 12px; margin: 12px; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 600; }
+        .error-box { background: rgba(220, 38, 38, 0.15); color: #dc2626; padding: 12px; margin: 12px; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<!-- Android App Style Splash Screen Loader -->
+<!-- Android App Style Splash Screen Loader - डार्क ग्रीन -->
 <div id="splashScreen">
-    <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="splash-logo">
+    <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
 </div>
 
 <div class="app-container">
     <div class="header">
         <button class="back-btn" onclick="location.href='dashboard.html'">←</button>
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOGAMI Logo" class="header-logo-img">
+        <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo" class="header-logo-img">
         <div style="width: 22px;"></div>
     </div>
     
@@ -319,20 +320,20 @@
         <div class="bid-card">
             <div class="bid-header"><span class="market-name">🎲 GAME PAYOUT RATES</span></div>
             <div class="bid-body">
-                <div class="bid-row"><span class="bid-label">Single Digit</span><span class="bid-value" style="color:#10b981;">10x</span></div>
-                <div class="bid-row"><span class="bid-label">Jodi</span><span class="bid-value" style="color:#10b981;">100x</span></div>
-                <div class="bid-row"><span class="bid-label">Single Pana</span><span class="bid-value" style="color:#10b981;">160x</span></div>
-                <div class="bid-row"><span class="bid-label">Double Pana</span><span class="bid-value" style="color:#10b981;">320x</span></div>
-                <div class="bid-row"><span class="bid-label">Triple Pana</span><span class="bid-value" style="color:#10b981;">1000x</span></div>
-                <div class="bid-row"><span class="bid-label">Half Sangam A</span><span class="bid-value" style="color:#10b981;">1000x</span></div>
-                <div class="bid-row"><span class="bid-label">Half Sangam B</span><span class="bid-value" style="color:#10b981;">1000x</span></div>
-                <div class="bid-row"><span class="bid-label">Full Sangam</span><span class="bid-value" style="color:#10b981;">10000x</span></div>
+                <div class="bid-row"><span class="bid-label">Single Digit</span><span class="bid-value" style="color:#059669;">10x</span></div>
+                <div class="bid-row"><span class="bid-label">Jodi</span><span class="bid-value" style="color:#059669;">100x</span></div>
+                <div class="bid-row"><span class="bid-label">Single Pana</span><span class="bid-value" style="color:#059669;">160x</span></div>
+                <div class="bid-row"><span class="bid-label">Double Pana</span><span class="bid-value" style="color:#059669;">320x</span></div>
+                <div class="bid-row"><span class="bid-label">Triple Pana</span><span class="bid-value" style="color:#059669;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Half Sangam A</span><span class="bid-value" style="color:#059669;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Half Sangam B</span><span class="bid-value" style="color:#059669;">1000x</span></div>
+                <div class="bid-row"><span class="bid-label">Full Sangam</span><span class="bid-value" style="color:#059669;">10000x</span></div>
             </div>
         </div>
     </div>
     
     <div class="bottom-nav">
-        <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
+        <a href="chart.html" class="nav-item"><span>Chart</span></a>
         <a href="mybids.html" class="nav-item active"><span>My Bids</span></a>
         <a href="dashboard.html" class="nav-item nav-item-home"><span>Home</span></a>
         <a href="funds.html" class="nav-item"><span>Fund</span></a>
@@ -426,10 +427,10 @@
                     <div class="bid-body">
                         <div class="bid-row"><span class="bid-label">Bidding ID</span><span class="bid-id-text">#${b.id.substring(0, 10).toUpperCase()}</span></div>
                         <div class="bid-row"><span class="bid-label">Game Type</span><span class="bid-value">${escapeHtml(gameTypeDisplay)}</span></div>
-                        <div class="bid-row"><span class="bid-label">Session</span><span class="bid-value" style="color:#3b82f6;">${sessionDisplay}</span></div>
-                        <div class="bid-row"><span class="bid-label">Selected Number</span><span class="bid-value" style="color:#f87171; font-family:monospace;">${escapeHtml(b.value)}</span></div>
-                        <div class="bid-row"><span class="bid-label">Points Bet</span><span class="bid-value" style="color:#10b981;">₹${b.points}</span></div>
-                        ${statusText==='WON'?`<div class="bid-row"><span class="bid-label">Payout Return</span><span class="bid-value" style="color:#10b981; font-weight:800;">+ ₹${winAmount}</span></div>`:''}
+                        <div class="bid-row"><span class="bid-label">Session</span><span class="bid-value" style="color:#0284c7;">${sessionDisplay}</span></div>
+                        <div class="bid-row"><span class="bid-label">Selected Number</span><span class="bid-value" style="color:#dc2626; font-family:monospace;">${escapeHtml(b.value)}</span></div>
+                        <div class="bid-row"><span class="bid-label">Points Bet</span><span class="bid-value" style="color:#059669;">₹${b.points}</span></div>
+                        ${statusText==='WON'?`<div class="bid-row"><span class="bid-label">Payout Return</span><span class="bid-value" style="color:#059669; font-weight:800;">+ ₹${winAmount}</span></div>`:''}
                     </div>
                     <div class="bid-footer">Placed: ${date}</div>
                 </div>`;
@@ -466,7 +467,7 @@
             for(let t of transactions){
                 let date = t.dateObj && t.dateObj.getTime() > 0 ? t.dateObj.toLocaleString() : 'Pending';
                 let isCredit = t.type === 'credit';
-                let statusColor = t.status === 'Completed' ? '#34d399' : (t.status === 'Rejected' ? '#f87171' : '#fbbf24');
+                let statusColor = t.status === 'Completed' ? '#059669' : (t.status === 'Rejected' ? '#dc2626' : '#d97706');
                 
                 html += `<div class="bid-card">
                     <div class="bid-header">
@@ -475,7 +476,7 @@
                     </div>
                     <div class="bid-body">
                         <div class="bid-row"><span class="bid-label">Ref ID</span><span class="bid-id-text">#${t.id.substring(0, 10).toUpperCase()}</span></div>
-                        <div class="bid-row"><span class="bid-label">Statement Amount</span><span class="bid-value" style="color:${isCredit ? '#10b981' : '#f87171'}; font-weight:800;">${isCredit ? '+' : '-'} ₹${t.amount}</span></div>
+                        <div class="bid-row"><span class="bid-label">Statement Amount</span><span class="bid-value" style="color:${isCredit ? '#059669' : '#dc2626'}; font-weight:800;">${isCredit ? '+' : '-'} ₹${t.amount}</span></div>
                         <div class="bid-row"><span class="bid-label">Timestamp</span><span class="bid-value">${date}</span></div>
                         ${t.description ? `<div class="bid-row"><span class="bid-label">Memo</span><span class="bid-value">${escapeHtml(t.description)}</span></div>` : ''}
                     </div>
