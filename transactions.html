@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOMAGI - Transactions</title>
+    <title>GOGAMI - Transactions</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -21,28 +21,28 @@
         }
 
         body { 
-            background: #090d16; 
-            color: #f8fafc; 
-            padding-bottom: 85px; 
+            background: #f0f6ff; 
+            color: #1e293b; 
+            padding-bottom: 90px; 
             min-height: 100vh;
         }
 
         .app-container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #090d16; 
+            background: #f0f6ff; 
             min-height: 100vh; 
             position: relative; 
         }
 
-        /* Full Screen Android App Style Splash Screen */
+        /* Full Screen Android App Style Splash Screen - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #090d16;
+            background: #025922;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,7 +61,7 @@
         .loader-bar {
             width: 120px;
             height: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
@@ -74,7 +74,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #2563eb;
+            background: #ffffff;
             border-radius: 10px;
             animation: loading 1.2s infinite linear;
         }
@@ -85,24 +85,25 @@
             100% { left: 100%; }
         }
 
-        /* Top Header Bar */
+        /* Top Header Bar - डार्क ग्रीन */
         .header { 
-            background: #0f172a; 
+            background: #025922; 
             padding: 12px 16px; 
             display: flex; 
             align-items: center; 
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .back-btn { 
             background: none; 
             border: none; 
             font-size: 22px; 
-            color: #94a3b8; 
+            color: #ffffff; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
@@ -116,7 +117,7 @@
         .title-text {
             font-size: 14px;
             font-weight: 800;
-            color: #f8fafc;
+            color: #ffffff;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -130,24 +131,26 @@
         }
 
         .history-item { 
-            background: #151c2c; 
+            background: #ffffff; 
             padding: 14px; 
             border-radius: 14px; 
             display: flex;
             flex-direction: column;
             gap: 8px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .history-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid #f1f5f9;
             padding-bottom: 8px;
         }
 
         .history-id { 
-            color: #3b82f6; 
+            color: #0284c7; 
             font-size: 11px; 
             font-family: monospace; 
             font-weight: 700;
@@ -158,8 +161,8 @@
             font-weight: 800; 
         }
 
-        .amount-credit { color: #10b981; }
-        .amount-debit { color: #f87171; }
+        .amount-credit { color: #059669; }
+        .amount-debit { color: #dc2626; }
 
         .history-row {
             display: flex;
@@ -176,8 +179,8 @@
             letter-spacing: 0.5px;
         }
 
-        .type-deposit { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .type-withdraw { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .type-deposit { background: rgba(5, 150, 105, 0.15); color: #059669; }
+        .type-withdraw { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
 
         .status-text {
             font-size: 11px;
@@ -185,9 +188,9 @@
             text-transform: uppercase;
         }
 
-        .status-completed, .status-approved { color: #34d399; }
-        .status-rejected { color: #f87171; }
-        .status-pending { color: #fbbf24; }
+        .status-completed, .status-approved { color: #059669; }
+        .status-rejected { color: #dc2626; }
+        .status-pending { color: #d97706; }
 
         .history-date { 
             color: #64748b; 
@@ -212,61 +215,57 @@
             right: 0; 
             max-width: 480px; 
             margin: 0 auto; 
-            background: #0f172a; 
+            background: #ffffff; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            padding: 8px 12px 10px 12px; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
+            padding: 6px 10px 8px 10px; 
+            border-top: 1px solid #e2e8f0; 
             z-index: 1000; 
-            height: 70px; 
+            height: 72px; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
         .nav-item { 
             text-align: center; 
-            color: #64748b; 
             cursor: pointer; 
-            font-size: 11px; 
+            font-size: 9px; 
             flex: 1; 
-            font-weight: 700; 
+            font-weight: 800; 
             text-decoration: none; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            height: 48px; 
-            border-radius: 12px; 
+            position: relative;
+            top: -16px; 
+            background: #025922; 
+            color: #fff !important; 
+            width: 58px; 
+            height: 58px; 
+            max-width: 58px; 
+            border-radius: 50%; 
+            border: 4px solid #ffffff; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px; 
             transition: all 0.2s ease; 
+            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.3);
         }
 
-        .nav-item.active { color: #3b82f6; }
         .nav-item:active { transform: scale(0.95); }
 
-        .nav-item-home { 
-            position: relative; 
-            top: -14px; 
-            background: #2563eb; 
-            color: #fff !important; 
-            width: 52px; 
-            height: 52px; 
-            max-width: 52px; 
-            border-radius: 50%; 
-            border: 4px solid #090d16; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+        .nav-item span { 
+            font-size: 9px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-top: 2px; 
         }
-
-        .nav-item-home span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<!-- Android App Style Splash Screen Loader -->
+<!-- Android App Style Splash Screen Loader - डार्क ग्रीन -->
 <div id="splashScreen">
-    <img src="https://i.imgur.com/Leuze73.png" alt="Logo" class="splash-logo">
+    <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
 </div>
 
@@ -274,7 +273,7 @@
     <div class="header">
         <button class="back-btn" onclick="goBack()">←</button>
         <span class="title-text">Transaction Statement</span>
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo" class="header-logo-img">
+        <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo" class="header-logo-img">
     </div>
 
     <div class="history-list" id="historyList">
@@ -321,7 +320,6 @@
         let user = auth.currentUser;
         if (!user) { window.location.href = 'index.html'; return; }
 
-        // Block Check Guard
         let userDoc = await db.collection('users').doc(user.uid).get();
         if (userDoc.exists && userDoc.data().blocked === true) {
             alert('🚫 Your account has been blocked by Admin.');
@@ -398,7 +396,7 @@
             container.innerHTML = html;
             hideSplashScreen();
         } catch (e) {
-            document.getElementById('historyList').innerHTML = `<div class="no-data" style="color:#f87171;">Error loading statement: ${e.message}</div>`;
+            document.getElementById('historyList').innerHTML = `<div class="no-data" style="color:#dc2626;">Error loading statement: ${e.message}</div>`;
             hideSplashScreen();
         }
     }
