@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GOMAGI - Live Support Chat</title>
+    <title>GOGAMI - Live Support Chat</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -11,29 +11,30 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
-        html, body { height: 100%; background: #090d16; color: #f8fafc; }
+        html, body { height: 100%; background: #f0f6ff; color: #1e293b; }
         body { display: flex; flex-direction: column; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; }
 
-        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #090d16; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #025922; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #ffffff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Support Header Bar Layout */
+        /* Support Header Bar Layout - डार्क ग्रीन */
         .chat-header {
-            background: #0f172a;
+            background: #025922;
             padding: 0 16px;
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             flex-shrink: 0;
             z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .back-btn {
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #ffffff;
             font-size: 22px;
             cursor: pointer;
             display: flex;
@@ -54,7 +55,7 @@
         }
         .status {
             font-size: 11px;
-            color: #10b981;
+            color: #34d399;
             font-weight: 600;
             margin-top: 1px;
         }
@@ -71,7 +72,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            background: #090d16;
+            background: #f0f6ff;
             -webkit-overflow-scrolling: touch;
         }
         .message {
@@ -85,22 +86,23 @@
             flex-direction: column;
         }
         .user-message {
-            background: #2563eb;
+            background: #025922;
             color: #fff;
             align-self: flex-end;
             border-bottom-right-radius: 2px;
         }
         .support-message {
-            background: #151c2c;
-            color: #f8fafc;
+            background: #ffffff;
+            color: #0f172a;
             align-self: flex-start;
             border-bottom-left-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .message-time {
             font-size: 10px;
             margin-top: 4px;
-            opacity: 0.6;
+            opacity: 0.7;
             align-self: flex-end;
             font-family: monospace;
         }
@@ -114,15 +116,16 @@
         }
         
         .welcome-msg {
-            background: #151c2c;
+            background: #ffffff;
             border-radius: 14px;
             padding: 18px 16px;
             text-align: center;
             margin: 10px 4px 20px 4px;
-            border: 1px dashed rgba(255,255,255,0.1);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
         .welcome-msg h3 {
-            color: #f8fafc;
+            color: #0f172a;
             margin-bottom: 6px;
             font-size: 15px;
             font-weight: 700;
@@ -138,29 +141,30 @@
             font-size: 11px;
             padding: 6px 16px;
             font-style: italic;
-            background: #090d16;
+            background: #f0f6ff;
             flex-shrink: 0;
             font-weight: 600;
         }
 
         /* Console Input Panel */
         .chat-input-area {
-            background: #0f172a;
+            background: #ffffff;
             padding: 10px 14px;
             display: flex;
             gap: 10px;
             flex-shrink: 0;
             align-items: center;
             min-height: 64px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
         .image-btn {
-            background: #151c2c;
-            border: none;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
             border-radius: 10px;
             width: 42px;
             height: 42px;
-            color: #fff;
+            color: #334155;
             font-size: 16px;
             cursor: pointer;
             display: flex;
@@ -170,28 +174,29 @@
         }
         .chat-input-field {
             flex: 1;
-            background: #151c2c;
+            background: #f8fafc;
             border-radius: 10px;
             padding: 10px 14px;
             display: flex;
             align-items: center;
             height: 42px;
+            border: 1px solid #cbd5e1;
         }
         .chat-input {
             width: 100%;
             background: transparent;
             border: none;
             outline: none;
-            color: #fff;
+            color: #0f172a;
             font-size: 13.5px;
             font-weight: 500;
             -webkit-user-select: text;
             user-select: text;
         }
-        .chat-input::placeholder { color: #52607a; }
+        .chat-input::placeholder { color: #94a3b8; }
         
         .send-btn {
-            background: #2563eb;
+            background: #025922;
             border: none;
             border-radius: 10px;
             height: 42px;
@@ -204,14 +209,14 @@
             text-transform: uppercase;
             flex-shrink: 0;
         }
-        .send-btn:active { background: #1d4ed8; }
+        .send-btn:active { background: #013b15; }
 
         /* Media Modal View Overlay */
         .image-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(9, 13, 22, 0.95);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(4px);
             z-index: 10000;
             justify-content: center;
@@ -232,18 +237,23 @@
 </head>
 <body>
     
+    <!-- Android App Style Splash Loader Screen - डार्क ग्रीन -->
+    <div class="loader-overlay" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
     <div class="chat-header">
         <button class="back-btn" onclick="goBack()">←</button>
         <div class="header-meta-box">
-            <span class="chat-title">GOMAGI SUPPORT</span>
+            <span class="chat-title">GOGAMI SUPPORT</span>
             <span class="status">● Online Support</span>
         </div>
-        <img src="https://i.imgur.com/Leuze73.png" alt="GOMAGI Logo" class="header-logo-img">
+        <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo" class="header-logo-img">
     </div>
 
     <div class="chat-messages" id="chatMessages">
         <div class="welcome-msg">
-            <h3>Welcome to GOMAGI Support!</h3>
+            <h3>Welcome to GOGAMI Support!</h3>
             <p>Our team is available to assist you.<br>Send a message and we will respond shortly.</p>
         </div>
     </div>
@@ -282,10 +292,10 @@
         const storage = firebase.storage();
 
         function showLoader() {
-            let div = document.createElement('div'); div.className = 'loader-overlay'; div.id = 'pageLoader'; 
-            div.innerHTML = '<div class="loader-spinner"></div>'; document.body.appendChild(div);
+            let el = document.getElementById('pageLoader');
+            if (el) el.style.display = 'flex';
         }
-        function hideLoader() { let el = document.getElementById('pageLoader'); if (el) el.remove(); }
+        function hideLoader() { let el = document.getElementById('pageLoader'); if (el) el.style.display = 'none'; }
 
         let currentUser = null, currentUserData = null, chatRoomId = null;
 
@@ -293,7 +303,6 @@
         auth.onAuthStateChanged(async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // USER BLOCK CHECK GUARD
             const userDoc = await db.collection('users').doc(user.uid).get();
             if (userDoc.exists && userDoc.data().blocked === true) {
                 alert('🚫 Your account has been blocked by Admin.');
@@ -352,7 +361,6 @@
                 container.scrollTop = container.scrollHeight;
             });
 
-            // Clears 'adminUnread' flag automatically
             db.collection('chats').doc(chatRoomId).onSnapshot((doc) => {
                 if (doc.exists) {
                     document.getElementById('typingIndicator').style.display = doc.data().adminTyping ? 'block' : 'none';
