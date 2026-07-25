@@ -24,8 +24,8 @@
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* ऊपर की तरफ एलाइनमेंट */
-            background: #f0f6ff;
+            align-items: flex-start;
+            background: #025922; /* डार्क ग्रीन बैकग्राउंड */
             overflow: hidden;
             position: relative;
         }
@@ -96,7 +96,7 @@
             align-items: center;
             position: relative;
             z-index: 2;
-            margin-top: 40px; /* लोगो और फॉर्म को ऊपर शिफ्ट किया गया है */
+            margin-top: 40px;
         }
 
         .main-logo {
@@ -146,7 +146,7 @@
         .btn {
             width: 100%;
             padding: 16px;
-            background: #025922;
+            background: #013b15; /* बटन के लिए डार्क ग्रीन शेड */
             border-radius: 14px;
             color: #ffffff;
             font-weight: 700;
@@ -154,24 +154,25 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(2, 89, 34, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             transition: background 0.2s ease, transform 0.1s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn:active { 
-            background: #013b15;
+            background: #00260d;
             transform: scale(0.98); 
         }
 
         .btn:disabled {
-            background: #e2e8f0;
-            color: #94a3b8;
+            background: #cbd5e1;
+            color: #64748b;
             cursor: not-allowed;
             box-shadow: none;
         }
 
         .welcome-text { 
-            color: #64748b; 
+            color: #ffffff; 
             font-size: 14px; 
             margin-bottom: 16px; 
             text-align: center; 
@@ -179,7 +180,7 @@
         }
 
         .timer { 
-            color: #d97706; 
+            color: #fef08a; 
             font-size: 13px; 
             font-weight: 700; 
             margin-bottom: 16px; 
@@ -189,7 +190,7 @@
         }
 
         .error-text { 
-            color: #dc2626; 
+            color: #fca5a5; 
             font-size: 12px; 
             text-align: center; 
             margin-top: 12px; 
@@ -256,7 +257,7 @@
         let isDataLoaded = false;
 
         function hideSplashScreen() {
-            if (!isDataLoaded) return; // सुनिश्चित करता है कि बैकग्राउंड डेटा लोड होने के बाद ही स्प्लैश हटे
+            if (!isDataLoaded) return;
             const splash = document.getElementById('splashScreen');
             if (splash && splash.style.opacity !== '0') {
                 splash.style.opacity = '0';
@@ -447,7 +448,7 @@
                             });
                             return;
                         }
-                        window.location.href = 'dashboard.html'; // अगर यूजर पहले से लॉग-इन है, डायरेक्ट डैशबोर्ड भेजें
+                        window.location.href = 'dashboard.html';
                     } else { 
                         showScreen(document.getElementById('registerScreen')); 
                         hideSplashScreen();
@@ -464,7 +465,6 @@
             } 
         });
 
-        // फॉールबैक टाइमर ताकि लोड होने में नेटवर्क धीमा होने पर भी ऐप अटके नहीं
         setTimeout(() => {
             isDataLoaded = true;
             hideSplashScreen();
