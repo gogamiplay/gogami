@@ -675,7 +675,19 @@
             const batch = db.batch();
             batch.update(db.collection('users').doc(auth.currentUser.uid), { balance: bal - total });
             const ts = firebase.firestore.FieldValue.serverTimestamp();
-            bids.forEach(b => batch.set(db.collection('bids').doc(), { ...b, userId: auth.currentUser.uid, status: 'pending', createdAt: ts }));
+            
+            // Explicitly adding bidId to database document matching generated ID
+            bids.forEach(b => {
+                let newDocRef = db.collection('bids').doc();
+                batch.set(newDocRef, { 
+                    ...b, 
+                    bidId: newDocRef.id, 
+                    userId: auth.currentUser.uid, 
+                    status: 'pending', 
+                    createdAt: ts 
+                });
+            });
+
             await batch.commit();
             document.getElementById('userBalance').innerText = (bal - total).toFixed(2);
             showMsg('✅ Bids Placed Successfully!', false); bids = []; updateSummary(); renderPanel();
