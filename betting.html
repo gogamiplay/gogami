@@ -336,7 +336,7 @@
         .error { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
         .success { background: rgba(16, 185, 129, 0.15); color: #059669; }
 
-        /* Stylish Confirmation Popup Styling */
+        /* Stylish Confirmation Popup Modal */
         #confirmPopupModal {
             position: fixed;
             top: 0;
@@ -710,18 +710,16 @@
         if(targetBlock) targetBlock.innerHTML = renderBidsOnly();
     }
 
-    // 1. Trigger Confirmation Popup instead of direct submit
+    // Step 1: Trigger Confirmation Popup
     function triggerSubmitConfirmation() {
         if (isSubmitting || bids.length === 0) return;
 
-        // Offline Check to prevent offline queuing issue
         if (!navigator.onLine) {
             alert("⚠️ No internet connection! Please check your network and try again.");
             return;
         }
 
         const total = bids.reduce((s,b)=>s+b.points,0);
-        document.getElementById('popupDescTextinnerHTML', true);
         document.getElementById('popupDescText').innerText = `Are you sure you want to place ${bids.length} bets totaling ₹${total}?`;
         document.getElementById('confirmPopupModal').style.display = 'flex';
     }
@@ -730,7 +728,7 @@
         document.getElementById('confirmPopupModal').style.display = 'none';
     }
 
-    // 2. Actual Submitting Logic after Confirmation
+    // Step 2: Secure Transaction-Based Submit (Fixes both Multi-click & Multi-browser race conditions)
     async function executeConfirmedSubmit() {
         closeConfirmPopup();
         if (isSubmitting || bids.length === 0) return;
@@ -745,34 +743,66 @@
             return; 
         }
         
-        const total = bids.reduce((s,b)=>s+b.points,0);
-        const userDoc = await db.collection('users').doc(auth.currentUser.uid).get();
-        const bal = userDoc.data().balance || 0;
-        if (bal < total) { showMsg('Insufficient balance', true); return; }
+        const total = bids.reduce((s, b) => s + b.points, 0);
+        const userId = auth.currentUser.uid;
+        const userRef = db.collection('users').doc(userId);
 
         isSubmitting = true;
-        const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = 'Submitting...';
+        const btn = document.getElementById('submitBtn'); 
+        btn.disabled = true; 
+        btn.innerText = 'Submitting...';
+
         try {
-            const batch = db.batch();
-            batch.update(db.collection('users').doc(auth.currentUser.uid), { balance: bal - total });
-            const ts = firebase.firestore.FieldValue.serverTimestamp();
-            
-            bids.forEach(b => {
-                let newDocRef = db.collection('bids').doc();
-                batch.set(newDocRef, { 
-                    ...b, 
-                    bidId: newDocRef.id, 
-                    userId: auth.currentUser.uid, 
-                    status: 'pending', 
-                    createdAt: ts 
+            // Firestore Transaction protects against multi-browser & multi-tab concurrency
+            await db.runTransaction(async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists) {
+                    throw "User does not exist!";
+                }
+
+                const currentBalance = userDoc.data().balance || 0;
+
+                if (currentBalance < total) {
+                    throw "Insufficient balance!";
+                }
+
+                // Deduct balance securely
+                transaction.update(userRef, { balance: currentBalance - total });
+
+                // Create bids atomically
+                const ts = firebase.firestore.FieldValue.serverTimestamp();
+                bids.forEach(b => {
+                    const newDocRef = db.collection('bids').doc();
+                    transaction.set(newDocRef, { 
+                        ...b, 
+                        bidId: newDocRef.id, 
+                        userId: userId, 
+                        status: 'pending', 
+                        createdAt: ts 
+                    });
                 });
             });
 
-            await batch.commit();
-            document.getElementById('userBalance').innerText = (bal - total).toFixed(2);
-            showMsg('✅ Bids Placed Successfully!', false); bids = []; updateSummary(); renderPanel();
-        } catch(e) { showMsg('Error placing bids. Try again.', true); }
-        finally { isSubmitting = false; btn.disabled = false; btn.innerText = 'Submit'; }
+            const updatedUserDoc = await userRef.get();
+            document.getElementById('userBalance').innerText = (updatedUserDoc.data().balance || 0).toFixed(2);
+            
+            showMsg('✅ Bids Placed Successfully!', false); 
+            bids = []; 
+            updateSummary(); 
+            renderPanel();
+
+        } catch (error) {
+            console.error("Transaction failed: ", error);
+            if (error === "Insufficient balance!") {
+                showMsg('Insufficient balance', true);
+            } else {
+                showMsg('Error placing bids. Try again.', true);
+            }
+        } finally {
+            isSubmitting = false; 
+            btn.disabled = false; 
+            btn.innerText = 'Submit'; 
+        }
     }
 
     function checkPanaLegality(p) {
