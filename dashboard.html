@@ -38,7 +38,6 @@
             position: relative; 
         }
         
-        /* Android App Style Splash Loader Overlay - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
@@ -88,7 +87,6 @@
             100% { left: 100%; }
         }
         
-        /* फिक्स्ड टॉप स्क्रीन / पैनल - डार्क ग्रीन बैकग्राउंड */
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -98,7 +96,7 @@
             margin: 0 auto;
             height: 12vh; 
             min-height: 85px;
-            background: #025922; /* डार्क ग्रीन */
+            background: #025922; 
             color: #ffffff; 
             z-index: 1000;
             display: flex; 
@@ -209,7 +207,6 @@
         
         .main-scroll-view { padding: 10px; }
 
-        /* Modern Skeleton Loader CSS */
         .market-skeleton {
             background: #ffffff;
             border-radius: 12px;
@@ -234,7 +231,6 @@
             100% { transform: translateX(200%); }
         }
 
-        /* मार्केट कार्ड्स */
         .market-card-wrapper { 
             background: #ffffff; 
             border-radius: 12px; 
@@ -573,7 +569,6 @@
 </head>
 <body>
 
-<!-- Android App Style Full Screen Splash Loader (डार्क ग्रीन) -->
 <div id="splashScreen">
     <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
@@ -605,7 +600,6 @@
     
     <div class="main-scroll-view">
         <div id="marketListElementContainer">
-            <!-- Modern Loading Skeleton View -->
             <div class="market-skeleton"></div>
             <div class="market-skeleton"></div>
             <div class="market-skeleton"></div>
@@ -703,7 +697,6 @@
     let currentUserData = null;
     let hasAlertedForCurrentMessage = false;
 
-    // स्पीड बूस्टर: जैसे ही पेज खुले, तुरंत लोकल स्टोरेज से पुराना डेटा उठाकर स्क्रीन पर दिखा दो (Instant Render)
     try {
         const cachedBal = localStorage.getItem('gogami_cached_balance');
         const cachedName = localStorage.getItem('gogami_cached_name');
@@ -716,7 +709,6 @@
         }
     } catch(e) {}
 
-    // स्प्लैश स्क्रीन को अब सुपर-फास्ट कर दिया गया है (ताकि यूज़र को तुरंत डैशबोर्ड दिखे)
     function hideSplashScreenFast() {
         const splash = document.getElementById('splashScreen');
         if (splash && splash.style.opacity !== '0') {
@@ -748,10 +740,8 @@
             }
         });
 
-        // Realtime User Document & Block Status Monitor
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if (doc.exists) {
-                // BLOCK CHECK GUARD
                 if (doc.data().blocked === true) {
                     alert('🚫 Your account has been blocked by Admin.');
                     auth.signOut().then(() => {
@@ -769,7 +759,6 @@
                 document.getElementById('drawerLabelName').innerText = name;
                 document.getElementById('drawerLabelPhone').innerText = currentUserData.phone ? `📞 ${currentUserData.phone}` : '';
                 
-                // लोकल स्टोरेज में सेव करें ताकि अगली बार ऐप खुलते ही तुरंत दिखे
                 try {
                     localStorage.setItem('gogami_cached_balance', bal);
                     localStorage.setItem('gogami_cached_name', name);
@@ -782,8 +771,6 @@
                     document.getElementById('bankIfscField').value = currentUserData.bankDetails.ifscCode || '';
                 }
             }
-            
-            // डेटा आते ही स्प्लैश स्क्रीन हटा दें ताकि ऐप सुपर-फास्ट लगे
             hideSplashScreenFast();
         });
     }
@@ -813,7 +800,6 @@
     }
 
     async function syncMarketFeeds() {
-        // सर्वर टाइम लाने के बजाय लोकल टाइम का इस्तेमाल करके स्पीड कई गुना तेज़ कर दी गई है
         const serverTime = new Date();
         
         db.collection('markets').orderBy('serialNo', 'asc').onSnapshot(snapshot => {
@@ -853,7 +839,6 @@
                     </div>`;
             }).join('');
 
-            // मार्केट फीड लोड होते ही स्प्लैश स्क्रीन हटा दें
             hideSplashScreenFast();
         });
     }
@@ -896,7 +881,7 @@
         if (auth.currentUser) {
             db.collection('users').doc(auth.currentUser.uid).update({ isOnline: false })
             .then(() => {
-                auth.signOut().then(() => { sessionStorage.clear(); window.location.href = 'index.html'; });
+                auth.signOut().then(() => { localStorage.removeItem('current_session_id'); sessionStorage.clear(); window.location.href = 'index.html'; });
             });
         } else {
             window.location.href = 'index.html';
@@ -928,25 +913,43 @@
     window.addEventListener('pagehide', clearOnlineStatusSync);
     window.addEventListener('beforeunload', clearOnlineStatusSync);
 
-    // सुरक्षा के लिए फॉलबैक टाइमर: अगर नेटवर्क धीमा भी हो, तो अधिकतम 1 सेकंड के अंदर स्प्लैश स्क्रीन ऑटोमैटिक हट जाएगी ताकि यूज़र को कभी इंतज़ार न करना पड़े।
     setTimeout(() => {
         hideSplashScreenFast();
     }, 1000);
 
+    // Single Session Enforcement Listener (Dashboard Level)
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
             window.location.href = 'index.html';
         } else {
-            // BLOCK CHECK GUARD
-            const doc = await db.collection('users').doc(user.uid).get();
+            const userId = user.uid;
+            const localSessionId = localStorage.getItem('current_session_id');
+
+            // 1. Block Check Guard
+            const doc = await db.collection('users').doc(userId).get();
             if (doc.exists && doc.data().blocked === true) {
                 alert('🚫 Your account has been blocked by Admin.');
                 await auth.signOut();
+                localStorage.removeItem('current_session_id');
                 window.location.href = 'index.html';
                 return;
             }
 
-            db.collection('users').doc(user.uid).update({
+            // 2. Real-time Single Session Monitor
+            db.collection('users').doc(userId).onSnapshot(userDoc => {
+                if (userDoc.exists) {
+                    const serverSessionId = userDoc.data().activeSessionId;
+                    if (serverSessionId && localSessionId && serverSessionId !== localSessionId) {
+                        alert("⚠️ Your account has been logged in from another device or browser.");
+                        auth.signOut().then(() => {
+                            localStorage.removeItem('current_session_id');
+                            window.location.href = 'index.html';
+                        });
+                    }
+                }
+            });
+
+            db.collection('users').doc(userId).update({
                 isOnline: true,
                 lastActive: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(e => console.log("Init offline trace caught."));
