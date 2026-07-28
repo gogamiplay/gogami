@@ -399,6 +399,15 @@
             });
         }
         
+        // Helper function to create/update session on successful login
+        async function createAndSaveSession(userId) {
+            const sessionId = 'session_' + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem('current_session_id', sessionId);
+            await db.collection('users').doc(userId).set({
+                activeSessionId: sessionId
+            }, { merge: true });
+        }
+
         document.getElementById('verifyOtpBtn').onclick = function() {
             const code = document.getElementById('otpCode').value;
             if (!code || code.length !== 6) { 
@@ -411,29 +420,31 @@
 
             if (ac) ac.abort();
             
-            confirmationResult.confirm(code).then(result => { 
+            confirmationResult.confirm(code).then(async result => { 
                 const user = result.user; 
-                db.collection('users').doc(user.uid).get().then(doc => { 
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
                     if (doc.exists) {
                         if (doc.data().blocked === true) {
                             alert('🚫 Your account has been blocked by Admin.');
-                            auth.signOut().then(() => {
-                                showScreen(document.getElementById('phoneScreen'));
-                                btn.disabled = false;
-                                btn.innerText = 'VERIFY OTP';
-                            });
+                            await auth.signOut();
+                            showScreen(document.getElementById('phoneScreen'));
+                            btn.disabled = false;
+                            btn.innerText = 'VERIFY OTP';
                             return;
                         }
+                        // Create session before heading to dashboard
+                        await createAndSaveSession(user.uid);
                         window.location.href = 'dashboard.html';
                     } else {
                         showScreen(document.getElementById('registerScreen'));
                         btn.disabled = false; 
                         btn.innerText = 'VERIFY OTP';
                     }
-                }).catch(() => { 
+                } catch(e) { 
                     showScreen(document.getElementById('registerScreen')); 
                     btn.disabled = false; 
-                }); 
+                } 
             }).catch(() => { 
                 showError('otpError', 'Invalid OTP. Please check and try again.'); 
                 btn.disabled = false; 
@@ -441,7 +452,7 @@
             });
         };
         
-        document.getElementById('registerBtn').onclick = function() {
+        document.getElementById('registerBtn').onclick = async function() {
             const name = document.getElementById('regName').value.trim();
             if (!name) { 
                 showError('regError', 'Enter your name'); 
@@ -457,46 +468,56 @@
             btn.disabled = true; 
             btn.innerText = 'Creating Account...';
             
-            db.collection('users').doc(user.uid).set({ 
-                uid: user.uid, 
-                phone: user.phoneNumber, 
-                name: name, 
-                balance: 0, 
-                blocked: false,
-                role: 'user', 
-                createdAt: new Date() 
-            }).then(() => { 
+            try {
+                // Create user doc and session ID together
+                const sessionId = 'session_' + Math.random().toString(36).substring(2) + Date.now();
+                localStorage.setItem('current_session_id', sessionId);
+
+                await db.collection('users').doc(user.uid).set({ 
+                    uid: user.uid, 
+                    phone: user.phoneNumber, 
+                    name: name, 
+                    balance: 0, 
+                    blocked: false,
+                    role: 'user', 
+                    activeSessionId: sessionId,
+                    createdAt: new Date() 
+                });
                 window.location.href = 'dashboard.html'; 
-            }).catch(error => { 
+            } catch(error) { 
                 showError('regError', error.message); 
                 btn.disabled = false; 
                 btn.innerText = 'Create Account & Login'; 
-            });
+            }
         };
 
-        auth.onAuthStateChanged(user => { 
+        auth.onAuthStateChanged(async user => { 
             if (user) { 
-                db.collection('users').doc(user.uid).get().then(doc => { 
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
                     isDataLoaded = true;
                     if (doc.exists) { 
                         if (doc.data().blocked === true) {
                             alert('🚫 Your account has been blocked by Admin.');
-                            auth.signOut().then(() => {
-                                showScreen(document.getElementById('phoneScreen'));
-                                hideSplashScreen();
-                            });
+                            await auth.signOut();
+                            showScreen(document.getElementById('phoneScreen'));
+                            hideSplashScreen();
                             return;
+                        }
+                        // Agar already logged in hai aur direct index.html khola hai toh session verify karke dashboard bhej do
+                        if (!localStorage.getItem('current_session_id')) {
+                            await createAndSaveSession(user.uid);
                         }
                         window.location.href = 'dashboard.html';
                     } else { 
                         showScreen(document.getElementById('registerScreen')); 
                         hideSplashScreen();
                     } 
-                }).catch(() => {
+                } catch(e) {
                     isDataLoaded = true;
                     showScreen(document.getElementById('phoneScreen'));
                     hideSplashScreen();
-                }); 
+                } 
             } else { 
                 isDataLoaded = true;
                 showScreen(document.getElementById('phoneScreen')); 
