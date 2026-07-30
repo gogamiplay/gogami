@@ -140,7 +140,7 @@
         .msg-bubble a {
             color: inherit;
             text-decoration: underline;
-          word-break: break-all;
+            word-break: break-all;
         }
         .msg-admin a { color: #93c5fd; }
         .msg-user a { color: #2563eb; }
@@ -287,13 +287,23 @@
     let messageListener = null;
     let chatMetaListener = null;
 
-    // Admin Authentication State Check Guard (Storage permissions ke liye zaroori hai)
     auth.onAuthStateChanged((user) => {
         if (!user) {
-            // Agar admin login nahi hai toh anonymous sign-in karwa lenge taaki storage rules pass ho jayein
             auth.signInAnonymously().catch((error) => {
                 console.error("Auth fallback error:", error);
             });
+        }
+    });
+
+    // URL parameters check करने का लॉजिक ताकि अगर admin.html से सीधा किसी यूजर पर क्लिक करके आएं तो वो चैट अपने आप खुल जाए
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const uidParam = urlParams.get('uid');
+        const nameParam = urlParams.get('name');
+        if (uidParam) {
+            setTimeout(() => {
+                selectChatRoom(uidParam, nameParam ? decodeURIComponent(nameParam) : 'User');
+            }, 1000);
         }
     });
 
@@ -323,13 +333,13 @@
             });
 
             listContainer.innerHTML = html;
-        });
+      });
     }
 
     function selectChatRoom(chatId, userName) {
         activeChatId = chatId;
         activeUserName = userName;
-        
+         
         document.getElementById('activeChatHeader').innerText = `Chatting with: ${userName}`;
         document.getElementById('chatMainWindow').classList.add('mobile-active');
 
@@ -349,7 +359,7 @@
             if (doc.exists) {
                 document.getElementById('userTypingIndicator').style.display = doc.data().userTyping ? 'block' : 'none';
             }
-        });
+      });
     }
 
     function loadMessages(chatId) {
@@ -361,33 +371,33 @@
                 const container = document.getElementById('chatMessages');
                 if (snapshot.empty) {
                     container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b; font-size:12px;">No messages in this room</div>';
-                  return;
-              }
+                    return;
+                }
 
-              let html = '';
-              snapshot.forEach(doc => {
-                  const msg = doc.data();
-                  const isAdmin = msg.sender === 'admin' || msg.isUser === false;
-                  const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
+                let html = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    const isAdmin = msg.sender === 'admin' || msg.isUser === false;
+                    const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
 
-                  if (msg.type === 'image' || msg.imageUrl) {
-                      html += `
+                    if (msg.type === 'image' || msg.imageUrl) {
+                        html += `
                             <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
                                 <img src="${msg.imageUrl}" class="msg-image" onclick="showImageModal('${msg.imageUrl}')">
                                 <div class="msg-time">${time}</div>
-                          </div>`;
-                } else {
-                      html += `
+                            </div>`;
+                    } else {
+                        html += `
                             <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
                                 <div>${formatMessageText(msg.text)}</div>
                                 <div class="msg-time">${time}</div>
-                        </div>`;
-                }
-            });
+                            </div>`;
+                    }
+                });
 
-          container.innerHTML = html;
-          container.scrollTop = container.scrollHeight;
-      });
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+          });
     }
 
     async function sendAdminReply() {
@@ -412,9 +422,9 @@
                 adminUnread: true
           });
 
-        } catch (e) {
+      } catch (e) {
             alert('Failed to send reply: ' + e.message);
-        }
+      }
     }
 
     async function sendAdminImage(input) {
@@ -442,8 +452,8 @@
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 adminUnread: true
           });
-        } catch (e) { alert("Image upload failed: " + e.message); } 
-        finally { input.value = ''; }
+      } catch (e) { alert("Image upload failed: " + e.message); } 
+      finally { input.value = ''; }
     }
 
     let adminTypingTimeout;
@@ -464,7 +474,7 @@
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
     }
 
-    // नया फंक्शन जो टेक्स्ट में मौजूद लिंक्स (YouTube या अन्य) को क्लिकेबल <a> टैग में बदल देता है
+    // लिंक्स को क्लिकेबल बनाने वाला फंक्शन
     function formatMessageText(str) {
         if (!str) return '';
         const safeStr = escapeHtml(str);
