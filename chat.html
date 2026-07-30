@@ -350,19 +350,19 @@
                     
                     if (msg.type === 'image' || msg.imageUrl) {
                         html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
-                                      <img src="${msg.imageUrl}" class="message-image" onclick="showImageModal('${msg.imageUrl}')">
-                                      <div class="message-time">${time}</div>
-                                 </div>`;
+                                     <img src="${msg.imageUrl}" class="message-image" onclick="showImageModal('${msg.imageUrl}')">
+                                     <div class="message-time">${time}</div>
+                                </div>`;
                     } else {
                         html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
-                                      <div>${formatMessageText(msg.text)}</div>
-                                      <div class="message-time">${time}</div>
-                                 </div>`;
+                                     <div>${formatMessageText(msg.text)}</div>
+                                     <div class="message-time">${time}</div>
+                                </div>`;
                     }
                 });
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-          });
+        });
 
             db.collection('chats').doc(chatRoomId).onSnapshot((doc) => {
                 if (doc.exists) {
@@ -371,7 +371,7 @@
                         db.collection('chats').doc(chatRoomId).update({ adminUnread: false }).catch(() => {});
                     }
                 }
-          });
+        });
     }
 
     async function sendMessage() {
@@ -439,13 +439,13 @@
     function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
     
-    // लिंक्स को क्लिकेबल बनाने वाला फंक्शन
+    // लिंक्स को क्लिकेबल और सुरक्षित बनाने वाला अपडेटेड फंक्शन
     function formatMessageText(str) {
             if (!str) return '';
             const safeStr = escapeHtml(str);
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return safeStr.replace(urlRegex, function(url) {
-                return '<a href="' + url + '" target="_blank">' + url + '</a>';
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
             });
     }
 
