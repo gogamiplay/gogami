@@ -18,7 +18,7 @@
         .loader-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #ffffff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Support Header Bar Layout - डार्क ग्रीन */
+        /* Support Header Bar Layout */
         .chat-header {
             background: #025922;
             padding: 0 16px;
@@ -114,6 +114,17 @@
             object-fit: cover;
             cursor: pointer;
         }
+        .message-video {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            margin-top: 2px;
+            background: #000;
+        }
+        .message-audio {
+            width: 200px;
+            margin-top: 4px;
+        }
 
         /* क्लिकेबल लिंक स्टाइल */
         .message a { color: inherit; text-decoration: underline; word-break: break-all; }
@@ -151,19 +162,19 @@
             font-weight: 600;
         }
 
-        /* Console Input Panel */
+        /* Console Input Panel - एंड्रॉइड वेबव्यू फिक्स */
         .chat-input-area {
             background: #ffffff;
             padding: 10px 14px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
             align-items: center;
             min-height: 64px;
             border-top: 1px solid #e2e8f0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
-        .image-btn {
+        .image-btn, .mic-btn {
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
@@ -177,6 +188,17 @@
             justify-content: center;
             flex-shrink: 0;
         }
+        .mic-btn.recording {
+            background: #dc2626 !important;
+            color: #fff !important;
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
         .chat-input-field {
             flex: 1;
             background: #f8fafc;
@@ -205,7 +227,7 @@
             border: none;
             border-radius: 10px;
             height: 42px;
-            padding: 0 18px;
+            padding: 0 16px;
             color: #fff;
             font-weight: 700;
             cursor: pointer;
@@ -266,6 +288,9 @@
     <div class="chat-input-area">
         <button class="image-btn" onclick="document.getElementById('imageInput').click()">📷</button>
         <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(this)">
+        
+        <button class="mic-btn" id="micBtn" onclick="toggleVoiceRecord()" title="Record Voice Message">🎙️</button>
+
         <div class="chat-input-field">
             <input type="text" class="chat-input" id="messageInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
         </div>
@@ -348,7 +373,17 @@
                     const isUser = msg.senderId === currentUser.uid || msg.sender === 'user' || msg.isUser === true;
                     const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     
-                    if (msg.type === 'image' || msg.imageUrl) {
+                    if (msg.type === 'audio' || msg.audioUrl) {
+                        html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
+                                     <audio src="${msg.audioUrl}" controls class="message-audio"></audio>
+                                     <div class="message-time">${time}</div>
+                                </div>`;
+                    } else if (msg.type === 'video' || msg.videoUrl) {
+                        html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
+                                     <video src="${msg.videoUrl}" controls class="message-video"></video>
+                                     <div class="message-time">${time}</div>
+                                </div>`;
+                    } else if (msg.type === 'image' || msg.imageUrl) {
                         html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
                                      <img src="${msg.imageUrl}" class="message-image" onclick="showImageModal('${msg.imageUrl}')">
                                      <div class="message-time">${time}</div>
@@ -435,11 +470,75 @@
             finally { btn.disabled = false; btn.innerHTML = '📷'; input.value = ''; }
     }
 
+    // यूजर वॉइस रिकॉर्डिंग लॉजिक
+    let mediaRecorder = null;
+    let audioChunks = [];
+    async function toggleVoiceRecord() {
+        if (!chatRoomId) { alert("Please wait, connecting to server..."); return; }
+        const micBtn = document.getElementById('micBtn');
+
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    stream.getTracks().forEach(track => track.stop());
+                    await uploadAndSendAudio(audioBlob);
+                };
+
+                mediaRecorder.start();
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '⏹';
+            } catch (e) {
+                alert("Microphone permission denied or not supported on this device.");
+            }
+        } else if (mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '🎙️';
+        }
+    }
+
+    async function uploadAndSendAudio(blob) {
+        try {
+            const filename = `${Date.now()}_voice.webm`;
+            const storageRef = storage.ref(`chat_audio/${chatRoomId}/${filename}`);
+            const snapshot = await storageRef.put(blob);
+            const audioUrl = await snapshot.ref.getDownloadURL();
+
+            await db.collection('chats').doc(chatRoomId).collection('messages').add({
+                senderId: currentUser.uid,
+                senderName: currentUserData?.name || 'User',
+                sender: 'user',
+                audioUrl: audioUrl,
+                type: 'audio',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                isUser: true
+            });
+
+            await db.collection('chats').doc(chatRoomId).set({
+                lastMessage: '🎤 Voice Message',
+                lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                unread: true,
+                adminUnread: false
+            }, { merge: true });
+        } catch (e) {
+            alert("Voice upload failed: " + e.message);
+        }
+    }
+
     function showImageModal(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').style.display = 'flex'; }
     function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
     
-    // लिंक्स को क्लिकेबल और सुरक्षित बनाने वाला अपडेटेड फंक्शन
     function formatMessageText(str) {
             if (!str) return '';
             const safeStr = escapeHtml(str);
@@ -466,6 +565,7 @@
     window.sendImage = sendImage; 
     window.showImageModal = showImageModal; 
     window.closeImageModal = closeImageModal;
+    window.toggleVoiceRecord = toggleVoiceRecord;
     </script>
 </body>
 </html>
