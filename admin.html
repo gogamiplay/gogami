@@ -27,7 +27,6 @@
             overflow-x: hidden; 
         }
 
-        /* Full Screen Login Screen */
         .login-screen { 
             position: fixed; 
             top: 0; 
@@ -86,7 +85,6 @@
             margin-top: 6px;
         }
 
-        /* App Mobile Shell & Sidebar Layout */
         .admin-panel { 
             display: none; 
             width: 100%; 
@@ -94,7 +92,6 @@
             flex-direction: column;
         }
 
-        /* Mobile Header */
         .mobile-header {
             display: flex;
             align-items: center;
@@ -115,7 +112,6 @@
             position: relative;
         }
 
-        /* मेनू बटन पर रेड डॉट इंडिकेटर */
         .menu-notification-dot {
             position: absolute;
             top: 2px;
@@ -132,7 +128,6 @@
             object-fit: contain;
         }
 
-        /* Sidebar Navigation Container */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -198,7 +193,6 @@
             font-weight: 800; 
         }
 
-        /* Main Content View Container */
         .main-content { 
             padding: 16px; 
             flex: 1; 
@@ -275,7 +269,6 @@
         .btn-delete { background: #991b1b; color: #fca5a5; }
         .hidden { display: none !important; }
 
-        /* Manage Markets List - छोटा और कॉम्पैक्ट साइज़ */
         .market-item { 
             background: #f8fafc; 
             padding: 8px 10px; 
@@ -321,7 +314,6 @@
         .jodi-display { font-size: 11px; color: #64748b; margin-top: 4px; }
         .jodi-display strong { color: #d97706; font-size: 13px; font-family: monospace; }
 
-        /* Collapsible User Item Styles */
         .user-item {
             background: #f8fafc;
             padding: 14px;
@@ -375,7 +367,6 @@
         .bank-details-box { background: #ffffff; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #334155; line-height: 1.5; border: 1px solid #cbd5e1; }
         .bank-details-box span { font-weight: 700; color: #64748b; }
 
-        /* Total Bids Section Styles */
         .total-bids-market-card { background: #ffffff; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .total-bids-market-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
         .total-bids-market-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
@@ -386,12 +377,10 @@
         .bid-badge-pill { background: #ffffff; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #334155; font-family: monospace; }
         .bid-badge-pill span { color: #0284c7; font-weight: 800; }
 
-        /* Add New Market Collapsible Styles */
         .collapsible-card-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
         .collapsible-card-body { display: none; margin-top: 14px; }
         .collapsible-card-body.open { display: block; }
 
-        /* Desktop Layout Adaptations */
         @media (min-width: 769px) {
             .admin-panel { flex-direction: row; }
             .mobile-header { display: none; }
@@ -405,7 +394,6 @@
 </head>
 <body>
 
-<!-- Login Overlay Screen -->
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
         <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
@@ -415,10 +403,7 @@
     </div>
 </div>
 
-<!-- Main Admin App Container -->
 <div id="adminPanel" class="admin-panel">
-    
-    <!-- Mobile Navigation Top Header -->
     <div class="mobile-header">
         <button class="menu-btn" onclick="toggleSidebar(true)">
             ☰
@@ -428,7 +413,6 @@
         <div style="width: 24px;"></div>
     </div>
 
-    <!-- Sidebar Menu Layer -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)">
         <div class="sidebar" onclick="event.stopPropagation()">
             <h2>GOGAMI ADMIN</h2>
@@ -444,10 +428,7 @@
         </div>
     </div>
 
-    <!-- Main Content Area -->
     <div class="main-content">
-        
-        <!-- Markets Section -->
         <div id="marketsSection">
             <div class="card">
                 <div class="collapsible-card-header" onclick="toggleAddMarketCard()">
@@ -477,7 +458,6 @@
             </div>
         </div>
         
-        <!-- Users Management Section -->
         <div id="usersSection" class="hidden">
             <div class="card">
                 <h3>👥 Users Management 
@@ -505,7 +485,6 @@
             </div>
         </div>
 
-        <!-- Total Bids Summary Section -->
         <div id="totalBidsSection" class="hidden">
             <div class="card">
                 <h3>📈 Total Bids Overview (Today)
@@ -515,7 +494,6 @@
             </div>
         </div>
         
-        <!-- Deposits Section -->
         <div id="depositsSection" class="hidden">
             <div class="card">
                 <h3>💰 Deposit Requests</h3>
@@ -528,7 +506,6 @@
             </div>
         </div>
         
-        <!-- Withdrawals Section -->
         <div id="withdrawalsSection" class="hidden">
             <div class="card">
                 <h3>💸 Withdrawal Requests</h3>
@@ -541,7 +518,6 @@
             </div>
         </div>
         
-        <!-- Notice Section -->
         <div id="noticeSection" class="hidden">
             <div class="card">
                 <h3>📢 Notice Board</h3>
@@ -551,7 +527,6 @@
             </div>
         </div>
         
-        <!-- Settings Section -->
         <div id="settingsSection" class="hidden">
             <div class="card">
                 <h3>🔐 Change Password</h3>
@@ -568,7 +543,6 @@
             </div>
         </div>
         
-        <!-- Live Chat Section -->
         <div id="livechatSection" class="hidden">
             <div class="card">
                 <h3>💬 Live Support Chat</h3>
@@ -883,7 +857,7 @@
                             <button onclick="updateBalance('${u.uid}','add')" class="btn-success">➕ Add</button>
                             <button onclick="updateBalance('${u.uid}','remove')" class="btn-danger">➖ Remove</button>
                             <button onclick="openUserBidsPage('${u.uid}','${escapeHtml(u.name)}')" class="btn-info">📋 Bids</button>
-                            <button onclick="openUserChat('${u.uid}','${escapeHtml(u.name)}')" class="btn-info" style="background:#7c3aed;">💬 Message</button>
+                            <button onclick="openUserChat('${u.uid}','${escapeHtml(u.name)}','${u.phone||''}')" class="btn-info" style="background:#7c3aed;">💬 Message</button>
                             <button onclick="toggleBlockUser('${u.uid}','${escapeHtml(u.name)}', ${isBlocked})" class="btn-warning">${isBlocked ? 'Unblock' : 'Block'}</button>
                             <button onclick="clearUserBids('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Bids</button>
                             <button onclick="clearUserTransactions('${u.uid}','${escapeHtml(u.name)}')" class="btn-reset">Clr Txn</button>
@@ -894,143 +868,91 @@
         }); 
         document.getElementById('usersList').innerHTML = html; 
     }
-    
+  
     async function loadTotalBidsSummary() {
         const container = document.getElementById('totalBidsContent');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Calculating total bids...</div>';
-        
         try {
             let today = new Date();
             today.setHours(0, 0, 0, 0);
-            
             let marketsSnap = await db.collection('markets').orderBy('serialNo', 'asc').get();
             let marketsList = [];
-            marketsSnap.forEach(doc => {
-                marketsList.push({ id: doc.id, name: doc.data().name || 'Unknown Market' });
-            });
-            
+            marketsSnap.forEach(doc => { marketsList.push({ id: doc.id, name: doc.data().name || 'Unknown Market' }); });
             let bidsSnap = await db.collection('bids').where('createdAt', '>=', today).get();
             let bidsData = [];
-            bidsSnap.forEach(doc => {
-                bidsData.push(doc.data());
-            });
-            
-            if (marketsList.length === 0) {
-                container.innerHTML = '<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>';
-                return;
-            }
-            
+            bidsSnap.forEach(doc => { bidsData.push(doc.data()); });
+            if (marketsList.length === 0) { container.innerHTML = '<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; return; }
             let html = '';
             marketsList.forEach(marketObj => {
                 let mName = marketObj.name;
                 let mBids = bidsData.filter(b => (b.market || '').toLowerCase() === mName.toLowerCase());
-                
-                let summary = {
-                    'Single Digit Open': {},
-                    'Single Digit Close': {},
-                    'Jodi': {},
-                    'Single Pana Open': {},
-                    'Single Pana Close': {},
-                    'Double Pana Open': {},
-                    'Double Pana Close': {},
-                    'Triple Pana Open': {},
-                    'Triple Pana Close': {},
-                    'Half Sangam A': {},
-                    'Half Sangam B': {},
-                    'Full Sangam': {}
-                };
-                
+                let summary = { 'Single Digit Open': {}, 'Single Digit Close': {}, 'Jodi': {}, 'Single Pana Open': {}, 'Single Pana Close': {}, 'Double Pana Open': {}, 'Double Pana Close': {}, 'Triple Pana Open': {}, 'Triple Pana Close': {}, 'Half Sangam A': {}, 'Half Sangam B': {}, 'Full Sangam': {} };
                 let marketTotalPts = 0;
-                
                 mBids.forEach(b => {
                     let gType = b.gameType || b.type || 'Other';
                     let bType = b.bidType || 'Open';
                     let val = b.value || '';
                     let pts = b.points || 0;
                     marketTotalPts += pts;
-                    
                     let key = gType;
-                    if (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana'].includes(gType)) {
-                        key = `${gType} ${bType}`;
-                    }
-                    
+                    if (['Single Digit', 'Single Pana', 'Double Pana', 'Triple Pana'].includes(gType)) { key = `${gType} ${bType}`; }
                     if (!summary[key]) summary[key] = {};
                     summary[key][val] = (summary[key][val] || 0) + pts;
                 });
-                
                 let isOpen = openTotalBidsMarketId === marketObj.id;
-                
-                html += `
-                    <div class="total-bids-market-card">
-                        <div class="total-bids-market-header" onclick="toggleTotalBidsMarket('${marketObj.id}')">
-                            <span>🎮 ${escapeHtml(mName)} (Total: ₹${marketTotalPts})</span>
-                            <span>${isOpen ? '▼' : '▶'}</span>
-                        </div>
-                        <div id="total_bids_market_${marketObj.id}" class="total-bids-market-body ${isOpen ? 'open' : ''}">`;
-                
+                html += `<div class="total-bids-market-card"><div class="total-bids-market-header" onclick="toggleTotalBidsMarket('${marketObj.id}')"><span>🎮 ${escapeHtml(mName)} (Total: ₹${marketTotalPts})</span><span>${isOpen ? '▼' : '▶'}</span></div><div id="total_bids_market_${marketObj.id}" class="total-bids-market-body ${isOpen ? 'open' : ''}">`;
                 let hasAnyBid = mBids.length > 0;
-                if (!hasAnyBid) {
-                    html += `<p style="color:#64748b; font-size:11px; text-align:center; padding:8px;">No bids placed for this market today.</p>`;
-                } else {
+                if (!hasAnyBid) { html += `<p style="color:#64748b; font-size:11px; text-align:center; padding:8px;">No bids placed for this market today.</p>`; } else {
                     for (let gameKey in summary) {
                         let gameObj = summary[gameKey];
                         let keysArr = Object.keys(gameObj);
                         if (keysArr.length > 0) {
-                            html += `
-                                <div class="game-type-block">
-                                    <div class="game-type-title">${gameKey}</div>
-                                    <div class="bid-detail-grid">`;
-                            keysArr.sort().forEach(val => {
-                                html += `<div class="bid-badge-pill">${val}: <span>₹${gameObj[val]}</span></div>`;
-                            });
+                            html += `<div class="game-type-block"><div class="game-type-title">${gameKey}</div><div class="bid-detail-grid">`;
+                            keysArr.sort().forEach(val => { html += `<div class="bid-badge-pill">${val}: <span>₹${gameObj[val]}</span></div>`; });
                             html += `</div></div>`;
                         }
                     }
                 }
                 html += `</div></div>`;
-          });
-          
-          container.innerHTML = html;
-      } catch (e) {
-            container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${e.message}</div>`;
-      }
+            });
+            container.innerHTML = html;
+      } catch (e) { container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${e.message}</div>`; }
     }
 
     function toggleTotalBidsMarket(mid) {
         let bodyDiv = document.getElementById(`total_bids_market_${mid}`);
         if(bodyDiv) {
-            if(openTotalBidsMarketId === mid) {
-                bodyDiv.classList.remove('open');
-                openTotalBidsMarketId = null;
-            } else {
-                if(openTotalBidsMarketId) {
-                    let prevDiv = document.getElementById(`total_bids_market_${openTotalBidsMarketId}`);
-                    if(prevDiv) prevDiv.classList.remove('open');
-              }
-              bodyDiv.classList.add('open');
-              openTotalBidsMarketId = mid;
-          }
+            if(openTotalBidsMarketId === mid) { bodyDiv.classList.remove('open'); openTotalBidsMarketId = null; } else {
+                if(openTotalBidsMarketId) { let prevDiv = document.getElementById(`total_bids_market_${openTotalBidsMarketId}`); if(prevDiv) prevDiv.classList.remove('open'); }
+                bodyDiv.classList.add('open'); openTotalBidsMarketId = mid;
+            }
       }
     }
   
     function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function openUserBidsPage(uid,name){ window.open(`user-bids.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
     
-    // नया फंक्शन: बिना चैट के भी यूजर को सीधे मैसेज/चैट खोलने के लिए (chat room automatically create/open होगा)
-    function openUserChat(uid, name) {
-        const chatId = uid;
-        db.collection('chats').doc(chatId).get().then(doc => {
+    // परफेक्ट फिक्स: सीधे chatRoomId (`chat_${uid}`) से चैट रूम बनाएगा और खोलेगा
+    async function openUserChat(uid, name, phone) {
+        const chatRoomId = `chat_${uid}`;
+        try {
+            const chatDocRef = db.collection('chats').doc(chatRoomId);
+            const doc = await chatDocRef.get();
             if (!doc.exists) {
-                db.collection('chats').doc(chatId).set({
+                await chatDocRef.set({
+                    userId: uid,
                     userName: name,
-                    userPhone: '',
+                    userPhone: phone || '',
                     lastMessage: 'Chat initialized by admin',
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                    unread: false
+                    unread: false,
+                    adminUnread: false
                 });
             }
             window.open(`admin-chat.html?uid=${uid}&name=${encodeURIComponent(name)}`, '_blank');
-        });
+        } catch (e) {
+            alert("Could not open chat: " + e.message);
+        }
     }
 
     function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div){ if(openMarketId===mid){ div.classList.remove('open'); openMarketId=null; }else{ if(openMarketId){ let prev=document.getElementById(`market_detail_${openMarketId}`); if(prev) prev.classList.remove('open'); } div.classList.add('open'); openMarketId=mid; } } }
@@ -1046,14 +968,12 @@
                 else if(m.status==='close'){ statusClass='status-close'; statusText='CLOSE'; }
                 else if(m.status==='holiday'){ statusClass='status-holiday'; statusText='HOLIDAY'; }
                 else{ statusClass='status-closed'; statusText='CLOSED'; } 
-                 
                 let openPana=m.openPana||'***', openDigit=m.openDigit||'*', closePana=m.closePana||'***', closeDigit=m.closeDigit||'*', jodi=m.jodi||'**', isCloseDeclared=m.closeDeclared||false; 
                 let jodiDisplay=(!isCloseDeclared && openPana!=='***')?openDigit+'*':jodi; 
-                 
                 html+=`<div class="market-item"><div class="market-header-row" onclick="toggleMarketDetails('${d.id}')"><span class="toggle-icon">${openMarketId===d.id?'▼':'▶'}</span><span><span class="market-serial" onclick="event.stopPropagation(); changeSerialNumber('${d.id}',${m.serialNo||0})">#${m.serialNo||'?'}</span> ${m.name||'No name'}</span><span class="status-badge ${statusClass}">${statusText}</span><button onclick="event.stopPropagation(); deleteMarket('${d.id}')" class="btn-danger" style="padding:3px 6px; font-size:10px;">🗑️</button></div><div id="market_detail_${d.id}" class="market-detail-row"><div><div>🎲 Numbers: ${m.numbers||'***'}</div><div>⏰ Open: ${formatTimeTo12Hour(m.openBidEnd)} | Close: ${formatTimeTo12Hour(m.closeBidEnd)}</div><div class="results-container"><div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div><div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div></div><div class="jodi-display">JODI: <strong>${jodiDisplay}</strong></div><div><input type="time" id="openBidEnd_${d.id}" value="${m.openBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','openBidEnd',document.getElementById('openBidEnd_${d.id}').value)">Save Open</button></div><div><input type="time" id="closeBidEnd_${d.id}" value="${m.closeBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','closeBidEnd',document.getElementById('closeBidEnd_${d.id}').value)">Save Close</button></div><div style="display:flex; gap:4px; flex-wrap:wrap;"><button onclick="setMarketStatus('${d.id}','open')" class="btn-success">🟢 OPEN</button><button onclick="setMarketStatus('${d.id}','close')" class="btn-warning">🟡 CLOSE</button><button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">🔴 CLOSED</button><button onclick="setMarketHoliday('${d.id}','${m.name}','${m.status}')" class="btn-warning">🎪 ${m.status==='holiday'?'Remove':'Set Holiday'}</button></div><div><input type="text" id="openPana_${d.id}" placeholder="Open Pana" maxlength="3" value="${openPana!=='***'?openPana:''}"><input type="text" id="openDigit_${d.id}" placeholder="Digit" maxlength="1" value="${openDigit!=='*'?openDigit:''}"><button onclick="declareOpenResult('${d.id}','${m.name}')">Declare OPEN</button></div><div><input type="text" id="closePana_${d.id}" placeholder="Close Pana" maxlength="3" value="${closePana!=='***'?closePana:''}"><input type="text" id="closeDigit_${d.id}" placeholder="Digit" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}"><button onclick="declareCloseResult('${d.id}','${m.name}')">Declare CLOSE</button></div><div><button onclick="editMarket('${d.id}','${m.name}','${m.numbers||''}')">✏️ Edit</button><button onclick="resetMarketResult('${d.id}','${m.name}')" class="btn-reset">⟳ Reset</button></div></div></div></div>`; 
-        }); 
-        if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
-        document.getElementById('marketsList').innerHTML=html; 
+          }); 
+          if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
+          document.getElementById('marketsList').innerHTML=html; 
     }); 
    }
 
@@ -1121,7 +1041,6 @@
             else if(normalizedGame==='Half Sangam A' && bid.value===''+openPana+'-'+closeDigit) winning=true; 
             else if(normalizedGame==='Half Sangam B' && bid.value===''+openDigit+'-'+closePana) winning=true; 
             else if(normalizedGame==='Full Sangam' && bid.value===''+openPana+'-'+closePana) winning=true; 
-             
             if(winning){ 
                 let win=bid.points*(gameRates[normalizedGame]||10); 
                 await b.ref.update({status:'won'}); 
@@ -1194,15 +1113,12 @@
    async function toggleBlockUser(uid, name, isBlocked) { 
         let targetState = !isBlocked; 
         let actionText = targetState ? "BLOCK" : "UNBLOCK"; 
-         
         if (confirm(`Are you sure you want to ${actionText} user "${name}"?`)) { 
             try {
                 await db.collection('users').doc(uid).update({ blocked: targetState }); 
                 alert(`✅ User "${name}" has been ${targetState ? 'BLOCKED' : 'UNBLOCKED'} successfully!`); 
                 loadUsersWithTodayBids(); 
-            } catch(e) {
-                alert("❌ Failed to update user status: " + e.message);
-            }
+            } catch(e) { alert("❌ Failed to update user status: " + e.message); }
         } 
    }
 
