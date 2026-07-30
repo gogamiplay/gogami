@@ -295,15 +295,15 @@
         }
     });
 
-    // URL parameters check करने का लॉजिक ताकि अगर admin.html से सीधा किसी यूजर पर क्लिक करके आएं तो वो चैट अपने आप खुल जाए
+    // URL से uid और name कैप्चर करके तुरंत उस यूजर की चैट ओपन करने का फिक्स
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const uidParam = urlParams.get('uid');
         const nameParam = urlParams.get('name');
         if (uidParam) {
             setTimeout(() => {
-                selectChatRoom(uidParam, nameParam ? decodeURIComponent(nameParam) : 'User');
-            }, 1000);
+                selectChatRoom(`chat_${uidParam}`, nameParam ? decodeURIComponent(nameParam) : 'User');
+            }, 800);
         }
     });
 
@@ -333,13 +333,13 @@
             });
 
             listContainer.innerHTML = html;
-      });
+        });
     }
 
     function selectChatRoom(chatId, userName) {
         activeChatId = chatId;
         activeUserName = userName;
-         
+        
         document.getElementById('activeChatHeader').innerText = `Chatting with: ${userName}`;
         document.getElementById('chatMainWindow').classList.add('mobile-active');
 
@@ -359,7 +359,7 @@
             if (doc.exists) {
                 document.getElementById('userTypingIndicator').style.display = doc.data().userTyping ? 'block' : 'none';
             }
-      });
+        });
     }
 
     function loadMessages(chatId) {
@@ -416,11 +416,11 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
           });
 
-            await db.collection('chats').doc(activeChatId).update({
+            await db.collection('chats').doc(activeChatId).set({
                 lastMessage: `Admin: ${text}`,
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 adminUnread: true
-          });
+          }, { merge: true });
 
       } catch (e) {
             alert('Failed to send reply: ' + e.message);
@@ -447,11 +447,11 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
           });
 
-            await db.collection('chats').doc(activeChatId).update({
+            await db.collection('chats').doc(activeChatId).set({
                 lastMessage: '📷 Admin Media Attachment',
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 adminUnread: true
-          });
+          }, { merge: true });
       } catch (e) { alert("Image upload failed: " + e.message); } 
       finally { input.value = ''; }
     }
