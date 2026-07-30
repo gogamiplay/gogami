@@ -375,7 +375,7 @@
         .bank-details-box { background: #ffffff; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #334155; line-height: 1.5; border: 1px solid #cbd5e1; }
         .bank-details-box span { font-weight: 700; color: #64748b; }
 
-        /* Total Bids Section Styles (ओरिजिनल साइज़) */
+        /* Total Bids Section Styles */
         .total-bids-market-card { background: #ffffff; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .total-bids-market-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
         .total-bids-market-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
@@ -449,7 +449,6 @@
         
         <!-- Markets Section -->
         <div id="marketsSection">
-            <!-- Add New Market Section (डिफ़ॉल्ट रूप से छिपा हुआ) -->
             <div class="card">
                 <div class="collapsible-card-header" onclick="toggleAddMarketCard()">
                     <h3 style="margin-bottom:0; border:none; padding-left:0;">➕ Add New Market</h3>
@@ -896,7 +895,6 @@
         document.getElementById('usersList').innerHTML = html; 
     }
     
-    // Total Bids Calculation Feature
     async function loadTotalBidsSummary() {
         const container = document.getElementById('totalBidsContent');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Calculating total bids...</div>';
@@ -990,12 +988,12 @@
                     }
                 }
                 html += `</div></div>`;
-            });
-            
-            container.innerHTML = html;
-        } catch (e) {
+          });
+          
+          container.innerHTML = html;
+      } catch (e) {
             container.innerHTML = `<div style="color:#dc2626; text-align:center;">Error: ${e.message}</div>`;
-        }
+      }
     }
 
     function toggleTotalBidsMarket(mid) {
@@ -1008,19 +1006,36 @@
                 if(openTotalBidsMarketId) {
                     let prevDiv = document.getElementById(`total_bids_market_${openTotalBidsMarketId}`);
                     if(prevDiv) prevDiv.classList.remove('open');
-                }
-                bodyDiv.classList.add('open');
-                openTotalBidsMarketId = mid;
-            }
-        }
+              }
+              bodyDiv.classList.add('open');
+              openTotalBidsMarketId = mid;
+          }
+      }
     }
-    
+  
     function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function openUserBidsPage(uid,name){ window.open(`user-bids.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
-    function openUserChat(uid,name){ window.open(`admin-chat.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
+    
+    // नया फंक्शन: बिना चैट के भी यूजर को सीधे मैसेज/चैट खोलने के लिए (chat room automatically create/open होगा)
+    function openUserChat(uid, name) {
+        const chatId = uid;
+        db.collection('chats').doc(chatId).get().then(doc => {
+            if (!doc.exists) {
+                db.collection('chats').doc(chatId).set({
+                    userName: name,
+                    userPhone: '',
+                    lastMessage: 'Chat initialized by admin',
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                    unread: false
+                });
+            }
+            window.open(`admin-chat.html?uid=${uid}&name=${encodeURIComponent(name)}`, '_blank');
+        });
+    }
+
     function toggleMarketDetails(mid){ let div=document.getElementById(`market_detail_${mid}`); if(div){ if(openMarketId===mid){ div.classList.remove('open'); openMarketId=null; }else{ if(openMarketId){ let prev=document.getElementById(`market_detail_${openMarketId}`); if(prev) prev.classList.remove('open'); } div.classList.add('open'); openMarketId=mid; } } }
     function formatTimeTo12Hour(t){ if(!t) return '--:--'; let [h,m]=t.split(':'); let hr=parseInt(h); let ampm=hr>=12?'PM':'AM'; hr=hr%12||12; return `${hr}:${m} ${ampm}`; }
-    
+  
     function loadMarkets(){ 
         db.collection('markets').orderBy('serialNo','asc').onSnapshot(s=>{ 
             let html=''; 
@@ -1031,24 +1046,24 @@
                 else if(m.status==='close'){ statusClass='status-close'; statusText='CLOSE'; }
                 else if(m.status==='holiday'){ statusClass='status-holiday'; statusText='HOLIDAY'; }
                 else{ statusClass='status-closed'; statusText='CLOSED'; } 
-                
+                 
                 let openPana=m.openPana||'***', openDigit=m.openDigit||'*', closePana=m.closePana||'***', closeDigit=m.closeDigit||'*', jodi=m.jodi||'**', isCloseDeclared=m.closeDeclared||false; 
                 let jodiDisplay=(!isCloseDeclared && openPana!=='***')?openDigit+'*':jodi; 
-                
+                 
                 html+=`<div class="market-item"><div class="market-header-row" onclick="toggleMarketDetails('${d.id}')"><span class="toggle-icon">${openMarketId===d.id?'▼':'▶'}</span><span><span class="market-serial" onclick="event.stopPropagation(); changeSerialNumber('${d.id}',${m.serialNo||0})">#${m.serialNo||'?'}</span> ${m.name||'No name'}</span><span class="status-badge ${statusClass}">${statusText}</span><button onclick="event.stopPropagation(); deleteMarket('${d.id}')" class="btn-danger" style="padding:3px 6px; font-size:10px;">🗑️</button></div><div id="market_detail_${d.id}" class="market-detail-row"><div><div>🎲 Numbers: ${m.numbers||'***'}</div><div>⏰ Open: ${formatTimeTo12Hour(m.openBidEnd)} | Close: ${formatTimeTo12Hour(m.closeBidEnd)}</div><div class="results-container"><div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div><div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div></div><div class="jodi-display">JODI: <strong>${jodiDisplay}</strong></div><div><input type="time" id="openBidEnd_${d.id}" value="${m.openBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','openBidEnd',document.getElementById('openBidEnd_${d.id}').value)">Save Open</button></div><div><input type="time" id="closeBidEnd_${d.id}" value="${m.closeBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','closeBidEnd',document.getElementById('closeBidEnd_${d.id}').value)">Save Close</button></div><div style="display:flex; gap:4px; flex-wrap:wrap;"><button onclick="setMarketStatus('${d.id}','open')" class="btn-success">🟢 OPEN</button><button onclick="setMarketStatus('${d.id}','close')" class="btn-warning">🟡 CLOSE</button><button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">🔴 CLOSED</button><button onclick="setMarketHoliday('${d.id}','${m.name}','${m.status}')" class="btn-warning">🎪 ${m.status==='holiday'?'Remove':'Set Holiday'}</button></div><div><input type="text" id="openPana_${d.id}" placeholder="Open Pana" maxlength="3" value="${openPana!=='***'?openPana:''}"><input type="text" id="openDigit_${d.id}" placeholder="Digit" maxlength="1" value="${openDigit!=='*'?openDigit:''}"><button onclick="declareOpenResult('${d.id}','${m.name}')">Declare OPEN</button></div><div><input type="text" id="closePana_${d.id}" placeholder="Close Pana" maxlength="3" value="${closePana!=='***'?closePana:''}"><input type="text" id="closeDigit_${d.id}" placeholder="Digit" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}"><button onclick="declareCloseResult('${d.id}','${m.name}')">Declare CLOSE</button></div><div><button onclick="editMarket('${d.id}','${m.name}','${m.numbers||''}')">✏️ Edit</button><button onclick="resetMarketResult('${d.id}','${m.name}')" class="btn-reset">⟳ Reset</button></div></div></div></div>`; 
         }); 
         if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
         document.getElementById('marketsList').innerHTML=html; 
     }); 
-    }
+   }
 
-    async function setMarketStatus(mid,st){ await db.collection('markets').doc(mid).update({status:st,isHoliday:st==='holiday'}); alert(`✅ Status changed to ${st.toUpperCase()}`); }
-    async function updateMarketTime(mid,fld,val){ await db.collection('markets').doc(mid).update({[fld]:val}); alert(`✅ ${fld} updated`); }
-    async function changeSerialNumber(mid,curr){ let newS=prompt(`New serial number (current #${curr})`,curr); if(newS && !isNaN(newS) && parseInt(newS)>0){ await db.collection('markets').doc(mid).update({serialNo:parseInt(newS)}); alert('✅ Changed!'); loadMarkets(); } }
-    async function deleteAllMarkets(){ if(confirm("DELETE ALL MARKETS?")){ await db.collection('markets').get().then(s=>s.forEach(d=>d.ref.delete())); alert('Deleted!'); loadMarkets(); } }
-    async function setMarketHoliday(mid,name,st){ let isH=st==='holiday'; await db.collection('markets').doc(mid).update({status:isH?'closed':'holiday',isHoliday:!isH}); loadMarkets(); }
-    
-    async function declareOpenResult(mid,name){ 
+   async function setMarketStatus(mid,st){ await db.collection('markets').doc(mid).update({status:st,isHoliday:st==='holiday'}); alert(`✅ Status changed to ${st.toUpperCase()}`); }
+   async function updateMarketTime(mid,fld,val){ await db.collection('markets').doc(mid).update({[fld]:val}); alert(`✅ ${fld} updated`); }
+   async function changeSerialNumber(mid,curr){ let newS=prompt(`New serial number (current #${curr})`,curr); if(newS && !isNaN(newS) && parseInt(newS)>0){ await db.collection('markets').doc(mid).update({serialNo:parseInt(newS)}); alert('✅ Changed!'); loadMarkets(); } }
+   async function deleteAllMarkets(){ if(confirm("DELETE ALL MARKETS?")){ await db.collection('markets').get().then(s=>s.forEach(d=>d.ref.delete())); alert('Deleted!'); loadMarkets(); } }
+   async function setMarketHoliday(mid,name,st){ let isH=st==='holiday'; await db.collection('markets').doc(mid).update({status:isH?'closed':'holiday',isHoliday:!isH}); loadMarkets(); }
+  
+   async function declareOpenResult(mid,name){ 
         let openPana=document.getElementById(`openPana_${mid}`).value.trim(), openDigit=document.getElementById(`openDigit_${mid}`).value.trim(); 
         if(!openPana||!/^\d{3}$/.test(openPana)){ alert('Enter valid 3-digit Open Pana'); return; } 
         if(!openDigit||!/^\d$/.test(openDigit)){ alert('Enter valid Open Digit'); return; } 
@@ -1057,9 +1072,9 @@
             await creditOpenWinners(mid,name,openPana,openDigit); 
             alert('✅ OPEN result declared!'); 
         } 
-    }
-    
-    async function declareCloseResult(mid,name){ 
+   }
+  
+   async function declareCloseResult(mid,name){ 
         let closePana=document.getElementById(`closePana_${mid}`).value.trim(), closeDigit=document.getElementById(`closeDigit_${mid}`).value.trim(); 
         if(!closePana||!/^\d{3}$/.test(closePana)){ alert('Enter valid 3-digit Close Pana'); return; } 
         if(!closeDigit||!/^\d$/.test(closeDigit)){ alert('Enter valid Close Digit'); return; } 
@@ -1072,11 +1087,11 @@
             await creditCloseWinners(mid,name,m.openPana,m.openDigit,closePana,closeDigit,jodi); 
             alert('✅ CLOSE result declared!'); 
         } 
-    }
-    
-    async function resetMarketResult(mid,name){ if(confirm(`Reset "${name}" results?`)){ await db.collection('markets').doc(mid).update({openPana:'***',openDigit:'*',closePana:'***',closeDigit:'*',jodi:'**',closeDeclared:false}); alert(`✅ Reset!`); } }
-    
-    async function creditOpenWinners(mid,name,openPana,openDigit){ 
+   }
+  
+   async function resetMarketResult(mid,name){ if(confirm(`Reset "${name}" results?`)){ await db.collection('markets').doc(mid).update({openPana:'***',openDigit:'*',closePana:'***',closeDigit:'*',jodi:'**',closeDeclared:false}); alert(`✅ Reset!`); } }
+  
+   async function creditOpenWinners(mid,name,openPana,openDigit){ 
         let bids=await db.collection('bids').where('marketId','==',mid).where('status','==','pending').get(); 
         for(let b of bids.docs){ 
             let bid=b.data(); let winning=false; 
@@ -1093,9 +1108,9 @@
                 await db.collection('transactions').add({userId:bid.userId,type:'credit',amount:win,status:'Completed',description:`Won on ${name} (OPEN) - ${normalizedGame}: ${bid.value}`,date:new Date()}); 
             } else { if (bid.bidType === 'Open') { await b.ref.update({status:'lost'}); } } 
         } 
-    }
-    
-    async function creditCloseWinners(mid,name,openPana,openDigit,closePana,closeDigit,jodi){ 
+   }
+  
+   async function creditCloseWinners(mid,name,openPana,openDigit,closePana,closeDigit,jodi){ 
         let bids=await db.collection('bids').where('marketId','==',mid).where('status','==','pending').get(); 
         for(let b of bids.docs){ 
             let bid=b.data(); let winning=false; 
@@ -1106,7 +1121,7 @@
             else if(normalizedGame==='Half Sangam A' && bid.value===''+openPana+'-'+closeDigit) winning=true; 
             else if(normalizedGame==='Half Sangam B' && bid.value===''+openDigit+'-'+closePana) winning=true; 
             else if(normalizedGame==='Full Sangam' && bid.value===''+openPana+'-'+closePana) winning=true; 
-            
+             
             if(winning){ 
                 let win=bid.points*(gameRates[normalizedGame]||10); 
                 await b.ref.update({status:'won'}); 
@@ -1115,13 +1130,13 @@
                 await db.collection('transactions').add({userId:bid.userId,type:'credit',amount:win,status:'Completed',description:`Won on ${name} - ${normalizedGame}: ${bid.value}`,date:new Date()}); 
             }else{ await b.ref.update({status:'lost'}); } 
         } 
-    }
-    
-    async function addMarket(){ let name=document.getElementById('marketNameInput').value; if(!name){ alert('Enter market name'); return; } await db.collection('markets').add({name, numbers:document.getElementById('marketNumbersInput').value||'***-**-***', openBidEnd:document.getElementById('openBidEnd').value, closeBidEnd:document.getElementById('closeBidEnd').value, closedTime:document.getElementById('closedTime').value, status:document.getElementById('marketStatus').value, serialNo:1, isHoliday:false, openPana:'***', openDigit:'*', closePana:'***', closeDigit:'*', jodi:'**', closeDeclared:false }); alert('Market added!'); }
-    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
-    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
-    
-    async function loadDeposits(){ 
+   }
+  
+   async function addMarket(){ let name=document.getElementById('marketNameInput').value; if(!name){ alert('Enter market name'); return; } await db.collection('markets').add({name, numbers:document.getElementById('marketNumbersInput').value||'***-**-***', openBidEnd:document.getElementById('openBidEnd').value, closeBidEnd:document.getElementById('closeBidEnd').value, closedTime:document.getElementById('closedTime').value, status:document.getElementById('marketStatus').value, serialNo:1, isHoliday:false, openPana:'***', openDigit:'*', closePana:'***', closeDigit:'*', jodi:'**', closeDeclared:false }); alert('Market added!'); }
+   async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
+   async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
+  
+   async function loadDeposits(){ 
         let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
         let snap=await db.collection('transactions').where('type','==','credit').where('status','==',status).get(); 
         let deposits=[]; 
@@ -1137,13 +1152,13 @@
             html+=`<div class="request-item"><div><b>👤 ${d.userName}</b><br><b>💰 Amount:</b> ₹${d.amount}<br><b>📋 UTR/Ref:</b> ${d.userUTR||'N/A'}<br><b>📅 Date:</b> ${d.date.toLocaleString()}</div><div style="margin-top:8px;">${isPending?`<button onclick="approveDeposit('${d.id}',${d.amount},'${d.userId}')" class="btn-success">Approve</button><button onclick="rejectDeposit('${d.id}')" class="btn-danger">Reject</button>`:`<button onclick="deleteDepositRecord('${d.id}')" class="btn-delete">Delete</button>`}</div></div>`; 
         } 
         document.getElementById('depositsList').innerHTML=html||'<p style="color:#64748b;">No deposits found</p>'; 
-    }
+   }
 
-    async function approveDeposit(id,amount,uid){ if(confirm(`Approve deposit of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); await db.collection('users').doc(uid).update({balance:(user.data().balance||0)+amount}); await db.collection('transactions').doc(id).update({status:'Completed'}); alert('✅ Deposit approved!'); loadDeposits(); } }
-    async function rejectDeposit(id){ if(confirm('Reject this deposit?')){ await db.collection('transactions').doc(id).update({status:'Rejected'}); alert('❌ Deposit rejected!'); loadDeposits(); } }
-    async function deleteDepositRecord(id){ if(confirm('Delete record?')){ await db.collection('transactions').doc(id).delete(); loadDeposits(); } }
-    
-    async function loadWithdrawals(){ 
+   async function approveDeposit(id,amount,uid){ if(confirm(`Approve deposit of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); await db.collection('users').doc(uid).update({balance:(user.data().balance||0)+amount}); await db.collection('transactions').doc(id).update({status:'Completed'}); alert('✅ Deposit approved!'); loadDeposits(); } }
+   async function rejectDeposit(id){ if(confirm('Reject this deposit?')){ await db.collection('transactions').doc(id).update({status:'Rejected'}); alert('❌ Deposit rejected!'); loadDeposits(); } }
+   async function deleteDepositRecord(id){ if(confirm('Delete record?')){ await db.collection('transactions').doc(id).delete(); loadDeposits(); } }
+  
+   async function loadWithdrawals(){ 
         let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
         let snap=await db.collection('withdrawRequests').where('status','==',status).get(); 
         let withdrawals=[]; 
@@ -1159,13 +1174,13 @@
             html+=`<div class="request-item"><div><b>👤 ${w.userName}</b><br><b>📞 Phone:</b> ${w.userPhone}<br><b>💰 Amount:</b> ₹${w.amount}<br><div class="bank-details-box"><span>🏦 BANK DETAILS:</span><br><span>Holder:</span> ${w.bankDetails.accountHolder||'N/A'}<br><span>Bank:</span> ${w.bankDetails.bankName||'N/A'}<br><span>Account:</span> ${w.bankDetails.accountNumber||'N/A'}<br><span>IFSC:</span> ${w.bankDetails.ifscCode||'N/A'}</div><b>📅 ${w.date.toLocaleString()}</b></div><div style="margin-top:8px;">${isPending?`<button onclick="approveWithdraw('${w.id}',${w.amount},'${w.userId}')" class="btn-success">Approve</button><button onclick="rejectWithdraw('${w.id}')" class="btn-danger">Reject</button>`:`<button onclick="deleteWithdrawalRecord('${w.id}')" class="btn-delete">Delete</button>`}</div></div>`; 
         } 
         document.getElementById('withdrawalsList').innerHTML=html||'<p style="color:#64748b;">No withdrawals found</p>'; 
-    }
+   }
 
-    async function approveWithdraw(id,amount,uid){ if(confirm(`Approve withdrawal of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); if((user.data().balance||0)<amount){ alert('User has insufficient balance!'); return; } await db.collection('users').doc(uid).update({balance:(user.data().balance||0)-amount}); await db.collection('withdrawRequests').doc(id).update({status:'Completed'}); alert('✅ Withdrawal approved!'); loadWithdrawals(); } }
-    async function rejectWithdraw(id){ if(confirm('Reject withdrawal?')){ await db.collection('withdrawRequests').doc(id).update({status:'Rejected'}); alert('❌ Rejected!'); loadWithdrawals(); } }
-    async function deleteWithdrawalRecord(id){ if(confirm('Delete record?')){ await db.collection('withdrawRequests').doc(id).delete(); loadWithdrawals(); } }
-    
-    async function updateBalance(uid,action){ 
+   async function approveWithdraw(id,amount,uid){ if(confirm(`Approve withdrawal of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); if((user.data().balance||0)<amount){ alert('User has insufficient balance!'); return; } await db.collection('users').doc(uid).update({balance:(user.data().balance||0)-amount}); await db.collection('withdrawRequests').doc(id).update({status:'Completed'}); alert('✅ Withdrawal approved!'); loadWithdrawals(); } }
+   async function rejectWithdraw(id){ if(confirm('Reject withdrawal?')){ await db.collection('withdrawRequests').doc(id).update({status:'Rejected'}); alert('❌ Rejected!'); loadWithdrawals(); } }
+   async function deleteWithdrawalRecord(id){ if(confirm('Delete record?')){ await db.collection('withdrawRequests').doc(id).delete(); loadWithdrawals(); } }
+  
+   async function updateBalance(uid,action){ 
         let amt=prompt(`Enter amount to ${action==='add'?'ADD':'REMOVE'}:`); 
         if(!amt||isNaN(amt)||parseInt(amt)<=0) return; 
         let amtNum=parseInt(amt); 
@@ -1174,12 +1189,12 @@
         let newBal=action==='add'?curr+amtNum:curr-amtNum; 
         await db.collection('users').doc(uid).update({balance:newBal}); 
         alert(`✅ Balance updated to ₹${newBal}`); 
-    }
+   }
 
-    async function toggleBlockUser(uid, name, isBlocked) { 
+   async function toggleBlockUser(uid, name, isBlocked) { 
         let targetState = !isBlocked; 
         let actionText = targetState ? "BLOCK" : "UNBLOCK"; 
-        
+         
         if (confirm(`Are you sure you want to ${actionText} user "${name}"?`)) { 
             try {
                 await db.collection('users').doc(uid).update({ blocked: targetState }); 
@@ -1189,18 +1204,18 @@
                 alert("❌ Failed to update user status: " + e.message);
             }
         } 
-    }
+   }
 
-    async function clearUserBids(uid,name){ if(confirm(`Clear bid history for "${name}"?`)){ let bids=await db.collection('bids').where('userId','==',uid).get(); bids.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
-    async function clearUserTransactions(uid,name){ if(confirm(`Clear transactions for "${name}"?`)){ let trans=await db.collection('transactions').where('userId','==',uid).get(); trans.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
-    async function deleteUser(uid,name){ if(confirm(`Delete user "${name}"?`)){ await db.collection('users').doc(uid).delete(); alert('User deleted!'); loadUsersWithTodayBids(); } }
-    
-    function loadSettings(){ db.collection('settings').doc('upi').get().then(d=>{ if(d.exists) document.getElementById('upiId').value=d.data().upiId; }); }
-    async function updateUPI(){ await db.collection('settings').doc('upi').set({upiId:document.getElementById('upiId').value}); alert("UPI Updated"); }
-    function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome to GOGAMI!'; }); }
-    async function updateNotice(){ await db.collection('settings').doc('notice').set({text:document.getElementById('noticeText').value,updatedAt:new Date()}); alert('✅ Notice updated!'); }
-    
-    async function changePassword(){ 
+   async function clearUserBids(uid,name){ if(confirm(`Clear bid history for "${name}"?`)){ let bids=await db.collection('bids').where('userId','==',uid).get(); bids.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
+   async function clearUserTransactions(uid,name){ if(confirm(`Clear transactions for "${name}"?`)){ let trans=await db.collection('transactions').where('userId','==',uid).get(); trans.forEach(d=>d.ref.delete()); alert('✅ Cleared!'); } }
+   async function deleteUser(uid,name){ if(confirm(`Delete user "${name}"?`)){ await db.collection('users').doc(uid).delete(); alert('User deleted!'); loadUsersWithTodayBids(); } }
+  
+   function loadSettings(){ db.collection('settings').doc('upi').get().then(d=>{ if(d.exists) document.getElementById('upiId').value=d.data().upiId; }); }
+   async function updateUPI(){ await db.collection('settings').doc('upi').set({upiId:document.getElementById('upiId').value}); alert("UPI Updated"); }
+   function loadNotice(){ db.collection('settings').doc('notice').onSnapshot(d=>{ document.getElementById('noticeText').value=d.exists?d.data().text:'Welcome to GOGAMI!'; }); }
+   async function updateNotice(){ await db.collection('settings').doc('notice').set({text:document.getElementById('noticeText').value,updatedAt:new Date()}); alert('✅ Notice updated!'); }
+  
+   async function changePassword(){ 
         let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
         if(old===dbPassword){ 
             await db.collection('settings').doc('admin').set({ password: newP.trim() }); 
@@ -1210,9 +1225,9 @@
             document.getElementById('loginScreen').style.display='flex'; 
             document.getElementById('adminPanel').style.display='none'; 
         } else { alert('❌ Wrong old password!'); } 
-    }
-    
-    function showSection(section){ 
+   }
+  
+   function showSection(section){ 
         toggleSidebar(false);
         ['markets','users','totalBids','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
         document.getElementById(`${section}Section`).classList.remove('hidden'); 
@@ -1221,14 +1236,14 @@
         if(section==='deposits') loadDeposits(); 
         if(section==='withdrawals') loadWithdrawals(); 
         if(section==='livechat') markAllChatsAsRead(); 
-    }
+   }
 
-    async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
-    function logout(){ 
+   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
+   function logout(){ 
         localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
         document.getElementById('adminPanel').style.display='none'; 
-    }
+   }
 </script>
 </body>
 </html>
