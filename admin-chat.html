@@ -97,6 +97,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            flex-shrink: 0;
         }
 
         .header-user-details { font-size: 14px; font-weight: 700; color: #0f172a; }
@@ -144,6 +145,11 @@
             background: #000;
         }
 
+        .msg-audio {
+            width: 200px;
+            margin-top: 4px;
+        }
+
         /* क्लिकेबल लिंक स्टाइल */
         .msg-bubble a {
             color: inherit;
@@ -160,9 +166,10 @@
             font-style: italic;
             background: #f0f6ff;
             font-weight: 600;
+            flex-shrink: 0;
         }
 
-        /* Input Controls */
+        /* Input Controls - एंड्रॉइड वेबव्यू के लिए फिक्सड */
         .chat-input-row {
             padding: 12px 16px;
             background: #ffffff;
@@ -171,6 +178,8 @@
             border-top: 1px solid #cbd5e1;
             align-items: center;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            flex-shrink: 0;
+            min-height: 64px;
         }
 
         .chat-input-row input[type="text"] {
@@ -190,21 +199,35 @@
         .chat-input-row button {
             background: #025922;
             color: #fff;
-            padding: 12px 18px;
+            padding: 12px 16px;
             border-radius: 10px;
             font-weight: 700;
             font-size: 12px;
             cursor: pointer;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .media-btn {
             background: #f1f5f9 !important;
             border: 1px solid #cbd5e1 !important;
             color: #334155 !important;
-            padding: 12px !important;
+            padding: 10px 12px !important;
             border-radius: 10px;
             font-size: 16px;
+            cursor: pointer;
+        }
+
+        .mic-btn.recording {
+            background: #dc2626 !important;
+            color: #fff !important;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
         }
 
         /* Image Modal */
@@ -233,7 +256,7 @@
         @media (max-width: 600px) {
             .chat-sidebar { width: 100%; }
             .chat-main-window { display: none; }
-            .chat-main-window.mobile-active { display: flex; position: absolute; width: 100vw; height: 100vh; z-index: 100; }
+            .chat-main-window.mobile-active { display: flex; position: absolute; width: 100vw; height: 100vh; z-index: 100; top: 0; left: 0; }
             .mobile-back-btn { display: block; }
         }
     </style>
@@ -261,8 +284,11 @@
     <div class="typing-indicator" id="userTypingIndicator" style="display: none;">User is typing...</div>
 
     <div class="chat-input-row">
-        <button class="media-btn" onclick="document.getElementById('adminImageInput').click()">📷</button>
-        <input type="file" id="adminImageInput" accept="image/*,video/*" style="display:none" onchange="sendAdminMedia(this)">
+        <button class="media-btn" onclick="document.getElementById('adminMediaInput').click()">📁</button>
+        <input type="file" id="adminMediaInput" accept="image/*,video/*" style="display:none" onchange="sendAdminMedia(this)">
+        
+        <button class="media-btn mic-btn" id="adminMicBtn" onclick="toggleAdminVoiceRecord()" title="Record Voice Message">🎙️</button>
+        
         <input type="text" id="adminReplyInput" placeholder="Type a reply..." onkeypress="if(event.key==='Enter') sendAdminReply()">
         <button onclick="sendAdminReply()">Reply</button>
     </div>
@@ -387,7 +413,13 @@
                     const isAdmin = msg.sender === 'admin' || msg.isUser === false;
                     const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
 
-                    if (msg.type === 'video' || msg.videoUrl) {
+                    if (msg.type === 'audio' || msg.audioUrl) {
+                        html += `
+                            <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
+                                <audio src="${msg.audioUrl}" controls class="msg-audio"></audio>
+                                <div class="msg-time">${time}</div>
+                            </div>`;
+                    } else if (msg.type === 'video' || msg.videoUrl) {
                         html += `
                             <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
                                 <video src="${msg.videoUrl}" controls class="msg-video"></video>
@@ -485,6 +517,67 @@
           }, { merge: true });
       } catch (e) { alert("Media upload failed: " + e.message); } 
       finally { input.value = ''; }
+    }
+
+    // एडमिन वॉइस रिकॉर्डिंग लॉजिक
+    let adminMediaRecorder = null;
+    let adminAudioChunks = [];
+    async function toggleAdminVoiceRecord() {
+        if (!activeChatId) { alert("Please select a user first."); return; }
+        const micBtn = document.getElementById('adminMicBtn');
+
+        if (!adminMediaRecorder || adminMediaRecorder.state === 'inactive') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                adminAudioChunks = [];
+                adminMediaRecorder = new MediaRecorder(stream);
+
+                adminMediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) adminAudioChunks.push(event.data);
+                };
+
+                adminMediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(adminAudioChunks, { type: 'audio/webm' });
+                    stream.getTracks().forEach(track => track.stop());
+                    await uploadAndSendAdminAudio(audioBlob);
+                };
+
+                adminMediaRecorder.start();
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '⏹';
+            } catch (e) {
+                alert("Microphone permission denied or not supported.");
+            }
+        } else if (adminMediaRecorder.state === 'recording') {
+            adminMediaRecorder.stop();
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '🎙️';
+        }
+    }
+
+    async function uploadAndSendAdminAudio(blob) {
+        try {
+            const filename = `${Date.now()}_voice.webm`;
+            const storageRef = storage.ref(`chat_audio/${activeChatId}/${filename}`);
+            const snapshot = await storageRef.put(blob);
+            const audioUrl = await snapshot.ref.getDownloadURL();
+
+            await db.collection('chats').doc(activeChatId).collection('messages').add({
+                sender: 'admin',
+                audioUrl: audioUrl,
+                type: 'audio',
+                isUser: false,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            await db.collection('chats').doc(activeChatId).set({
+                lastMessage: '🎤 Admin Voice Message',
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                adminUnread: true
+            }, { merge: true });
+        } catch (e) {
+            alert("Voice upload failed: " + e.message);
+        }
     }
 
     let adminTypingTimeout;
