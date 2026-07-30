@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOGAMI - Admin Live Support</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -136,6 +136,14 @@
             cursor: pointer;
         }
 
+        .msg-video {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            margin-top: 2px;
+            background: #000;
+        }
+
         /* क्लिकेबल लिंक स्टाइल */
         .msg-bubble a {
             color: inherit;
@@ -254,7 +262,7 @@
 
     <div class="chat-input-row">
         <button class="media-btn" onclick="document.getElementById('adminImageInput').click()">📷</button>
-        <input type="file" id="adminImageInput" accept="image/*" style="display:none" onchange="sendAdminImage(this)">
+        <input type="file" id="adminImageInput" accept="image/*,video/*" style="display:none" onchange="sendAdminMedia(this)">
         <input type="text" id="adminReplyInput" placeholder="Type a reply..." onkeypress="if(event.key==='Enter') sendAdminReply()">
         <button onclick="sendAdminReply()">Reply</button>
     </div>
@@ -295,7 +303,6 @@
         }
     });
 
-    // URL से uid और name कैप्चर करके तुरंत उस यूजर की चैट ओपन करने का फिक्स
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const uidParam = urlParams.get('uid');
@@ -380,7 +387,13 @@
                     const isAdmin = msg.sender === 'admin' || msg.isUser === false;
                     const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
 
-                    if (msg.type === 'image' || msg.imageUrl) {
+                    if (msg.type === 'video' || msg.videoUrl) {
+                        html += `
+                            <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
+                                <video src="${msg.videoUrl}" controls class="msg-video"></video>
+                                <div class="msg-time">${time}</div>
+                            </div>`;
+                    } else if (msg.type === 'image' || msg.imageUrl) {
                         html += `
                             <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
                                 <img src="${msg.imageUrl}" class="msg-image" onclick="showImageModal('${msg.imageUrl}')">
@@ -397,7 +410,7 @@
 
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-          });
+        });
     }
 
     async function sendAdminReply() {
@@ -427,32 +440,50 @@
       }
     }
 
-    async function sendAdminImage(input) {
+    async function sendAdminMedia(input) {
         if (!activeChatId) { alert("Please select a user first."); return; }
         const file = input.files[0]; if (!file) return;
-        if (!file.type.startsWith('image/')) { alert('Select standard image formats'); return; }
-        if (file.size > 5 * 1024 * 1024) { alert('File size must be under 5MB'); return; }
+
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        if (!isImage && !isVideo) { alert('Only image or video files are allowed'); return; }
+
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+        if (file.size > maxSize) { 
+            alert(isVideo ? 'Video size must be under 50MB' : 'Image size must be under 5MB'); 
+            return; 
+        }
 
         try {
             const filename = `${Date.now()}_${file.name}`;
-            const storageRef = storage.ref(`chat_images/${activeChatId}/${filename}`);
+            const folder = isVideo ? 'chat_videos' : 'chat_images';
+            const storageRef = storage.ref(`${folder}/${activeChatId}/${filename}`);
             const snapshot = await storageRef.put(file);
-            const imageUrl = await snapshot.ref.getDownloadURL();
+            const downloadUrl = await snapshot.ref.getDownloadURL();
 
-            await db.collection('chats').doc(activeChatId).collection('messages').add({
+            const mediaType = isVideo ? 'video' : 'image';
+            const messageData = {
                 sender: 'admin',
-                imageUrl: imageUrl,
-                type: 'image',
+                type: mediaType,
                 isUser: false,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            };
+
+            if (isVideo) {
+                messageData.videoUrl = downloadUrl;
+            } else {
+                messageData.imageUrl = downloadUrl;
+            }
+
+            await db.collection('chats').doc(activeChatId).collection('messages').add(messageData);
 
             await db.collection('chats').doc(activeChatId).set({
-                lastMessage: '📷 Admin Media Attachment',
+                lastMessage: isVideo ? '🎬 Admin Video Attachment' : '📷 Admin Media Attachment',
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 adminUnread: true
           }, { merge: true });
-      } catch (e) { alert("Image upload failed: " + e.message); } 
+      } catch (e) { alert("Media upload failed: " + e.message); } 
       finally { input.value = ''; }
     }
 
@@ -474,7 +505,6 @@
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
     }
 
-    // लिंक्स को क्लिकेबल बनाने वाला फंक्शन
     function formatMessageText(str) {
         if (!str) return '';
         const safeStr = escapeHtml(str);
