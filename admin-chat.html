@@ -137,19 +137,6 @@
             cursor: pointer;
         }
 
-        .msg-video {
-            max-width: 100%;
-            max-height: 220px;
-            border-radius: 8px;
-            margin-top: 2px;
-            background: #000;
-        }
-
-        .msg-audio {
-            width: 200px;
-            margin-top: 4px;
-        }
-
         /* क्लिकेबल लिंक स्टाइल */
         .msg-bubble a {
             color: inherit;
@@ -218,18 +205,6 @@
             cursor: pointer;
         }
 
-        .mic-btn.recording {
-            background: #dc2626 !important;
-            color: #fff !important;
-            animation: pulse 1.2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-
         /* Image Modal */
         .image-modal {
             display: none;
@@ -284,10 +259,8 @@
     <div class="typing-indicator" id="userTypingIndicator" style="display: none;">User is typing...</div>
 
     <div class="chat-input-row">
-        <button class="media-btn" onclick="document.getElementById('adminMediaInput').click()">📁</button>
-        <input type="file" id="adminMediaInput" accept="image/*,video/*" style="display:none" onchange="sendAdminMedia(this)">
-        
-        <button class="media-btn mic-btn" id="adminMicBtn" onclick="toggleAdminVoiceRecord()" title="Record Voice Message">🎙️</button>
+        <button class="media-btn" onclick="document.getElementById('adminImageInput').click()">📷</button>
+        <input type="file" id="adminImageInput" accept="image/*" style="display:none" onchange="sendAdminImage(this)">
         
         <input type="text" id="adminReplyInput" placeholder="Type a reply..." onkeypress="if(event.key==='Enter') sendAdminReply()">
         <button onclick="sendAdminReply()">Reply</button>
@@ -413,19 +386,7 @@
                     const isAdmin = msg.sender === 'admin' || msg.isUser === false;
                     const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
 
-                    if (msg.type === 'audio' || msg.audioUrl) {
-                        html += `
-                            <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
-                                <audio src="${msg.audioUrl}" controls class="msg-audio"></audio>
-                                <div class="msg-time">${time}</div>
-                            </div>`;
-                    } else if (msg.type === 'video' || msg.videoUrl) {
-                        html += `
-                            <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
-                                <video src="${msg.videoUrl}" controls class="msg-video"></video>
-                                <div class="msg-time">${time}</div>
-                            </div>`;
-                    } else if (msg.type === 'image' || msg.imageUrl) {
+                    if (msg.type === 'image' || msg.imageUrl) {
                         html += `
                             <div class="msg-bubble ${isAdmin ? 'msg-admin' : 'msg-user'}">
                                 <img src="${msg.imageUrl}" class="msg-image" onclick="showImageModal('${msg.imageUrl}')">
@@ -472,112 +433,33 @@
       }
     }
 
-    async function sendAdminMedia(input) {
+    async function sendAdminImage(input) {
         if (!activeChatId) { alert("Please select a user first."); return; }
         const file = input.files[0]; if (!file) return;
-
-        const isImage = file.type.startsWith('image/');
-        const isVideo = file.type.startsWith('video/');
-
-        if (!isImage && !isVideo) { alert('Only image or video files are allowed'); return; }
-
-        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-        if (file.size > maxSize) { 
-            alert(isVideo ? 'Video size must be under 50MB' : 'Image size must be under 5MB'); 
-            return; 
-        }
+        if (!file.type.startsWith('image/')) { alert('Select standard image formats'); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('File size must be under 5MB'); return; }
 
         try {
             const filename = `${Date.now()}_${file.name}`;
-            const folder = isVideo ? 'chat_videos' : 'chat_images';
-            const storageRef = storage.ref(`${folder}/${activeChatId}/${filename}`);
+            const storageRef = storage.ref(`chat_images/${activeChatId}/${filename}`);
             const snapshot = await storageRef.put(file);
-            const downloadUrl = await snapshot.ref.getDownloadURL();
-
-            const mediaType = isVideo ? 'video' : 'image';
-            const messageData = {
-                sender: 'admin',
-                type: mediaType,
-                isUser: false,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            if (isVideo) {
-                messageData.videoUrl = downloadUrl;
-            } else {
-                messageData.imageUrl = downloadUrl;
-            }
-
-            await db.collection('chats').doc(activeChatId).collection('messages').add(messageData);
-
-            await db.collection('chats').doc(activeChatId).set({
-                lastMessage: isVideo ? '🎬 Admin Video Attachment' : '📷 Admin Media Attachment',
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                adminUnread: true
-          }, { merge: true });
-      } catch (e) { alert("Media upload failed: " + e.message); } 
-      finally { input.value = ''; }
-    }
-
-    // एडमिन वॉइस रिकॉर्डिंग लॉजिक
-    let adminMediaRecorder = null;
-    let adminAudioChunks = [];
-    async function toggleAdminVoiceRecord() {
-        if (!activeChatId) { alert("Please select a user first."); return; }
-        const micBtn = document.getElementById('adminMicBtn');
-
-        if (!adminMediaRecorder || adminMediaRecorder.state === 'inactive') {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                adminAudioChunks = [];
-                adminMediaRecorder = new MediaRecorder(stream);
-
-                adminMediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) adminAudioChunks.push(event.data);
-                };
-
-                adminMediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(adminAudioChunks, { type: 'audio/webm' });
-                    stream.getTracks().forEach(track => track.stop());
-                    await uploadAndSendAdminAudio(audioBlob);
-                };
-
-                adminMediaRecorder.start();
-                micBtn.classList.add('recording');
-                micBtn.innerHTML = '⏹';
-            } catch (e) {
-                alert("Microphone permission denied or not supported.");
-            }
-        } else if (adminMediaRecorder.state === 'recording') {
-            adminMediaRecorder.stop();
-            micBtn.classList.remove('recording');
-            micBtn.innerHTML = '🎙️';
-        }
-    }
-
-    async function uploadAndSendAdminAudio(blob) {
-        try {
-            const filename = `${Date.now()}_voice.webm`;
-            const storageRef = storage.ref(`chat_audio/${activeChatId}/${filename}`);
-            const snapshot = await storageRef.put(blob);
-            const audioUrl = await snapshot.ref.getDownloadURL();
+            const imageUrl = await snapshot.ref.getDownloadURL();
 
             await db.collection('chats').doc(activeChatId).collection('messages').add({
                 sender: 'admin',
-                audioUrl: audioUrl,
-                type: 'audio',
+                imageUrl: imageUrl,
+                type: 'image',
                 isUser: false,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+          });
 
             await db.collection('chats').doc(activeChatId).set({
-                lastMessage: '🎤 Admin Voice Message',
+                lastMessage: '📷 Admin Media Attachment',
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 adminUnread: true
-            }, { merge: true });
-        } catch (e) {
-            alert("Voice upload failed: " + e.message);
-        }
+          }, { merge: true });
+      } catch (e) { alert("Image upload failed: " + e.message); } 
+      finally { input.value = ''; }
     }
 
     let adminTypingTimeout;
