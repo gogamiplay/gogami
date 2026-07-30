@@ -932,7 +932,6 @@
     function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function openUserBidsPage(uid,name){ window.open(`user-bids.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
     
-    // परफेक्ट फिक्स: सीधे chatRoomId (`chat_${uid}`) से चैट रूम बनाएगा और खोलेगा
     async function openUserChat(uid, name, phone) {
         const chatRoomId = `chat_${uid}`;
         try {
@@ -971,9 +970,9 @@
                 let openPana=m.openPana||'***', openDigit=m.openDigit||'*', closePana=m.closePana||'***', closeDigit=m.closeDigit||'*', jodi=m.jodi||'**', isCloseDeclared=m.closeDeclared||false; 
                 let jodiDisplay=(!isCloseDeclared && openPana!=='***')?openDigit+'*':jodi; 
                 html+=`<div class="market-item"><div class="market-header-row" onclick="toggleMarketDetails('${d.id}')"><span class="toggle-icon">${openMarketId===d.id?'▼':'▶'}</span><span><span class="market-serial" onclick="event.stopPropagation(); changeSerialNumber('${d.id}',${m.serialNo||0})">#${m.serialNo||'?'}</span> ${m.name||'No name'}</span><span class="status-badge ${statusClass}">${statusText}</span><button onclick="event.stopPropagation(); deleteMarket('${d.id}')" class="btn-danger" style="padding:3px 6px; font-size:10px;">🗑️</button></div><div id="market_detail_${d.id}" class="market-detail-row"><div><div>🎲 Numbers: ${m.numbers||'***'}</div><div>⏰ Open: ${formatTimeTo12Hour(m.openBidEnd)} | Close: ${formatTimeTo12Hour(m.closeBidEnd)}</div><div class="results-container"><div class="result-card"><div class="result-pana">${openPana}</div><div>Open: ${openDigit}</div></div><div class="result-card"><div class="result-pana">${closePana}</div><div>Close: ${closeDigit}</div></div></div><div class="jodi-display">JODI: <strong>${jodiDisplay}</strong></div><div><input type="time" id="openBidEnd_${d.id}" value="${m.openBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','openBidEnd',document.getElementById('openBidEnd_${d.id}').value)">Save Open</button></div><div><input type="time" id="closeBidEnd_${d.id}" value="${m.closeBidEnd||''}" step="60"><button onclick="updateMarketTime('${d.id}','closeBidEnd',document.getElementById('closeBidEnd_${d.id}').value)">Save Close</button></div><div style="display:flex; gap:4px; flex-wrap:wrap;"><button onclick="setMarketStatus('${d.id}','open')" class="btn-success">🟢 OPEN</button><button onclick="setMarketStatus('${d.id}','close')" class="btn-warning">🟡 CLOSE</button><button onclick="setMarketStatus('${d.id}','closed')" class="btn-danger">🔴 CLOSED</button><button onclick="setMarketHoliday('${d.id}','${m.name}','${m.status}')" class="btn-warning">🎪 ${m.status==='holiday'?'Remove':'Set Holiday'}</button></div><div><input type="text" id="openPana_${d.id}" placeholder="Open Pana" maxlength="3" value="${openPana!=='***'?openPana:''}"><input type="text" id="openDigit_${d.id}" placeholder="Digit" maxlength="1" value="${openDigit!=='*'?openDigit:''}"><button onclick="declareOpenResult('${d.id}','${m.name}')">Declare OPEN</button></div><div><input type="text" id="closePana_${d.id}" placeholder="Close Pana" maxlength="3" value="${closePana!=='***'?closePana:''}"><input type="text" id="closeDigit_${d.id}" placeholder="Digit" maxlength="1" value="${closeDigit!=='*'?closeDigit:''}"><button onclick="declareCloseResult('${d.id}','${m.name}')">Declare CLOSE</button></div><div><button onclick="editMarket('${d.id}','${m.name}','${m.numbers||''}')">✏️ Edit</button><button onclick="resetMarketResult('${d.id}','${m.name}')" class="btn-reset">⟳ Reset</button></div></div></div></div>`; 
-          }); 
-          if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
-          document.getElementById('marketsList').innerHTML=html; 
+            }); 
+            if(s.empty) html='<p style="color:#64748b; text-align:center; padding:30px;">No markets available</p>'; 
+            document.getElementById('marketsList').innerHTML=html; 
     }); 
    }
 
