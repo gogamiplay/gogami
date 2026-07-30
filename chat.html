@@ -114,7 +114,12 @@
             object-fit: cover;
             cursor: pointer;
         }
-        
+
+        /* क्लिकेबल लिंक स्टाइल */
+        .message a { color: inherit; text-decoration: underline; word-break: break-all; }
+        .user-message a { color: #93c5fd; }
+        .support-message a { color: #2563eb; }
+  
         .welcome-msg {
             background: #ffffff;
             border-radius: 14px;
@@ -194,7 +199,7 @@
             user-select: text;
         }
         .chat-input::placeholder { color: #94a3b8; }
-        
+         
         .send-btn {
             background: #025922;
             border: none;
@@ -211,7 +216,6 @@
         }
         .send-btn:active { background: #013b15; }
 
-        /* Media Modal View Overlay */
         .image-modal {
             display: none;
             position: fixed;
@@ -237,7 +241,6 @@
 </head>
 <body>
     
-    <!-- Android App Style Splash Loader Screen - डार्क ग्रीन -->
     <div class="loader-overlay" id="pageLoader">
         <div class="loader-spinner"></div>
     </div>
@@ -347,19 +350,19 @@
                     
                     if (msg.type === 'image' || msg.imageUrl) {
                         html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
-                                    <img src="${msg.imageUrl}" class="message-image" onclick="showImageModal('${msg.imageUrl}')">
-                                    <div class="message-time">${time}</div>
-                                </div>`;
+                                      <img src="${msg.imageUrl}" class="message-image" onclick="showImageModal('${msg.imageUrl}')">
+                                      <div class="message-time">${time}</div>
+                                 </div>`;
                     } else {
                         html += `<div class="message ${isUser ? 'user-message' : 'support-message'}">
-                                    ${escapeHtml(msg.text)}
-                                    <div class="message-time">${time}</div>
-                                </div>`;
+                                      <div>${formatMessageText(msg.text)}</div>
+                                      <div class="message-time">${time}</div>
+                                 </div>`;
                     }
                 });
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-            });
+          });
 
             db.collection('chats').doc(chatRoomId).onSnapshot((doc) => {
                 if (doc.exists) {
@@ -368,10 +371,10 @@
                         db.collection('chats').doc(chatRoomId).update({ adminUnread: false }).catch(() => {});
                     }
                 }
-            });
-        }
+          });
+    }
 
-        async function sendMessage() {
+    async function sendMessage() {
             if (!chatRoomId) { alert("Please wait, connecting to server..."); return; }
             const input = document.getElementById('messageInput');
             const text = input.value.trim(); if (!text) return;
@@ -395,9 +398,9 @@
                     adminUnread: false
                 }, { merge: true });
             } catch (e) { alert("Error sending message: " + e.message); }
-        }
+    }
 
-        async function sendImage(input) {
+    async function sendImage(input) {
             if (!chatRoomId) { alert("Please wait, connecting to server..."); return; }
             const file = input.files[0]; if (!file) return;
             if (!file.type.startsWith('image/')) { alert('Select standard image formats'); return; }
@@ -430,28 +433,39 @@
                 }, { merge: true });
             } catch (e) { alert("Image upload failed."); } 
             finally { btn.disabled = false; btn.innerHTML = '📷'; input.value = ''; }
-        }
+    }
 
-        function showImageModal(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').style.display = 'flex'; }
-        function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
-        function goBack() { window.location.href = 'dashboard.html'; }
+    function showImageModal(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').style.display = 'flex'; }
+    function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+    
+    // लिंक्स को क्लिकेबल बनाने वाला फंक्शन
+    function formatMessageText(str) {
+            if (!str) return '';
+            const safeStr = escapeHtml(str);
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return safeStr.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank">' + url + '</a>';
+            });
+    }
 
-        let typingTimeout;
-        document.getElementById('messageInput').addEventListener('input', () => {
+    function goBack() { window.location.href = 'dashboard.html'; }
+
+    let typingTimeout;
+    document.getElementById('messageInput').addEventListener('input', () => {
             if (!chatRoomId) return;
             db.collection('chats').doc(chatRoomId).update({ userTyping: true }).catch(() => {});
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 if (chatRoomId) db.collection('chats').doc(chatRoomId).update({ userTyping: false }).catch(() => {});
             }, 1000);
-        });
+    });
 
-        window.sendMessage = sendMessage; 
-        window.goBack = goBack; 
-        window.sendImage = sendImage; 
-        window.showImageModal = showImageModal; 
-        window.closeImageModal = closeImageModal;
+    window.sendMessage = sendMessage; 
+    window.goBack = goBack; 
+    window.sendImage = sendImage; 
+    window.showImageModal = showImageModal; 
+    window.closeImageModal = closeImageModal;
     </script>
 </body>
 </html>
