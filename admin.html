@@ -381,7 +381,7 @@
         .collapsible-card-body { display: none; margin-top: 14px; }
         .collapsible-card-body.open { display: block; }
 
-        /* NEW - Transaction Stats Cards */
+        /* Transaction Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -394,6 +394,7 @@
             border-radius: 12px;
             text-align: center;
             border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
         }
         .stat-card .stat-number {
             font-size: 22px;
@@ -415,14 +416,37 @@
         .stat-card.negative .stat-number { color: #dc2626; }
         .stat-card.total .stat-number { color: #025922; }
         .stat-card.admin .stat-number { color: #7c3aed; }
+        .stat-card.admin.positive .stat-number { color: #059669; }
+        .stat-card.admin.negative .stat-number { color: #dc2626; }
+        .stat-card.win .stat-number { color: #059669; }
         .stat-card.loss .stat-number { color: #dc2626; }
-        .stat-card.profit .stat-number { color: #059669; }
 
         .action-buttons-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-top: 12px;
+        }
+
+        .admin-status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .admin-status-badge.profit {
+            background: rgba(5, 150, 105, 0.15);
+            color: #059669;
+        }
+        .admin-status-badge.loss {
+            background: rgba(220, 38, 38, 0.15);
+            color: #dc2626;
+        }
+        .admin-status-badge.neutral {
+            background: rgba(100, 116, 139, 0.15);
+            color: #64748b;
         }
 
         @media (min-width: 769px) {
@@ -608,41 +632,43 @@
             <div class="card" style="border: 2px solid #025922;">
                 <h3 style="border-left-color: #dc2626;">📊 Total Transactions Overview</h3>
                 
-                <!-- Stats Grid - Row 1 -->
+                <!-- Stats Grid - Row 1: Main Stats -->
                 <div class="stats-grid">
                     <div class="stat-card total">
                         <div class="stat-number" id="newTotalBalanceDisplay">₹0</div>
-                        <div class="stat-label">💰 Total Overall Balance</div>
-                        <div class="stat-sub">All users combined</div>
+                        <div class="stat-label">💰 Total Users Balance</div>
+                        <div class="stat-sub">All users combined balance</div>
                     </div>
-                    <div class="stat-card profit">
-                        <div class="stat-number" id="newTotalProfitDisplay">₹0</div>
-                        <div class="stat-label">📈 Total Profit (Plus)</div>
-                        <div class="stat-sub">Users with positive balance</div>
+                    <div class="stat-card win">
+                        <div class="stat-number" id="newTotalWinDisplay">₹0</div>
+                        <div class="stat-label">🏆 Total Win (Plus)</div>
+                        <div class="stat-sub" id="newWinUsersCount">0 users in profit</div>
                     </div>
                     <div class="stat-card loss">
                         <div class="stat-number" id="newTotalLossDisplay">₹0</div>
                         <div class="stat-label">📉 Total Loss (Minus)</div>
-                        <div class="stat-sub">Users with negative balance</div>
+                        <div class="stat-sub" id="newLossUsersCount">0 users in loss</div>
                     </div>
                 </div>
 
-                <!-- Stats Grid - Row 2 -->
+                <!-- Stats Grid - Row 2: Admin & Users -->
                 <div class="stats-grid">
-                    <div class="stat-card total">
-                        <div class="stat-number" id="newCurrentBalanceDisplay">₹0</div>
-                        <div class="stat-label">👥 Current Users Balance</div>
-                        <div class="stat-sub">Active users total balance</div>
-                    </div>
-                    <div class="stat-card admin">
+                    <div class="stat-card admin" id="newAdminCard">
                         <div class="stat-number" id="newAdminProfitDisplay">₹0</div>
                         <div class="stat-label">🏦 Admin Profit / Loss</div>
-                        <div class="stat-sub" id="newAdminStatusDisplay">💰 In Profit</div>
+                        <div class="stat-sub">
+                            <span class="admin-status-badge" id="newAdminStatusBadge">Calculating...</span>
+                        </div>
                     </div>
                     <div class="stat-card total">
                         <div class="stat-number" id="newTotalUsersCount">0</div>
                         <div class="stat-label">👥 Total Users</div>
                         <div class="stat-sub">All registered users</div>
+                    </div>
+                    <div class="stat-card total">
+                        <div class="stat-number" id="newZeroBalanceUsers">0</div>
+                        <div class="stat-label">⚖️ Zero Balance Users</div>
+                        <div class="stat-sub">Users with ₹0 balance</div>
                     </div>
                 </div>
 
@@ -1278,17 +1304,20 @@
    }
 
 // ============================================================
-// 🔥 NEW: FULL TRANSACTION STATS FUNCTIONS
+// 🔥 FULL TRANSACTION STATS FUNCTIONS
 // ============================================================
 
 async function loadTransactionStats() {
     const displayBalance = document.getElementById('newTotalBalanceDisplay');
-    const displayProfit = document.getElementById('newTotalProfitDisplay');
+    const displayWin = document.getElementById('newTotalWinDisplay');
     const displayLoss = document.getElementById('newTotalLossDisplay');
-    const displayCurrentBalance = document.getElementById('newCurrentBalanceDisplay');
     const displayAdmin = document.getElementById('newAdminProfitDisplay');
-    const displayAdminStatus = document.getElementById('newAdminStatusDisplay');
-    const displayTotal = document.getElementById('newTotalUsersCount');
+    const displayAdminBadge = document.getElementById('newAdminStatusBadge');
+    const displayAdminCard = document.getElementById('newAdminCard');
+    const displayTotalUsers = document.getElementById('newTotalUsersCount');
+    const displayWinUsers = document.getElementById('newWinUsersCount');
+    const displayLossUsers = document.getElementById('newLossUsersCount');
+    const displayZeroUsers = document.getElementById('newZeroBalanceUsers');
     const refreshBtn = document.getElementById('newRefreshStatsBtn');
     
     if (!displayBalance) return;
@@ -1301,12 +1330,12 @@ async function loadTransactionStats() {
     try {
         const usersSnapshot = await firebase.firestore().collection('users').get();
         let totalBalance = 0;
-        let totalProfit = 0;  // Sum of all positive balances
-        let totalLoss = 0;    // Sum of all negative balances
-        let currentBalance = 0; // Total balance of all users
+        let totalWin = 0;      // Sum of all positive balances
+        let totalLoss = 0;     // Sum of all negative balances (absolute value)
         let userCount = 0;
-        let profitUsers = 0;
+        let winUsers = 0;
         let lossUsers = 0;
+        let zeroUsers = 0;
         
         usersSnapshot.forEach(doc => {
             const data = doc.data();
@@ -1315,20 +1344,18 @@ async function loadTransactionStats() {
             userCount++;
             
             if (balance > 0) {
-                totalProfit += balance;
-                profitUsers++;
+                totalWin += balance;
+                winUsers++;
             } else if (balance < 0) {
                 totalLoss += Math.abs(balance);
                 lossUsers++;
+            } else {
+                zeroUsers++;
             }
         });
         
-        // Current balance is total of all users (including negative)
-        currentBalance = totalBalance;
-        
-        // Admin Profit/Loss = Total Profit - Total Loss
-        // Agar admin profit mein hai toh positive, loss mein toh negative
-        const adminProfitLoss = totalProfit - totalLoss;
+        // Admin Profit/Loss = Total Win - Total Loss
+        const adminProfitLoss = totalWin - totalLoss;
         
         // Format numbers
         const formatCurrency = (num) => {
@@ -1340,37 +1367,42 @@ async function loadTransactionStats() {
             }).format(num);
         };
         
+        // Update displays
         displayBalance.textContent = formatCurrency(totalBalance);
-        displayProfit.textContent = formatCurrency(totalProfit);
+        displayWin.textContent = formatCurrency(totalWin);
         displayLoss.textContent = formatCurrency(totalLoss);
-        displayCurrentBalance.textContent = formatCurrency(currentBalance);
-        displayTotal.textContent = userCount;
+        displayTotalUsers.textContent = userCount;
+        displayWinUsers.textContent = `${winUsers} users in profit`;
+        displayLossUsers.textContent = `${lossUsers} users in loss`;
+        displayZeroUsers.textContent = zeroUsers;
         
         // Admin Profit/Loss
         const adminFormatted = formatCurrency(Math.abs(adminProfitLoss));
         displayAdmin.textContent = adminFormatted;
         
+        // Update admin card style and badge
+        displayAdminCard.className = 'stat-card admin';
+        
         if (adminProfitLoss > 0) {
-            displayAdmin.style.color = '#059669';
-            displayAdminStatus.textContent = '💰 Admin In Profit ✅';
-            displayAdminStatus.style.color = '#059669';
+            displayAdminCard.classList.add('positive');
+            displayAdminBadge.textContent = '💰 Admin In Profit ✅';
+            displayAdminBadge.className = 'admin-status-badge profit';
         } else if (adminProfitLoss < 0) {
-            displayAdmin.style.color = '#dc2626';
-            displayAdminStatus.textContent = '📉 Admin In Loss ❌';
-            displayAdminStatus.style.color = '#dc2626';
+            displayAdminCard.classList.add('negative');
+            displayAdminBadge.textContent = '📉 Admin In Loss ❌';
+            displayAdminBadge.className = 'admin-status-badge loss';
         } else {
-            displayAdmin.style.color = '#64748b';
-            displayAdminStatus.textContent = '⚖️ Admin Break Even';
-            displayAdminStatus.style.color = '#64748b';
+            displayAdminBadge.textContent = '⚖️ Admin Break Even';
+            displayAdminBadge.className = 'admin-status-badge neutral';
         }
         
-        console.log(`✅ Stats Loaded:
+        console.log(`✅ Full Stats Loaded:
             Total Balance: ₹${totalBalance}
-            Total Profit: ₹${totalProfit} (${profitUsers} users)
+            Total Win: ₹${totalWin} (${winUsers} users)
             Total Loss: ₹${totalLoss} (${lossUsers} users)
-            Current Balance: ₹${currentBalance}
             Admin P/L: ₹${adminProfitLoss}
-            Total Users: ${userCount}`);
+            Total Users: ${userCount}
+            Zero Balance: ${zeroUsers} users`);
         
     } catch (error) {
         displayBalance.textContent = '❌ Error';
@@ -1534,7 +1566,7 @@ async function deleteAllBidsWithHistory() {
 }
 
 // ============================================================
-// 🔥 EVENT LISTENERS FOR NEW BUTTONS
+// 🔥 EVENT LISTENERS
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔥 Full Transaction Stats loaded successfully!');
@@ -1561,14 +1593,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     console.log('📌 Full Features added:');
-    console.log('  1. 💰 Total Overall Balance');
-    console.log('  2. 📈 Total Profit (Plus)');
+    console.log('  1. 💰 Total Users Balance');
+    console.log('  2. 🏆 Total Win (Plus)');
     console.log('  3. 📉 Total Loss (Minus)');
-    console.log('  4. 👥 Current Users Balance');
-    console.log('  5. 🏦 Admin Profit / Loss');
-    console.log('  6. 👥 Total Users');
-    console.log('  7. 🗑️ Delete All Transactions');
-    console.log('  8. 💸 Delete All Bids');
+    console.log('  4. 🏦 Admin Profit / Loss');
+    console.log('  5. 👥 Total Users');
+    console.log('  6. 📊 Win/Loss Users Count');
+    console.log('  7. ⚖️ Zero Balance Users');
+    console.log('  8. 🗑️ Delete All Transactions');
+    console.log('  9. 💸 Delete All Bids');
 });
 
 console.log('✅ Admin panel loaded with full transaction stats!');
