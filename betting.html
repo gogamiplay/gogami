@@ -622,7 +622,12 @@
         return 'Single Pana';
     }
 
+    // 🔥 FIX 1: Prevent any new bids from being added during submission or confirmation
     function addToBidsDirectly(resolvedGameType, val, pts) {
+        if (isSubmitting || (document.getElementById('confirmPopupModal') && document.getElementById('confirmPopupModal').style.display === 'flex')) {
+            return; // Block input silently if submission is in progress
+        }
+
         const check = isBettingAllowedFast(); 
         if (!check.allowed) { alert(check.message); return; }
         if (isNaN(pts) || pts < 5) { alert('Min ₹5 required. Enter points first.'); return; }
@@ -728,7 +733,7 @@
         document.getElementById('confirmPopupModal').style.display = 'none';
     }
 
-    // Step 2: Secure Transaction-Based Submit (Fixed with Increment for 100% Accuracy)
+    // Step 2: Secure Transaction-Based Submit (Fixed snapshot protection)
     async function executeConfirmedSubmit() {
         closeConfirmPopup();
         if (isSubmitting || bids.length === 0) return;
@@ -743,8 +748,10 @@
             return; 
         }
         
-        // Total calculation
-        const total = bids.reduce((s, b) => s + b.points, 0);
+        // 🔥 FIX 2: Create a strict snapshot of the bids array at this exact moment
+        const snapshotBids = [...bids];
+        const total = snapshotBids.reduce((s, b) => s + b.points, 0);
+        
         const userId = auth.currentUser.uid;
         const userRef = db.collection('users').doc(userId);
 
@@ -766,12 +773,11 @@
                     throw "Insufficient balance!";
                 }
 
-                // 🔥 FIX: Using FieldValue.increment() for absolute mathematical accuracy on server
                 transaction.update(userRef, { balance: firebase.firestore.FieldValue.increment(-total) });
 
-                // Create bids atomically
+                // Create bids atomically using the snapshot
                 const ts = firebase.firestore.FieldValue.serverTimestamp();
-                bids.forEach(b => {
+                snapshotBids.forEach(b => {
                     const newDocRef = db.collection('bids').doc();
                     transaction.set(newDocRef, { 
                         ...b, 
@@ -788,6 +794,8 @@
             document.getElementById('userBalance').innerText = (updatedUserDoc.data().balance || 0).toFixed(2);
             
             showMsg('✅ Bids Placed Successfully!', false); 
+            
+            // Clear the actual bids list only after success
             bids = []; 
             updateSummary(); 
             renderPanel();
