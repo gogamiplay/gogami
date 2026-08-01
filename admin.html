@@ -285,7 +285,7 @@
             background: #ffffff; 
             padding: 8px 10px; 
             border-radius: 8px; 
-            border: 1px solid #cbd5e1;
+            border: 1px solid #cbd5e1; 
             font-size: 13px;
         }
 
@@ -550,6 +550,15 @@
                         <div class="value" id="appNetProfit">₹0</div>
                     </div>
                 </div>
+                
+                <!-- NEW ADDITION: Clear History Buttons -->
+                <div style="margin-top: 16px; border-top: 1px solid #cbd5e1; padding-top: 16px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="clearAllUsersBidHistory()" class="btn-danger" style="flex: 1;">🗑️ All Users Bid History Clear</button>
+                        <button onclick="clearAllUsersTransactionHistory()" class="btn-danger" style="flex: 1;">🗑️ All Users Transaction History Clear</button>
+                    </div>
+                </div>
+                
             </div>
         </div>
         <!-- END NEW SECTION -->
@@ -928,7 +937,7 @@
         }); 
         document.getElementById('usersList').innerHTML = html; 
     }
-  
+ 
     async function loadTotalBidsSummary() {
         const container = document.getElementById('totalBidsContent');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Calculating total bids...</div>';
@@ -1269,6 +1278,43 @@
         localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
         document.getElementById('adminPanel').style.display='none'; 
+   }
+
+   // NEW FUNCTIONS FOR CLEARING ALL HISTORY
+   async function clearAllUsersBidHistory(){
+       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL bid history for ALL users?")){
+           if(prompt('Type "CLEAR ALL BIDS" to confirm:') === 'CLEAR ALL BIDS'){
+               try {
+                   let bids = await db.collection('bids').get();
+                   let count = 0;
+                   bids.forEach(d => {
+                       d.ref.delete();
+                       count++;
+                   });
+                   alert(`✅ Successfully cleared ${count} bid records from all users!`);
+               } catch(e) {
+                   alert("❌ Error: " + e.message);
+               }
+           }
+       }
+   }
+
+   async function clearAllUsersTransactionHistory(){
+       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for ALL users?")){
+           if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
+               try {
+                   let trans = await db.collection('transactions').get();
+                   let count = 0;
+                   trans.forEach(d => {
+                       d.ref.delete();
+                       count++;
+                   });
+                   alert(`✅ Successfully cleared ${count} transaction records from all users!`);
+               } catch(e) {
+                   alert("❌ Error: " + e.message);
+               }
+           }
+       }
    }
 </script>
 </body>
