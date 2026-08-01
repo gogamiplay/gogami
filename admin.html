@@ -381,6 +381,42 @@
         .collapsible-card-body { display: none; margin-top: 14px; }
         .collapsible-card-body.open { display: block; }
 
+        /* NEW - Total Transactions Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+        }
+        .stat-card .stat-number {
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .stat-card .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .stat-card.positive .stat-number { color: #059669; }
+        .stat-card.negative .stat-number { color: #dc2626; }
+        .stat-card.total .stat-number { color: #025922; }
+
+        .action-buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
         @media (min-width: 769px) {
             .admin-panel { flex-direction: row; }
             .mobile-header { display: none; }
@@ -389,6 +425,7 @@
             .main-content { margin-left: 260px; max-width: 100%; padding: 24px; }
             .user-actions-grid { grid-template-columns: repeat(4, 1fr); }
             .sort-bar { flex-direction: row; align-items: center; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
         }
     </style>
 </head>
@@ -424,6 +461,8 @@
             <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
             <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
             <div class="sidebar-item" onclick="showSection('livechat')" id="livechatMenuItem">💬 Live Chat <span id="chatBadge" class="notification-badge" style="display:none;">0</span></div>
+            <!-- 🔥 NEW SIDEBAR ITEM -->
+            <div class="sidebar-item" onclick="showSection('transactions')" style="border-left: 3px solid #025922;">📊 Total Transactions</div>
             <div class="sidebar-item" onclick="logout()" style="color:#dc2626;">🚪 Logout</div>
         </div>
     </div>
@@ -483,46 +522,6 @@
                 <div id="userCount" class="user-count"></div>
                 <div id="usersList">Loading...</div>
             </div>
-
-            <!-- ========================================================== -->
-            <!-- 🔥 NEW FEATURES - ADMIN TOOLS (Added without changing existing code) -->
-            <!-- ========================================================== -->
-            <div class="card" style="border: 2px solid #025922; background: #f0faf5;">
-                <h3 style="border-left-color: #dc2626;">🛠️ Admin Tools (New)</h3>
-                
-                <!-- Feature 1: Total Balance -->
-                <div style="background: #ffffff; padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span style="font-weight: 700; font-size: 14px;">💰 Total Users Balance</span>
-                        <button id="newCalcBalanceBtn" class="btn-info" style="padding: 8px 16px; font-size: 11px;">🔄 Calculate</button>
-                    </div>
-                    <div id="newTotalBalanceDisplay" style="margin-top: 8px; font-size: 20px; font-weight: 800; color: #025922; text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px;">
-                        ₹0
-                    </div>
-                    <div style="font-size: 11px; color: #64748b; text-align: center;">Total balance across all users</div>
-                </div>
-
-                <!-- Feature 2: Delete All Transactions -->
-                <div style="background: #ffffff; padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span style="font-weight: 700; font-size: 14px;">🗑️ Delete All Users Transaction History</span>
-                        <button id="newDeleteAllTxnsBtn" class="btn-delete" style="padding: 8px 16px; font-size: 11px;">🗑️ DELETE ALL</button>
-                    </div>
-                    <div style="font-size: 11px; color: #dc2626; margin-top: 4px;">⚠️ This will permanently delete ALL transaction records for ALL users!</div>
-                </div>
-
-                <!-- Feature 3: Delete All Bids With History -->
-                <div style="background: #ffffff; padding: 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #cbd5e1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span style="font-weight: 700; font-size: 14px;">💸 Delete All Users Bid With History</span>
-                        <button id="newDeleteAllBidsBtn" class="btn-delete" style="padding: 8px 16px; font-size: 11px;">🗑️ DELETE ALL</button>
-                    </div>
-                    <div style="font-size: 11px; color: #dc2626; margin-top: 4px;">⚠️ This will permanently delete ALL bid records and history for ALL users!</div>
-                </div>
-            </div>
-            <!-- ========================================================== -->
-            <!-- END NEW FEATURES -->
-            <!-- ========================================================== -->
         </div>
 
         <div id="totalBidsSection" class="hidden">
@@ -593,6 +592,52 @@
                 </div>
             </div>
         </div>
+
+        <!-- ========================================================== -->
+        <!-- 🔥 NEW SECTION: TOTAL TRANSACTIONS (Sidebar se open hoga) -->
+        <!-- ========================================================== -->
+        <div id="transactionsSection" class="hidden">
+            <div class="card" style="border: 2px solid #025922;">
+                <h3 style="border-left-color: #dc2626;">📊 Total Transactions Overview</h3>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <div class="stat-number" id="newTotalBalanceDisplay">₹0</div>
+                        <div class="stat-label">💰 Total Balance</div>
+                    </div>
+                    <div class="stat-card positive">
+                        <div class="stat-number" id="newPositiveUsersCount">0</div>
+                        <div class="stat-label">✅ Positive Balance (Plus)</div>
+                    </div>
+                    <div class="stat-card negative">
+                        <div class="stat-number" id="newNegativeUsersCount">0</div>
+                        <div class="stat-label">❌ Negative Balance (Minus)</div>
+                    </div>
+                    <div class="stat-card total">
+                        <div class="stat-number" id="newTotalUsersCount">0</div>
+                        <div class="stat-label">👥 Total Users</div>
+                    </div>
+                </div>
+
+                <!-- Refresh Button -->
+                <button id="newRefreshStatsBtn" class="btn-info" style="width:100%; margin-bottom:12px;">🔄 Refresh Statistics</button>
+
+                <hr style="border: 1px solid #cbd5e1; margin: 12px 0;">
+
+                <!-- Action Buttons -->
+                <div class="action-buttons-grid">
+                    <button id="newDeleteAllTxnsBtn" class="btn-delete" style="padding: 12px; font-size: 11px;">🗑️ Delete All Transactions</button>
+                    <button id="newDeleteAllBidsBtn" class="btn-delete" style="padding: 12px; font-size: 11px;">💸 Delete All Bids</button>
+                </div>
+                <div style="font-size: 10px; color: #dc2626; text-align: center; margin-top: 8px;">
+                    ⚠️ These actions are irreversible! Double confirmation required.
+                </div>
+            </div>
+        </div>
+        <!-- ========================================================== -->
+        <!-- END NEW SECTION -->
+        <!-- ========================================================== -->
     </div>
 </div>
 
@@ -1184,19 +1229,19 @@
   
    function showSection(section){ 
         toggleSidebar(false);
-        ['markets','users','totalBids','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
-        document.getElementById(`${section}Section`).classList.remove('hidden'); 
-        if(section==='users') {
-            refreshTodayBidsForUsers(); 
-            // 🔥 Auto-calculate total balance when users section opens
-            setTimeout(() => {
-                calculateTotalBalance();
-            }, 500);
-        }
+        ['markets','users','totalBids','deposits','withdrawals','notice','settings','livechat','transactions'].forEach(s => {
+            const el = document.getElementById(`${s}Section`);
+            if (el) el.classList.add('hidden');
+        }); 
+        const targetSection = document.getElementById(`${section}Section`);
+        if (targetSection) targetSection.classList.remove('hidden');
+        
+        if(section==='users') refreshTodayBidsForUsers(); 
         if(section==='totalBids') loadTotalBidsSummary();
         if(section==='deposits') loadDeposits(); 
         if(section==='withdrawals') loadWithdrawals(); 
         if(section==='livechat') markAllChatsAsRead(); 
+        if(section==='transactions') loadTransactionStats();
    }
 
    async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
@@ -1207,27 +1252,28 @@
    }
 
 // ============================================================
-// 🔥 NEW ADMIN TOOLS - EXISTING CODE KO TOUCH KIYE BINA
+// 🔥 NEW: TRANSACTION STATS FUNCTIONS
 // ============================================================
 
-// -------- FEATURE 1: TOTAL BALANCE --------
-async function calculateTotalBalance() {
-    const display = document.getElementById('newTotalBalanceDisplay');
-    const btn = document.getElementById('newCalcBalanceBtn');
+async function loadTransactionStats() {
+    const displayBalance = document.getElementById('newTotalBalanceDisplay');
+    const displayPositive = document.getElementById('newPositiveUsersCount');
+    const displayNegative = document.getElementById('newNegativeUsersCount');
+    const displayTotal = document.getElementById('newTotalUsersCount');
+    const refreshBtn = document.getElementById('newRefreshStatsBtn');
     
-    if (!display) return;
+    if (!displayBalance) return;
     
-    // Show loading state
-    display.innerHTML = '⏳ Calculating...';
-    display.style.color = '#0284c7';
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = '⏳ Calculating...';
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '⏳ Loading...';
     }
     
     try {
         const usersSnapshot = await firebase.firestore().collection('users').get();
         let totalBalance = 0;
+        let positiveUsers = 0;
+        let negativeUsers = 0;
         let userCount = 0;
         
         usersSnapshot.forEach(doc => {
@@ -1235,9 +1281,12 @@ async function calculateTotalBalance() {
             const balance = data.balance || 0;
             totalBalance += balance;
             userCount++;
+            
+            if (balance > 0) positiveUsers++;
+            else if (balance < 0) negativeUsers++;
         });
         
-        // Format with Indian number system
+        // Format total balance
         const formattedTotal = new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: 'INR',
@@ -1245,32 +1294,27 @@ async function calculateTotalBalance() {
             maximumFractionDigits: 0
         }).format(totalBalance);
         
-        display.innerHTML = `${formattedTotal}`;
-        display.style.color = '#025922';
+        displayBalance.textContent = formattedTotal;
+        displayPositive.textContent = positiveUsers;
+        displayNegative.textContent = negativeUsers;
+        displayTotal.textContent = userCount;
         
-        // Show additional info
-        display.innerHTML += `<div style="font-size: 12px; font-weight: 400; color: #64748b; margin-top: 4px;">
-            👥 ${userCount} users | 💰 Average: ₹${Math.round(totalBalance / (userCount || 1))}
-        </div>`;
-        
-        console.log(`✅ Total Balance: ₹${totalBalance} from ${userCount} users`);
+        console.log(`✅ Stats: Total Balance ₹${totalBalance}, Plus: ${positiveUsers}, Minus: ${negativeUsers}, Total: ${userCount}`);
         
     } catch (error) {
-        display.innerHTML = '❌ Error calculating balance';
-        display.style.color = '#dc2626';
-        console.error('Balance calculation error:', error);
-        alert('❌ Error calculating total balance: ' + error.message);
+        displayBalance.textContent = '❌ Error';
+        console.error('Stats loading error:', error);
+        alert('❌ Error loading statistics: ' + error.message);
     } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = '🔄 Calculate';
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = '🔄 Refresh Statistics';
         }
     }
 }
 
-// -------- FEATURE 2: DELETE ALL TRANSACTIONS --------
+// -------- DELETE ALL TRANSACTIONS (UPDATED) --------
 async function deleteAllTransactions() {
-    // ⚠️ DANGER - Double confirmation
     if (!confirm('⚠️ DANGER: This will DELETE ALL TRANSACTION RECORDS for ALL users!\n\nAre you sure?')) {
         return;
     }
@@ -1281,7 +1325,6 @@ async function deleteAllTransactions() {
         return;
     }
     
-    // Final warning
     if (!confirm('⚠️ FINAL WARNING: Are you ABSOLUTELY sure you want to delete ALL transactions?\n\nThis action CANNOT be undone!')) {
         return;
     }
@@ -1301,16 +1344,14 @@ async function deleteAllTransactions() {
             alert('ℹ️ No transactions found to delete.');
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '🗑️ DELETE ALL';
+                btn.textContent = '🗑️ Delete All Transactions';
             }
             return;
         }
         
-        // Delete in batches of 500 (Firestore limit)
         let deletedCount = 0;
         const batchSize = 500;
         const batches = [];
-        
         let batch = db.batch();
         let count = 0;
         
@@ -1318,26 +1359,21 @@ async function deleteAllTransactions() {
             batch.delete(doc.ref);
             count++;
             deletedCount++;
-            
             if (count === batchSize) {
                 batches.push(batch);
                 batch = db.batch();
                 count = 0;
             }
         });
+        if (count > 0) batches.push(batch);
         
-        if (count > 0) {
-            batches.push(batch);
-        }
-        
-        // Commit all batches
         for (let i = 0; i < batches.length; i++) {
             await batches[i].commit();
             console.log(`✅ Batch ${i + 1}/${batches.length} committed`);
         }
         
         alert(`✅ Successfully deleted ${deletedCount} transaction records!`);
-        console.log(`✅ Deleted ${deletedCount} transactions`);
+        loadTransactionStats();
         
     } catch (error) {
         alert('❌ Error deleting transactions: ' + error.message);
@@ -1345,14 +1381,13 @@ async function deleteAllTransactions() {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '🗑️ DELETE ALL';
+            btn.textContent = '🗑️ Delete All Transactions';
         }
     }
 }
 
-// -------- FEATURE 3: DELETE ALL BIDS WITH HISTORY --------
+// -------- DELETE ALL BIDS (UPDATED) --------
 async function deleteAllBidsWithHistory() {
-    // ⚠️ DANGER - Double confirmation
     if (!confirm('⚠️ DANGER: This will DELETE ALL BID RECORDS AND HISTORY for ALL users!\n\nThis includes:\n• All pending bids\n• All winning bids\n• All losing bids\n• All bid history\n\nAre you sure?')) {
         return;
     }
@@ -1363,8 +1398,7 @@ async function deleteAllBidsWithHistory() {
         return;
     }
     
-    // Final warning
-    if (!confirm('⚠️ FINAL WARNING: Are you ABSOLUTELY sure you want to delete ALL bids and history?\n\nThis action CANNOT be undone and will affect all market results!')) {
+    if (!confirm('⚠️ FINAL WARNING: Are you ABSOLUTELY sure you want to delete ALL bids and history?\n\nThis action CANNOT be undone!')) {
         return;
     }
     
@@ -1383,16 +1417,14 @@ async function deleteAllBidsWithHistory() {
             alert('ℹ️ No bids found to delete.');
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '🗑️ DELETE ALL';
+                btn.textContent = '💸 Delete All Bids';
             }
             return;
         }
         
-        // Delete in batches of 500 (Firestore limit)
         let deletedCount = 0;
         const batchSize = 500;
         const batches = [];
-        
         let batch = db.batch();
         let count = 0;
         
@@ -1400,34 +1432,24 @@ async function deleteAllBidsWithHistory() {
             batch.delete(doc.ref);
             count++;
             deletedCount++;
-            
             if (count === batchSize) {
                 batches.push(batch);
                 batch = db.batch();
                 count = 0;
             }
         });
+        if (count > 0) batches.push(batch);
         
-        if (count > 0) {
-            batches.push(batch);
-        }
-        
-        // Commit all batches
         for (let i = 0; i < batches.length; i++) {
             await batches[i].commit();
             console.log(`✅ Batch ${i + 1}/${batches.length} committed`);
         }
         
         alert(`✅ Successfully deleted ${deletedCount} bid records!`);
-        console.log(`✅ Deleted ${deletedCount} bids`);
         
-        // Refresh UI
-        if (typeof loadUsersWithTodayBids === 'function') {
-            loadUsersWithTodayBids();
-        }
-        if (typeof loadTotalBidsSummary === 'function') {
-            loadTotalBidsSummary();
-        }
+        if (typeof loadUsersWithTodayBids === 'function') loadUsersWithTodayBids();
+        if (typeof loadTotalBidsSummary === 'function') loadTotalBidsSummary();
+        loadTransactionStats();
         
     } catch (error) {
         alert('❌ Error deleting bids: ' + error.message);
@@ -1435,29 +1457,48 @@ async function deleteAllBidsWithHistory() {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '🗑️ DELETE ALL';
+            btn.textContent = '💸 Delete All Bids';
         }
     }
 }
 
-// -------- AUTO-LOAD ON PAGE LOAD --------
+// ============================================================
+// 🔥 EVENT LISTENERS FOR NEW BUTTONS
+// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔥 New Admin Tools loaded successfully!');
-    console.log('📌 Features added:');
-    console.log('  1. 💰 Total Users Balance');
-    console.log('  2. 🗑️ Delete All Transactions');
-    console.log('  3. 💸 Delete All Bids with History');
+    console.log('🔥 New Transaction Stats loaded successfully!');
     
-    // Auto-calculate if users section is visible
-    const usersSection = document.getElementById('usersSection');
-    if (usersSection && !usersSection.classList.contains('hidden')) {
-        setTimeout(() => {
-            calculateTotalBalance();
-        }, 1000);
+    const refreshBtn = document.getElementById('newRefreshStatsBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            loadTransactionStats();
+        });
     }
+    
+    const deleteTxnsBtn = document.getElementById('newDeleteAllTxnsBtn');
+    if (deleteTxnsBtn) {
+        deleteTxnsBtn.addEventListener('click', function() {
+            deleteAllTransactions();
+        });
+    }
+    
+    const deleteBidsBtn = document.getElementById('newDeleteAllBidsBtn');
+    if (deleteBidsBtn) {
+        deleteBidsBtn.addEventListener('click', function() {
+            deleteAllBidsWithHistory();
+        });
+    }
+    
+    console.log('📌 Features added:');
+    console.log('  1. 📊 Total Balance Stats');
+    console.log('  2. ✅ Positive Users (Plus)');
+    console.log('  3. ❌ Negative Users (Minus)');
+    console.log('  4. 👥 Total Users');
+    console.log('  5. 🗑️ Delete All Transactions');
+    console.log('  6. 💸 Delete All Bids');
 });
 
-console.log('✅ Admin panel loaded with new features!');
+console.log('✅ Admin panel loaded with new transaction features!');
 </script>
 </body>
 </html>
