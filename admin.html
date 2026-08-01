@@ -381,6 +381,34 @@
         .collapsible-card-body { display: none; margin-top: 14px; }
         .collapsible-card-body.open { display: block; }
 
+        /* NEW CSS FOR OVERALL STATS DASHBOARD */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            margin-top: 14px; 
+        }
+        .stat-box { 
+            background: #f8fafc; 
+            padding: 16px 12px; 
+            border-radius: 14px; 
+            text-align: center; 
+            border: 1px solid #cbd5e1; 
+        }
+        .stat-box .label { 
+            color: #64748b; 
+            font-size: 11px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-bottom: 6px; 
+        }
+        .stat-box .value { 
+            color: #0f172a; 
+            font-size: 20px; 
+            font-weight: 800; 
+        }
+        .stat-box .value.positive { color: #059669; }
+        .stat-box .value.negative { color: #dc2626; }
         @media (min-width: 769px) {
             .admin-panel { flex-direction: row; }
             .mobile-header { display: none; }
@@ -389,6 +417,7 @@
             .main-content { margin-left: 260px; max-width: 100%; padding: 24px; }
             .user-actions-grid { grid-template-columns: repeat(4, 1fr); }
             .sort-bar { flex-direction: row; align-items: center; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
         }
     </style>
 </head>
@@ -419,6 +448,7 @@
             <div class="sidebar-item" onclick="showSection('markets')">🎮 Markets</div>
             <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
             <div class="sidebar-item" onclick="showSection('totalBids')">📈 Total Bids</div>
+            <!-- NEW SIDEBAR BUTTON ADDED HERE -->
             <div class="sidebar-item" onclick="showSection('totalTransactions')">📊 Total Transactions</div>
             <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
             <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
@@ -494,18 +524,36 @@
                 <div id="totalBidsContent">Loading total bids calculation...</div>
             </div>
         </div>
-
-        <!-- NEW TOTAL TRANSACTIONS SECTION -->
+        
+        <!-- NEW TOTAL TRANSACTIONS (SUMMARY) SECTION ADDED HERE -->
         <div id="totalTransactionsSection" class="hidden">
             <div class="card">
-                <h3>📊 Total Transactions History
-                    <button onclick="loadAllTransactions()" class="btn-info" style="font-size:10px; padding:6px 10px;">🔄 Refresh</button>
+                <h3>📊 Overall App Summary
+                    <button id="calcStatsBtn" onclick="calculateOverallStats()" class="btn-info" style="font-size:10px; padding:6px 10px;">🔄 Calculate Now</button>
                 </h3>
-                <div id="allTransactionsList">Loading transactions...</div>
+                <div style="margin-bottom:12px; color:#64748b; font-size:11px;">(This calculates Total Balance, Spent, and Earnings combining all users)</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="label">Total Users Balance</div>
+                        <div class="value" id="appTotalBalance">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Total Spent (Bids)</div>
+                        <div class="value" id="appTotalSpent">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Total Won</div>
+                        <div class="value positive" id="appTotalWon">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Overall Plus/Minus</div>
+                        <div class="value" id="appNetProfit">₹0</div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- END NEW SECTION -->
-        
+
         <div id="depositsSection" class="hidden">
             <div class="card">
                 <h3>💰 Deposit Requests</h3>
@@ -941,49 +989,53 @@
       }
     }
   
-    // NEW FUNCTION FOR TOTAL TRANSACTIONS
-    async function loadAllTransactions() {
-        const container = document.getElementById('allTransactionsList');
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading recent transactions...</div>';
+    // NEW FUNCTION ADDED HERE TO CALCULATE APP OVERALL STATS
+    async function calculateOverallStats() {
+        let btn = document.getElementById('calcStatsBtn');
+        if(btn) btn.innerText = "⏳ Calculating...";
+        
         try {
-            // Fetch the last 100 transactions to keep it fast
-            let snap = await db.collection('transactions').orderBy('date', 'desc').limit(100).get();
-            let transactions = [];
-            
-            for(let d of snap.docs) {
-                let t = d.data();
-                // Optionally fetching user names for better display
-                let userDoc = await db.collection('users').doc(t.userId).get();
-                let userName = userDoc.exists ? userDoc.data().name : 'Unknown User';
-                transactions.push({id: d.id, ...t, userName: userName});
-            }
+            // 1. Calculate Total Users Balance
+            let totalBal = 0;
+            let usersSnap = await db.collection('users').get();
+            usersSnap.forEach(doc => {
+                let ud = doc.data();
+                totalBal += (ud.balance || 0);
+            });
+            document.getElementById('appTotalBalance').innerText = `₹${totalBal.toLocaleString()}`;
 
-            let html = '';
-            for(let t of transactions) {
-                let dateStr = t.date?.toDate ? t.date.toDate().toLocaleString() : new Date(0).toLocaleString();
-                let statusColor = t.status === 'Completed' ? 'color:#059669;' : (t.status === 'Rejected' ? 'color:#dc2626;' : 'color:#d97706;');
-                let typeColor = t.type === 'credit' ? 'color:#025922;' : 'color:#dc2626;';
+            // 2. Calculate Total Spent & Total Won from all Bids
+            let bidsSnap = await db.collection('bids').get();
+            let totalSpent = 0;
+            let totalWon = 0;
 
-                html += `<div class="user-item">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                        <b>👤 ${escapeHtml(t.userName)}</b>
-                        <span style="${statusColor} font-size:10px; font-weight:800; background:rgba(0,0,0,0.05); padding:3px 6px; border-radius:6px; letter-spacing:0.5px;">${(t.status || 'N/A').toUpperCase()}</span>
-                    </div>
-                    <div style="font-size:13.5px; margin-bottom:4px;"><b>Amount:</b> <span style="${typeColor} font-weight:bold;">₹${t.amount || 0}</span> | <b>Type:</b> ${(t.type || 'N/A').toUpperCase()}</div>
-                    <div style="font-size:12px; color:#334155; margin-top:4px; font-weight:600;">📝 ${t.description || (t.utr ? 'UTR: '+t.utr : 'No description')}</div>
-                    <div style="font-size:11px; color:#64748b; margin-top:6px; border-top:1px solid #e2e8f0; padding-top:6px;">📅 ${dateStr}</div>
-                </div>`;
-            }
+            bidsSnap.forEach(doc => {
+                let b = doc.data();
+                let pts = b.points || 0;
+                totalSpent += pts;
+                
+                if (b.status === 'won') {
+                    let gameDisplay = b.gameType || b.type || '-';
+                    let rate = gameRates[gameDisplay] || 10;
+                    totalWon += (pts * rate);
+                }
+            });
 
-            if(transactions.length === 0) {
-                html = '<p style="color:#64748b; text-align:center; padding:20px;">No transactions found.</p>';
-            }
-            container.innerHTML = html;
+            document.getElementById('appTotalSpent').innerText = `₹${totalSpent.toLocaleString()}`;
+            document.getElementById('appTotalWon').innerText = `₹${totalWon.toLocaleString()}`;
+
+            // Calculate Overall Plus/Minus (Net Users Profit/Loss)
+            let net = totalWon - totalSpent; 
+            let netEl = document.getElementById('appNetProfit');
+            netEl.innerText = `₹${net.toLocaleString()}`;
+            netEl.className = 'value ' + (net > 0 ? 'positive' : (net < 0 ? 'negative' : ''));
+
         } catch (e) {
-            container.innerHTML = `<div style="color:#dc2626; text-align:center; padding:20px;">Error fetching transactions: ${e.message}</div>`;
+            alert("Error calculating stats: " + e.message);
         }
+
+        if(btn) btn.innerText = "🔄 Calculate Now";
     }
-    // END NEW FUNCTION
 
     function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function openUserBidsPage(uid,name){ window.open(`user-bids.html?uid=${uid}&name=${encodeURIComponent(name)}`,'_blank'); }
@@ -1203,9 +1255,10 @@
         // ARRAY UPDATED WITH 'totalTransactions'
         ['markets','users','totalBids','totalTransactions','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
         document.getElementById(`${section}Section`).classList.remove('hidden'); 
+        
         if(section==='users') refreshTodayBidsForUsers(); 
         if(section==='totalBids') loadTotalBidsSummary();
-        if(section==='totalTransactions') loadAllTransactions(); // NEW LOGIC
+        if(section==='totalTransactions') calculateOverallStats(); // CALL THE NEW CALCULATION
         if(section==='deposits') loadDeposits(); 
         if(section==='withdrawals') loadWithdrawals(); 
         if(section==='livechat') markAllChatsAsRead(); 
