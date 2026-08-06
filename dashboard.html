@@ -884,37 +884,24 @@
     function openPopupModal(id) { toggleDrawerMenu(false); document.getElementById(id).style.display = 'flex'; }
     function closePopupModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // Smart Native App Share Function (Works in WebViews)
+    // Simple Copy to Clipboard Function (WebView Safe)
     function shareApp() {
         toggleDrawerMenu(false);
-        const textToShare = 'Play and win with GOGAMI! Download here: https://gogamiplay.github.io/gogami/download.html';
+        const linkToShare = 'https://gogamiplay.github.io/gogami/download.html';
         
-        if (navigator.share) {
-            navigator.share({
-                title: 'GOGAMI App',
-                text: textToShare
-            }).catch(console.error);
-        } else {
-            // Android WebView Native Share Intent fallback
-            const intentUri = "intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=" + encodeURIComponent(textToShare) + ";end";
-            
-            const iframe = document.createElement("iframe");
-            iframe.style.display = "none";
-            iframe.src = intentUri;
-            document.body.appendChild(iframe);
-            setTimeout(() => document.body.removeChild(iframe), 1000);
-            
-            // Safe Fallback: Auto copy to clipboard & show a nice alert instead of prompt
-            const tempInput = document.createElement("input");
-            tempInput.value = textToShare;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            try {
-                document.execCommand("copy");
-                setTimeout(() => alert("✅ Link Copied to Clipboard!\n\nYou can now paste it directly in WhatsApp, Telegram, or Messenger to share."), 500);
-            } catch(e) {}
-            document.body.removeChild(tempInput);
+        const tempInput = document.createElement("input");
+        tempInput.value = linkToShare;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        
+        try {
+            document.execCommand("copy");
+            alert("✅ Link Copied Successfully!\n\nYou can now paste and share it anywhere.");
+        } catch(e) {
+            alert("⚠️ Failed to copy. Link: " + linkToShare);
         }
+        
+        document.body.removeChild(tempInput);
     }
 
     async function commitBankingUpdate() {
