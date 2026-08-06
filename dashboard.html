@@ -8,6 +8,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
+        html, body {
+            -webkit-text-size-adjust: none;
+            -moz-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+            text-size-adjust: none;
+        }
+
         * { 
             margin: 0; 
             padding: 0; 
@@ -465,9 +472,9 @@
             top: -16px; 
             background: #025922; 
             color: #fff !important; 
-            width: 58px;  
-            height: 58px; 
-            max-width: 58px; 
+            width: 72px;  
+            height: 62px; 
+            max-width: 72px; 
             border-radius: 16px; 
             border: 4px solid #ffffff; 
             text-transform: uppercase; 
@@ -641,7 +648,7 @@
                 <div class="drawer-menu-item" onclick="redirectPage('chat.html')"><span>Live Help & Support</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="openPopupModal('ratesModalPopup')"><span>🎲 Game Payout Rates</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="openPopupModal('bankModalPopup')"><span>🏦 Update Bank Account</span><span class="drawer-arrow-label">→</span></div>
-                <div class="drawer-menu-item" onclick="window.location.href='https://gogamiplay.github.io/gogami/download.html'"><span>🔗 Share App</span><span class="drawer-arrow-label">→</span></div>
+                <div class="drawer-menu-item" onclick="shareApp()"><span>🔗 Share App</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item drawer-logout-btn" onclick="executeSecureSignout()"><span>🚪 Secure Logout</span><span class="drawer-arrow-label">→</span></div>
             </div>
         </div>
@@ -876,6 +883,20 @@
     function redirectPage(target) { toggleDrawerMenu(false); window.location.href = target; }
     function openPopupModal(id) { toggleDrawerMenu(false); document.getElementById(id).style.display = 'flex'; }
     function closePopupModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // Native App Share Function
+    function shareApp() {
+        toggleDrawerMenu(false);
+        if (navigator.share) {
+            navigator.share({
+                title: 'GOGAMI App',
+                text: 'Play and win with GOGAMI! Download here:',
+                url: 'https://gogamiplay.github.io/gogami/download.html'
+            }).catch(console.error);
+        } else {
+            prompt('Copy link to share:', 'https://gogamiplay.github.io/gogami/download.html');
+        }
+    }
 
     async function commitBankingUpdate() {
         let ah = document.getElementById('bankHolderNameField').value.trim();
