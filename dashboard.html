@@ -884,17 +884,36 @@
     function openPopupModal(id) { toggleDrawerMenu(false); document.getElementById(id).style.display = 'flex'; }
     function closePopupModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // Native App Share Function
+    // Smart Native App Share Function (Works in WebViews)
     function shareApp() {
         toggleDrawerMenu(false);
+        const textToShare = 'Play and win with GOGAMI! Download here: https://gogamiplay.github.io/gogami/download.html';
+        
         if (navigator.share) {
             navigator.share({
                 title: 'GOGAMI App',
-                text: 'Play and win with GOGAMI! Download here:',
-                url: 'https://gogamiplay.github.io/gogami/download.html'
+                text: textToShare
             }).catch(console.error);
         } else {
-            prompt('Copy link to share:', 'https://gogamiplay.github.io/gogami/download.html');
+            // Android WebView Native Share Intent fallback
+            const intentUri = "intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=" + encodeURIComponent(textToShare) + ";end";
+            
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            iframe.src = intentUri;
+            document.body.appendChild(iframe);
+            setTimeout(() => document.body.removeChild(iframe), 1000);
+            
+            // Safe Fallback: Auto copy to clipboard & show a nice alert instead of prompt
+            const tempInput = document.createElement("input");
+            tempInput.value = textToShare;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand("copy");
+                setTimeout(() => alert("✅ Link Copied to Clipboard!\n\nYou can now paste it directly in WhatsApp, Telegram, or Messenger to share."), 500);
+            } catch(e) {}
+            document.body.removeChild(tempInput);
         }
     }
 
