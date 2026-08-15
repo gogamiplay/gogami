@@ -164,6 +164,7 @@
             display: inline-flex; 
             align-items: center;
             transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            cursor: pointer;
         }
 
         .btn-deposit-pill { 
@@ -336,18 +337,6 @@
             border-top: 5px solid transparent; 
             border-bottom: 5px solid transparent; 
             border-left: 8px solid #fff; 
-            margin-left: 2px; 
-        }
-
-        .btn-inactive-stop { background: #e2e8f0; color: #64748b; opacity: 0.7; }
-        .btn-inactive-stop::after { 
-            content: ''; 
-            display: block; 
-            width: 0; 
-            height: 0; 
-            border-top: 5px solid transparent; 
-            border-bottom: 5px solid transparent; 
-            border-left: 8px solid #64748b; 
             margin-left: 2px; 
         }
 
@@ -610,8 +599,8 @@
         
         <div class="panel-shortcuts-row">
             <div class="action-shortcuts-box">
-                <!-- 🚀 Updated Link to External Payment Gateway Website -->
-                <a href="https://www.gogamienterprises.co.in/payment.html" class="shortcut-action-btn btn-deposit-pill">Deposit</a>
+                <!-- 🚀 Updated Deposit Button calling the new session-safe function -->
+                <button onclick="handleDepositClick()" class="shortcut-action-btn btn-deposit-pill">Deposit</button>
                 <a href="withdraw.html" class="shortcut-action-btn btn-withdraw-pill">Withdraw</a>
             </div>
             <div class="balance-pill" onclick="triggerWalletAlert()">₹<span id="userWalletBalance">0</span></div>
@@ -641,8 +630,8 @@
                 <div class="drawer-user-bal">Wallet: ₹<span id="drawerLabelBalance">0</span></div>
             </div>
             <div class="drawer-menu-scroller">
-                <!-- 🚀 Updated Link in Drawer Menu -->
-                <div class="drawer-menu-item" onclick="redirectPage('https://www.gogamienterprises.co.in/payment.html')"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
+                <!-- 🚀 Updated Drawer Link calling the new session-safe function -->
+                <div class="drawer-menu-item" onclick="handleDepositClick()"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('withdraw.html')"><span>Request Cash Out (Withdraw)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('chart.html')"><span>Market Panel Charts</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('mybids.html')"><span>My Bidding Passbook</span><span class="drawer-arrow-label">→</span></div>
@@ -724,6 +713,15 @@
     
     let currentUserData = null;
     let hasAlertedForCurrentMessage = false;
+
+    // 🚀 NEW SESSION-SAFE DEPOSIT FUNCTION
+    window.handleDepositClick = function() {
+        toggleDrawerMenu(false);
+        const user = auth.currentUser;
+        const uid = user ? user.uid : "";
+        // Pass userid in query param so payment gateway doesn't trigger auth loop
+        window.location.href = `https://www.gogamienterprises.co.in/payment.html?userid=${uid}`;
+    };
 
     try {
         const cachedBal = localStorage.getItem('gogami_cached_balance');
@@ -886,7 +884,6 @@
     function openPopupModal(id) { toggleDrawerMenu(false); document.getElementById(id).style.display = 'flex'; }
     function closePopupModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // Simple Copy to Clipboard Function (WebView Safe)
     function shareApp() {
         toggleDrawerMenu(false);
         const linkToShare = 'https://gogamiplay.github.io/gogami/download.html';
@@ -965,7 +962,6 @@
         hideSplashScreenFast();
     }, 1000);
 
-    // Single Session Enforcement Listener (Dashboard Level)
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
             window.location.href = 'index.html';
@@ -973,7 +969,6 @@
             const userId = user.uid;
             const localSessionId = localStorage.getItem('current_session_id');
 
-            // 1. Block Check Guard
             const doc = await db.collection('users').doc(userId).get();
             if (doc.exists && doc.data().blocked === true) {
                 alert('🚫 Your account has been blocked by Admin.');
@@ -983,7 +978,6 @@
                 return;
             }
 
-            // 2. Real-time Single Session Monitor
             db.collection('users').doc(userId).onSnapshot(userDoc => {
                 if (userDoc.exists) {
                     const serverSessionId = userDoc.data().activeSessionId;
