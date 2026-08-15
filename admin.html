@@ -381,7 +381,6 @@
         .collapsible-card-body { display: none; margin-top: 14px; }
         .collapsible-card-body.open { display: block; }
 
-        /* NEW CSS FOR OVERALL STATS DASHBOARD */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -409,6 +408,24 @@
         }
         .stat-box .value.positive { color: #059669; }
         .stat-box .value.negative { color: #dc2626; }
+
+        /* 🚀 Live Gateway Deposit Card Styling */
+        .deposit-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .deposit-meta { display: flex; flex-direction: column; gap: 3px; }
+        .deposit-user { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .deposit-info { font-size: 11.5px; color: #64748b; font-family: monospace; }
+        .deposit-amount { font-size: 16px; font-weight: 800; color: #059669; text-align: right; }
+        .deposit-status { font-size: 10px; font-weight: 800; background: rgba(5,150,105,0.15); color: #059669; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+
         @media (min-width: 769px) {
             .admin-panel { flex-direction: row; }
             .mobile-header { display: none; }
@@ -448,9 +465,8 @@
             <div class="sidebar-item" onclick="showSection('markets')">🎮 Markets</div>
             <div class="sidebar-item" onclick="showSection('users')" id="usersMenuItem">👥 Users</div>
             <div class="sidebar-item" onclick="showSection('totalBids')">📈 Total Bids</div>
-            <!-- NEW SIDEBAR BUTTON ADDED HERE -->
             <div class="sidebar-item" onclick="showSection('totalTransactions')">📊 Total Transactions</div>
-            <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Deposits <span id="depositBadge" class="notification-badge" style="display:none;">0</span></div>
+            <div class="sidebar-item" onclick="showSection('deposits')" id="depositsMenuItem">💰 Live Deposits</div>
             <div class="sidebar-item" onclick="showSection('withdrawals')" id="withdrawalsMenuItem">💸 Withdrawals <span id="withdrawalBadge" class="notification-badge" style="display:none;">0</span></div>
             <div class="sidebar-item" onclick="showSection('notice')">📢 Notice</div>
             <div class="sidebar-item" onclick="showSection('settings')">⚙️ Settings</div>
@@ -525,7 +541,6 @@
             </div>
         </div>
         
-        <!-- NEW TOTAL TRANSACTIONS (SUMMARY) SECTION ADDED HERE -->
         <div id="totalTransactionsSection" class="hidden">
             <div class="card">
                 <h3>📊 Overall App Summary
@@ -551,7 +566,6 @@
                     </div>
                 </div>
                 
-                <!-- NEW ADDITION: Clear History Buttons -->
                 <div style="margin-top: 16px; border-top: 1px solid #cbd5e1; padding-top: 16px;">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button onclick="clearAllUsersBidHistory()" class="btn-danger" style="flex: 1;">🗑️ All Users Bid History Clear</button>
@@ -561,17 +575,13 @@
                 
             </div>
         </div>
-        <!-- END NEW SECTION -->
 
+        <!-- 🚀 Updated Deposits Section (Live Gateway Transactions Passbook) -->
         <div id="depositsSection" class="hidden">
             <div class="card">
-                <h3>💰 Deposit Requests</h3>
-                <div class="request-tabs">
-                    <div class="request-tab active" onclick="showDepositTab('pending')">⏳ Pending</div>
-                    <div class="request-tab" onclick="showDepositTab('completed')">✅ Approved</div>
-                    <div class="request-tab" onclick="showDepositTab('rejected')">❌ Rejected</div>
-                </div>
-                <div id="depositsList">Loading...</div>
+                <h3>💰 Live Gateway Deposits Passbook</h3>
+                <div style="margin-bottom: 12px; font-size: 11px; color: #64748b; font-weight: 600;">Showing all successful online gateway top-ups in real-time.</div>
+                <div id="depositsList">Loading transactions...</div>
             </div>
         </div>
         
@@ -642,7 +652,7 @@
     const db = firebase.firestore();
     
     let dbPassword = "Gani99@@", allUsers = [], currentSearchTerm = "", currentSortType = "todayBidders", todayBidMap = new Map(), userLastBidTime = new Map();
-    let depositCount = 0, withdrawalCount = 0, chatUnreadCount = 0, depositListener = null, withdrawalListener = null, chatListener = null, currentDepositTab = "pending", currentWithdrawalTab = "pending", openMarketId = null;
+    let withdrawalCount = 0, chatUnreadCount = 0, withdrawalListener = null, chatListener = null, openMarketId = null;
     let userLastActive = new Map();
     let onlineStatusListener = null;
     let openTotalBidsMarketId = null;
@@ -733,28 +743,24 @@
     }
     
     function startNotificationListeners(){ 
-        if(depositListener) depositListener(); 
-        depositListener = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); updateMenuDot(); if(currentDepositTab==='pending') loadDeposits(); }); 
         if(withdrawalListener) withdrawalListener(); 
         withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); updateMenuDot(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
         if(chatListener) chatListener(); 
-        chatListener = db.collection('chats').where('unread','==',true).onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); updateMenuDot(); }); 
+        chatListener = db.collection('chats').where('unread','==','true').onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); updateMenuDot(); }); 
     }
 
-    function updateDepositBadge(){ let b=document.getElementById('depositBadge'); if(depositCount>0){ b.style.display='inline-block'; b.innerText=depositCount>99?'99+':depositCount; } else b.style.display='none'; }
     function updateWithdrawalBadge(){ let b=document.getElementById('withdrawalBadge'); if(withdrawalCount>0){ b.style.display='inline-block'; b.innerText=withdrawalCount>99?'99+':withdrawalCount; } else b.style.display='none'; }
     function updateChatBadge(){ let b=document.getElementById('chatBadge'); if(chatUnreadCount>0){ b.style.display='inline-block'; b.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else b.style.display='none'; }
 
     function updateMenuDot() {
         const dot = document.getElementById('menuNotificationDot');
-        if (depositCount > 0 || withdrawalCount > 0 || chatUnreadCount > 0) {
+        if (withdrawalCount > 0 || chatUnreadCount > 0) {
             dot.style.display = 'block';
         } else {
             dot.style.display = 'none';
         }
     }
 
-    function showDepositTab(tab){ currentDepositTab=tab; document.querySelectorAll('#depositsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadDeposits(); }
     function showWithdrawalTab(tab){ currentWithdrawalTab=tab; document.querySelectorAll('#withdrawalsSection .request-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); loadWithdrawals(); }
     
     async function deleteAllUsers() {
@@ -782,12 +788,12 @@
         let thirtyDaysAgo=new Date(); 
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30); 
         try{ 
-            let oldDeposits=await db.collection('transactions').where('type','==','credit').where('status','in',['Completed','Rejected']).get(); 
+            let oldDeposits=await db.collection('transactions').where('status','in',['Completed','Rejected']).get(); 
             let batch=db.batch(); 
             let count=0; 
             oldDeposits.forEach(doc=>{ 
                 let d=doc.data(); 
-                let reqDate=d.date?.toDate?d.date.toDate():(d.date?.seconds?new Date(d.date.seconds*1000):null); 
+                let reqDate=d.timestamp?.toDate?d.timestamp.toDate():(d.timestamp?.seconds?new Date(d.timestamp.seconds*1000):null); 
                 if(reqDate && reqDate<thirtyDaysAgo){ batch.delete(doc.ref); count++; } 
             }); 
             if(count>0) await batch.commit(); 
@@ -998,13 +1004,11 @@
       }
     }
   
-    // NEW FUNCTION ADDED HERE TO CALCULATE APP OVERALL STATS
     async function calculateOverallStats() {
         let btn = document.getElementById('calcStatsBtn');
         if(btn) btn.innerText = "⏳ Calculating...";
         
         try {
-            // 1. Calculate Total Users Balance
             let totalBal = 0;
             let usersSnap = await db.collection('users').get();
             usersSnap.forEach(doc => {
@@ -1013,7 +1017,6 @@
             });
             document.getElementById('appTotalBalance').innerText = `₹${totalBal.toLocaleString()}`;
 
-            // 2. Calculate Total Spent & Total Won from all Bids
             let bidsSnap = await db.collection('bids').get();
             let totalSpent = 0;
             let totalWon = 0;
@@ -1033,7 +1036,6 @@
             document.getElementById('appTotalSpent').innerText = `₹${totalSpent.toLocaleString()}`;
             document.getElementById('appTotalWon').innerText = `₹${totalWon.toLocaleString()}`;
 
-            // Calculate Overall Plus/Minus (Net Users Profit/Loss)
             let net = totalWon - totalSpent; 
             let netEl = document.getElementById('appNetProfit');
             netEl.innerText = `₹${net.toLocaleString()}`;
@@ -1171,27 +1173,55 @@
    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
   
+   // 🚀 UPDATED: Load only Gateway Successful Deposits (filtered by razorpayPaymentId existence)
    async function loadDeposits(){ 
-        let status=currentDepositTab==='pending'?'Pending':(currentDepositTab==='completed'?'Completed':'Rejected'); 
-        let snap=await db.collection('transactions').where('type','==','credit').where('status','==',status).get(); 
-        let deposits=[]; 
-        for(let d of snap.docs){ 
-            let t=d.data(); 
-            let user=await db.collection('users').doc(t.userId).get(); 
-            deposits.push({id:d.id,userId:t.userId,amount:t.amount,userUTR:t.utr,date:t.date?.toDate()||new Date(0),userName:user.data()?.name||'Unknown'}); 
-        } 
-        deposits.sort((a,b)=>b.date-a.date); 
-        let html=''; 
-        for(let d of deposits){ 
-            let isPending=currentDepositTab==='pending'; 
-            html+=`<div class="request-item"><div><b>👤 ${d.userName}</b><br><b>💰 Amount:</b> ₹${d.amount}<br><b>📋 UTR/Ref:</b> ${d.userUTR||'N/A'}<br><b>📅 Date:</b> ${d.date.toLocaleString()}</div><div style="margin-top:8px;">${isPending?`<button onclick="approveDeposit('${d.id}',${d.amount},'${d.userId}')" class="btn-success">Approve</button><button onclick="rejectDeposit('${d.id}')" class="btn-danger">Reject</button>`:`<button onclick="deleteDepositRecord('${d.id}')" class="btn-delete">Delete</button>`}</div></div>`; 
-        } 
-        document.getElementById('depositsList').innerHTML=html||'<p style="color:#64748b;">No deposits found</p>'; 
+        let container = document.getElementById('depositsList');
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading live deposits...</div>';
+        try {
+            let snap = await db.collection('transactions').orderBy('timestamp', 'desc').get();
+            let deposits = [];
+            
+            for(let d of snap.docs){ 
+                let t = d.data();
+                // Filter only gateway deposits which have razorpayPaymentId
+                if (t.razorpayPaymentId) {
+                    let user = await db.collection('users').doc(t.userid).get();
+                    let dateObj = t.timestamp?.toDate ? t.timestamp.toDate() : (t.timestamp?.seconds ? new Date(t.timestamp.seconds * 1000) : new Date());
+                    deposits.push({
+                        id: d.id,
+                        userId: t.userid,
+                        amount: t.amount,
+                        razorpayId: t.razorpayPaymentId,
+                        txnid: t.txnid || 'N/A',
+                        date: dateObj,
+                        userName: user.exists ? (user.data().name || 'Unknown') : 'Unknown',
+                        userPhone: user.exists ? (user.data().phone || 'N/A') : 'N/A'
+                    });
+                }
+            } 
+            
+            let html = ''; 
+            if(deposits.length === 0) {
+                html = '<p style="color:#64748b; text-align:center; padding:20px;">No gateway deposits found yet.</p>';
+            } else {
+                for(let d of deposits){ 
+                    html += `<div class="deposit-item">
+                                <div class="deposit-meta">
+                                    <span class="deposit-user">👤 ${escapeHtml(d.userName)} (${d.userPhone})</span>
+                                    <span class="deposit-info">🆔 Txn: ${d.txnid}</span>
+                                    <span class="deposit-info">💳 RZP ID: ${d.razorpayId}</span>
+                                    <span class="deposit-info">📅 ${d.date.toLocaleString()}</span>
+                                    <span class="deposit-status">SUCCESS</span>
+                                </div>
+                                <div class="deposit-amount">+ ₹${d.amount}</div>
+                             </div>`; 
+                }
+            }
+            container.innerHTML = html;
+        } catch(e) {
+            container.innerHTML = `<p style="color:#dc2626; text-align:center;">Error loading deposits: ${e.message}</p>`;
+        }
    }
-
-   async function approveDeposit(id,amount,uid){ if(confirm(`Approve deposit of ₹${amount}?`)){ let user=await db.collection('users').doc(uid).get(); await db.collection('users').doc(uid).update({balance:(user.data().balance||0)+amount}); await db.collection('transactions').doc(id).update({status:'Completed'}); alert('✅ Deposit approved!'); loadDeposits(); } }
-   async function rejectDeposit(id){ if(confirm('Reject this deposit?')){ await db.collection('transactions').doc(id).update({status:'Rejected'}); alert('❌ Deposit rejected!'); loadDeposits(); } }
-   async function deleteDepositRecord(id){ if(confirm('Delete record?')){ await db.collection('transactions').doc(id).delete(); loadDeposits(); } }
   
    async function loadWithdrawals(){ 
         let status=currentWithdrawalTab==='pending'?'Pending':(currentWithdrawalTab==='completed'?'Completed':'Rejected'); 
@@ -1261,13 +1291,12 @@
   
    function showSection(section){ 
         toggleSidebar(false);
-        // ARRAY UPDATED WITH 'totalTransactions'
         ['markets','users','totalBids','totalTransactions','deposits','withdrawals','notice','settings','livechat'].forEach(s=>document.getElementById(`${s}Section`).classList.add('hidden')); 
         document.getElementById(`${section}Section`).classList.remove('hidden'); 
         
         if(section==='users') refreshTodayBidsForUsers(); 
         if(section==='totalBids') loadTotalBidsSummary();
-        if(section==='totalTransactions') calculateOverallStats(); // CALL THE NEW CALCULATION
+        if(section==='totalTransactions') calculateOverallStats();
         if(section==='deposits') loadDeposits(); 
         if(section==='withdrawals') loadWithdrawals(); 
         if(section==='livechat') markAllChatsAsRead(); 
@@ -1280,9 +1309,8 @@
         document.getElementById('adminPanel').style.display='none'; 
    }
 
-   // NEW FUNCTIONS FOR CLEARING ALL HISTORY
    async function clearAllUsersBidHistory(){
-       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL bid history for ALL users?")){
+       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL bid history for all users?")){
            if(prompt('Type "CLEAR ALL BIDS" to confirm:') === 'CLEAR ALL BIDS'){
                try {
                    let bids = await db.collection('bids').get();
@@ -1300,7 +1328,7 @@
    }
 
    async function clearAllUsersTransactionHistory(){
-       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for ALL users?")){
+       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for all users?")){
            if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
                try {
                    let trans = await db.collection('transactions').get();
