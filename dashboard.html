@@ -610,7 +610,8 @@
         
         <div class="panel-shortcuts-row">
             <div class="action-shortcuts-box">
-                <a href="deposit.html" class="shortcut-action-btn btn-deposit-pill">Deposit</a>
+                <!-- 🚀 Updated Link to Payment Gateway Website -->
+                <a href="https://www.gogamienterprises.co.in/payment.html" class="shortcut-action-btn btn-deposit-pill">Deposit</a>
                 <a href="withdraw.html" class="shortcut-action-btn btn-withdraw-pill">Withdraw</a>
             </div>
             <div class="balance-pill" onclick="triggerWalletAlert()">₹<span id="userWalletBalance">0</span></div>
@@ -640,7 +641,8 @@
                 <div class="drawer-user-bal">Wallet: ₹<span id="drawerLabelBalance">0</span></div>
             </div>
             <div class="drawer-menu-scroller">
-                <div class="drawer-menu-item" onclick="redirectPage('deposit.html')"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
+                <!-- 🚀 Updated Link in Drawer Menu -->
+                <div class="drawer-menu-item" onclick="redirectPage('https://www.gogamienterprises.co.in/payment.html')"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('withdraw.html')"><span>Request Cash Out (Withdraw)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('chart.html')"><span>Market Panel Charts</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('mybids.html')"><span>My Bidding Passbook</span><span class="drawer-arrow-label">→</span></div>
@@ -668,28 +670,28 @@
 
 <div id="ratesModalPopup" class="modal-popup-layer">
     <div class="modal-popup-body">     
-        <h3>🎲 GAME RATES</h3>      
-        <div class="popup-rate-row"><span>Single Digit</span><span>10x</span></div>      
-        <div class="popup-rate-row"><span>Jodi</span><span>100x</span></div>      
-        <div class="popup-rate-row"><span>Single Pana</span><span>160x</span></div>      
-        <div class="popup-rate-row"><span>Double Pana</span><span>320x</span></div>      
-        <div class="popup-rate-row"><span>Triple Pana</span><span>1000x</span></div>      
-        <div class="popup-rate-row"><span>Half Sangam A</span><span>1000x</span></div>      
-        <div class="popup-rate-row"><span>Half Sangam B</span><span>1000x</span></div>      
-        <div class="popup-rate-row"><span>Full Sangam</span><span>10000x</span></div>      
+        <h3>🎲 GAME RATES</h3>     
+        <div class="popup-rate-row"><span>Single Digit</span><span>10x</span></div>     
+        <div class="popup-rate-row"><span>Jodi</span><span>100x</span></div>     
+        <div class="popup-rate-row"><span>Single Pana</span><span>160x</span></div>     
+        <div class="popup-rate-row"><span>Double Pana</span><span>320x</span></div>     
+        <div class="popup-rate-row"><span>Triple Pana</span><span>1000x</span></div>     
+        <div class="popup-rate-row"><span>Half Sangam A</span><span>1000x</span></div>     
+        <div class="popup-rate-row"><span>Half Sangam B</span><span>1000x</span></div>     
+        <div class="popup-rate-row"><span>Full Sangam</span><span>10000x</span></div>     
         <button class="modal-action-button modal-close-trigger" onclick="closePopupModal('ratesModalPopup')">Close</button> 
     </div>
 </div>
 
 <div id="bankModalPopup" class="modal-popup-layer">
     <div class="modal-popup-body">     
-        <h3>🏦 Bank Details</h3>      
-        <input type="text" id="bankHolderNameField" class="popup-input-element" placeholder="Account Holder Name">      
-        <input type="text" id="bankTitleField" class="popup-input-element" placeholder="Bank Name">      
-        <input type="text" id="bankNumberField" class="popup-input-element" placeholder="Account Number">      
-        <input type="text" id="bankIfscField" class="popup-input-element" placeholder="IFSC Code">      
-        <button class="modal-action-button" onclick="commitBankingUpdate()">Save Coordinates</button>      
-        <button class="modal-action-button modal-close-trigger" onclick="closePopupModal('bankModalPopup')">Cancel</button>      
+        <h3>🏦 Bank Details</h3>     
+        <input type="text" id="bankHolderNameField" class="popup-input-element" placeholder="Account Holder Name">     
+        <input type="text" id="bankTitleField" class="popup-input-element" placeholder="Bank Name">     
+        <input type="text" id="bankNumberField" class="popup-input-element" placeholder="Account Number">     
+        <input type="text" id="bankIfscField" class="popup-input-element" placeholder="IFSC Code">     
+        <button class="modal-action-button" onclick="commitBankingUpdate()">Save Coordinates</button>     
+        <button class="modal-action-button modal-close-trigger" onclick="closePopupModal('bankModalPopup')">Cancel</button>     
         <div id="bankCallbackLog" style="text-align:center; font-size:11px; margin-top:6px; font-weight:700;"></div> 
     </div>
 </div>
