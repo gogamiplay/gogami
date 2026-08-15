@@ -94,6 +94,44 @@
             100% { left: 100%; }
         }
         
+        /* 🚀 Full-screen loading overlay for deposit click */
+        #depositLoadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(2, 89, 34, 0.92);
+            z-index: 6000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+        }
+
+        .spinner-circle {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .deposit-loading-text {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
         .sticky-top-panel {
             position: fixed; 
             top: 0; 
@@ -588,6 +626,12 @@
     <div class="loader-bar"></div>
 </div>
 
+<!-- 🚀 Deposit Loading Circle Overlay -->
+<div id="depositLoadingOverlay">
+    <div class="spinner-circle"></div>
+    <div class="deposit-loading-text">Processing Deposit...</div>
+</div>
+
 <div class="app-container">
     
     <div class="sticky-top-panel">
@@ -599,7 +643,7 @@
         
         <div class="panel-shortcuts-row">
             <div class="action-shortcuts-box">
-                <!-- 🚀 Updated Deposit Button calling the new session-safe function -->
+                <!-- 🚀 Updated Deposit Button calling the loading sequence -->
                 <button onclick="handleDepositClick()" class="shortcut-action-btn btn-deposit-pill">Deposit</button>
                 <a href="withdraw.html" class="shortcut-action-btn btn-withdraw-pill">Withdraw</a>
             </div>
@@ -630,7 +674,7 @@
                 <div class="drawer-user-bal">Wallet: ₹<span id="drawerLabelBalance">0</span></div>
             </div>
             <div class="drawer-menu-scroller">
-                <!-- 🚀 Updated Drawer Link calling the new session-safe function -->
+                <!-- 🚀 Updated Drawer Link calling the loading sequence -->
                 <div class="drawer-menu-item" onclick="handleDepositClick()"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('withdraw.html')"><span>Request Cash Out (Withdraw)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('chart.html')"><span>Market Panel Charts</span><span class="drawer-arrow-label">→</span></div>
@@ -714,13 +758,19 @@
     let currentUserData = null;
     let hasAlertedForCurrentMessage = false;
 
-    // 🚀 NEW SESSION-SAFE DEPOSIT FUNCTION
+    // 🚀 NEW SESSION-SAFE DEPOSIT FUNCTION WITH CIRCLE LOADER
     window.handleDepositClick = function() {
         toggleDrawerMenu(false);
-        const user = auth.currentUser;
-        const uid = user ? user.uid : "";
-        // Pass userid in query param so payment gateway doesn't trigger auth loop
-        window.location.href = `https://www.gogamienterprises.co.in/payment.html?userid=${uid}`;
+        const loadingOverlay = document.getElementById('depositLoadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        setTimeout(() => {
+            const user = auth.currentUser;
+            const uid = user ? user.uid : "";
+            window.location.href = `https://www.gogamienterprises.co.in/payment.html?userid=${uid}`;
+        }, 800); // 0.8 seconds circle loader display time
     };
 
     try {
