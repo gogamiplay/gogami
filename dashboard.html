@@ -94,7 +94,6 @@
             100% { left: 100%; }
         }
         
-        /* 🚀 Full-screen loading overlay for deposit click */
         #depositLoadingOverlay {
             display: none;
             position: fixed;
@@ -352,9 +351,10 @@
         .status-closed-today { color: #dc2626; }
         .status-holiday-today { color: #7c3aed; }
 
+        /* 🚀 Fixed Play Button Circle with visible Play Icon */
         .market-action-btn-circle { 
-            width: 36px; 
-            height: 36px; 
+            width: 38px; 
+            height: 38px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
@@ -367,16 +367,7 @@
 
         .market-action-btn-circle:active { transform: scale(0.95); }
         .btn-active-play { background: #025922; color: #fff; }
-        .btn-active-play::after { 
-            content: ''; 
-            display: block; 
-            width: 0; 
-            height: 0; 
-            border-top: 5px solid transparent; 
-            border-bottom: 5px solid transparent; 
-            border-left: 8px solid #fff; 
-            margin-left: 2px; 
-        }
+        .btn-inactive-stop { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
 
         .market-timing-footer-row { 
             display: flex; 
@@ -626,7 +617,6 @@
     <div class="loader-bar"></div>
 </div>
 
-<!-- 🚀 Deposit Loading Circle Overlay -->
 <div id="depositLoadingOverlay">
     <div class="spinner-circle"></div>
     <div class="deposit-loading-text">Processing Deposit...</div>
@@ -643,7 +633,6 @@
         
         <div class="panel-shortcuts-row">
             <div class="action-shortcuts-box">
-                <!-- 🚀 Updated Deposit Button calling the loading sequence -->
                 <button onclick="handleDepositClick()" class="shortcut-action-btn btn-deposit-pill">Deposit</button>
                 <a href="withdraw.html" class="shortcut-action-btn btn-withdraw-pill">Withdraw</a>
             </div>
@@ -674,7 +663,6 @@
                 <div class="drawer-user-bal">Wallet: ₹<span id="drawerLabelBalance">0</span></div>
             </div>
             <div class="drawer-menu-scroller">
-                <!-- 🚀 Updated Drawer Link calling the loading sequence -->
                 <div class="drawer-menu-item" onclick="handleDepositClick()"><span>Add Funds (Deposit)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('withdraw.html')"><span>Request Cash Out (Withdraw)</span><span class="drawer-arrow-label">→</span></div>
                 <div class="drawer-menu-item" onclick="redirectPage('chart.html')"><span>Market Panel Charts</span><span class="drawer-arrow-label">→</span></div>
@@ -758,7 +746,6 @@
     let currentUserData = null;
     let hasAlertedForCurrentMessage = false;
 
-    // 🚀 NEW SESSION-SAFE DEPOSIT FUNCTION WITH CIRCLE LOADER
     window.handleDepositClick = function() {
         toggleDrawerMenu(false);
         const loadingOverlay = document.getElementById('depositLoadingOverlay');
@@ -770,7 +757,7 @@
             const user = auth.currentUser;
             const uid = user ? user.uid : "";
             window.location.href = `https://www.gogamienterprises.co.in/payment.html?userid=${uid}`;
-        }, 800); // 0.8 seconds circle loader display time
+        }, 800);
     };
 
     try {
@@ -896,6 +883,7 @@
                 let calculatedState = computeMarketCurrentStatus(m, curMin);
                 let buttonStyleClass = calculatedState.allow ? 'btn-active-play' : 'btn-inactive-stop';
                 
+                // 🚀 Added explicit SVG Play triangle inside the button so it's always visible
                 return `
                     <div class="market-card-wrapper" onclick="navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')">
                         <div class="market-main-row">
@@ -906,7 +894,9 @@
                                 <div class="market-numbers-display">${combinedNumbers}</div>
                                 <span class="market-status-text ${calculatedState.css}">${calculatedState.text}</span>
                             </div>
-                            <button class="market-action-btn-circle ${buttonStyleClass}" onclick="event.stopPropagation(); navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')"></button>
+                            <button class="market-action-btn-circle ${buttonStyleClass}" onclick="event.stopPropagation(); navigateTradingSuite('${doc.id}', '${encodeURIComponent(m.name || '')}', '${calculatedState.statusParam}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
                         </div>
                         <div class="market-timing-footer-row" onclick="event.stopPropagation()">
                             <div class="time-node">Open Bids : <span>${formatTimeTo12Hour(m.openBidEnd)}</span></div>
