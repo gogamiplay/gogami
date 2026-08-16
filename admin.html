@@ -1173,7 +1173,7 @@
    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
   
-   // 🚀 UPDATED: Load only Gateway Successful Deposits (filtered by razorpayPaymentId existence)
+   // 🚀 UPDATED: Load Gateway Successful Deposits supporting both userid and userId
    async function loadDeposits(){ 
         let container = document.getElementById('depositsList');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading live deposits...</div>';
@@ -1185,11 +1185,12 @@
                 let t = d.data();
                 // Filter only gateway deposits which have razorpayPaymentId
                 if (t.razorpayPaymentId) {
-                    let user = await db.collection('users').doc(t.userid).get();
+                    let targetUid = t.userid || t.userId;
+                    let user = targetUid ? await db.collection('users').doc(targetUid).get() : { exists: false };
                     let dateObj = t.timestamp?.toDate ? t.timestamp.toDate() : (t.timestamp?.seconds ? new Date(t.timestamp.seconds * 1000) : new Date());
                     deposits.push({
                         id: d.id,
-                        userId: t.userid,
+                        userId: targetUid || 'N/A',
                         amount: t.amount,
                         razorpayId: t.razorpayPaymentId,
                         txnid: t.txnid || 'N/A',
