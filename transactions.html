@@ -323,7 +323,6 @@
         }
 
         try {
-            // Fetch all transactions from the collection safely
             let transactionsSnap = await db.collection('transactions').get();
             let withdrawalsSnap = await db.collection('withdrawRequests').where('userId', '==', user.uid).get();
 
@@ -332,29 +331,43 @@
             withdrawalsSnap.forEach(doc => {
                 let w = doc.data();
                 let date = w.date?.toDate ? w.date.toDate() : (w.date?.seconds ? new Date(w.date.seconds * 1000) : (w.timestamp?.toDate ? w.timestamp.toDate() : new Date(0)));
+                
+                let rawStatus = (w.status || 'Pending').toLowerCase();
+                let displayStatus = 'Pending';
+                if (rawStatus === 'rejected' || rawStatus === 'cancel' || rawStatus === 'cancelled') {
+                    displayStatus = 'Rejected';
+                } else if (rawStatus === 'completed' || rawStatus === 'approved' || rawStatus === 'success') {
+                    displayStatus = 'Approved';
+                }
+
                 items.push({
                     id: doc.id,
                     type: 'debit',
                     category: 'Withdrawal',
                     amount: w.amount,
-                    status: w.status || 'Pending',
+                    status: displayStatus,
                     date: date
                 });
             });
 
             transactionsSnap.forEach(doc => {
                 let t = doc.data();
-                // Check for both userId or userid fields matching the current user
                 let tUserId = t.userId || t.userid;
                 if (tUserId === user.uid) {
                     let date = t.timestamp?.toDate ? t.timestamp.toDate() : (t.timestamp?.seconds ? new Date(t.timestamp.seconds * 1000) : (t.date?.toDate ? t.date.toDate() : (t.date?.seconds ? new Date(t.date.seconds * 1000) : new Date(0))));
-                    let statusVal = t.status || (t.razorpayPaymentId ? 'Success' : 'Completed');
+                    
+                    let rawStatus = (t.status || (t.razorpayPaymentId ? 'Success' : 'Completed')).toLowerCase();
+                    let displayStatus = 'Completed';
+                    if (rawStatus === 'rejected') displayStatus = 'Rejected';
+                    else if (rawStatus === 'pending') displayStatus = 'Pending';
+                    else if (rawStatus === 'success' || rawStatus === 'completed' || rawStatus === 'approved') displayStatus = 'Success';
+
                     items.push({
                         id: doc.id,
                         type: 'credit',
                         category: t.razorpayPaymentId ? 'Online Deposit' : 'Deposit',
                         amount: t.amount,
-                        status: statusVal,
+                        status: displayStatus,
                         date: date
                     });
                 }
@@ -373,7 +386,7 @@
             let html = items.map(item => {
                 let isCredit = item.type === 'credit';
                 let statusLower = item.status.toLowerCase();
-                let statusClass = statusLower === 'completed' || statusLower === 'approved' || statusLower === 'success' ? 'status-completed' : (statusLower === 'rejected' ? 'status-rejected' : 'status-pending');
+                let statusClass = (statusLower === 'completed' || statusLower === 'approved' || statusLower === 'success') ? 'status-completed' : (statusLower === 'rejected' ? 'status-rejected' : 'status-pending');
 
                 return `
                     <div class="history-item">
