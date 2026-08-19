@@ -35,7 +35,6 @@
             position: relative; 
         }
 
-        /* Full Screen Android App Style Splash Screen - डार्क ग्रीन */
         #splashScreen {
             position: fixed;
             top: 0;
@@ -85,7 +84,6 @@
             100% { left: 100%; }
         }
 
-        /* Top Header Bar - डार्क ग्रीन */
         .header { 
             background: #025922; 
             padding: 12px 16px; 
@@ -122,7 +120,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* History Cards */
         .history-list {
             padding: 12px;
             display: flex;
@@ -188,7 +185,7 @@
             text-transform: uppercase;
         }
 
-        .status-completed, .status-approved { color: #059669; }
+        .status-completed, .status-approved, .status-success { color: #059669; }
         .status-rejected { color: #dc2626; }
         .status-pending { color: #d97706; }
 
@@ -207,7 +204,6 @@
             font-weight: 600;
         }
 
-        /* Bottom Fixed Navigation */
         .bottom-nav { 
             position: fixed; 
             bottom: 0; 
@@ -263,7 +259,6 @@
 </head>
 <body>
 
-<!-- Android App Style Splash Screen Loader - डार्क ग्रीन -->
 <div id="splashScreen">
     <img src="https://i.imgur.com/DEFyMFt.png" alt="Logo" class="splash-logo">
     <div class="loader-bar"></div>
@@ -280,7 +275,6 @@
         <div style="text-align:center; padding:40px; color:#64748b; font-size:12px;">Loading transactions...</div>
     </div>
 
-    <!-- Navigation Dock -->
     <div class="bottom-nav">
         <a href="mybids.html" class="nav-item"><span>Passbook</span></a>
         <a href="mybids.html" class="nav-item"><span>My Bids</span></a>
@@ -329,14 +323,15 @@
         }
 
         try {
-            let transactionsSnap = await db.collection('transactions').where('userId', '==', user.uid).get();
+            // Fetch all transactions from the collection safely
+            let transactionsSnap = await db.collection('transactions').get();
             let withdrawalsSnap = await db.collection('withdrawRequests').where('userId', '==', user.uid).get();
 
             let items = [];
 
             withdrawalsSnap.forEach(doc => {
                 let w = doc.data();
-                let date = w.date?.toDate ? w.date.toDate() : (w.date?.seconds ? new Date(w.date.seconds * 1000) : new Date(0));
+                let date = w.date?.toDate ? w.date.toDate() : (w.date?.seconds ? new Date(w.date.seconds * 1000) : (w.timestamp?.toDate ? w.timestamp.toDate() : new Date(0)));
                 items.push({
                     id: doc.id,
                     type: 'debit',
@@ -349,14 +344,17 @@
 
             transactionsSnap.forEach(doc => {
                 let t = doc.data();
-                if (t.type === 'credit') {
-                    let date = t.date?.toDate ? t.date.toDate() : (t.date?.seconds ? new Date(t.date.seconds * 1000) : new Date(0));
+                // Check for both userId or userid fields matching the current user
+                let tUserId = t.userId || t.userid;
+                if (tUserId === user.uid) {
+                    let date = t.timestamp?.toDate ? t.timestamp.toDate() : (t.timestamp?.seconds ? new Date(t.timestamp.seconds * 1000) : (t.date?.toDate ? t.date.toDate() : (t.date?.seconds ? new Date(t.date.seconds * 1000) : new Date(0))));
+                    let statusVal = t.status || (t.razorpayPaymentId ? 'Success' : 'Completed');
                     items.push({
                         id: doc.id,
                         type: 'credit',
-                        category: 'Deposit',
+                        category: t.razorpayPaymentId ? 'Online Deposit' : 'Deposit',
                         amount: t.amount,
-                        status: t.status || 'Pending',
+                        status: statusVal,
                         date: date
                     });
                 }
@@ -375,7 +373,7 @@
             let html = items.map(item => {
                 let isCredit = item.type === 'credit';
                 let statusLower = item.status.toLowerCase();
-                let statusClass = statusLower === 'completed' || statusLower === 'approved' ? 'status-completed' : (statusLower === 'rejected' ? 'status-rejected' : 'status-pending');
+                let statusClass = statusLower === 'completed' || statusLower === 'approved' || statusLower === 'success' ? 'status-completed' : (statusLower === 'rejected' ? 'status-rejected' : 'status-pending');
 
                 return `
                     <div class="history-item">
