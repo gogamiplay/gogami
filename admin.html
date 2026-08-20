@@ -1184,37 +1184,49 @@
    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
   
-   // 🚀 Load Manual Deposit Requests
+   // 🚀 Load Manual Deposit Requests (Fixed to check both depositRequests and transactions collection for 100% compatibility)
    async function loadDeposits(){    
         let container = document.getElementById('depositsList');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading deposit requests...</div>';
         try {
-            let snap = await db.collection('depositRequests').where('status', '==', currentDepositTab).get();
-            let deposits = [];
+            // Fetch from depositRequests
+            let snap1 = await db.collection('depositRequests').where('status', '==', currentDepositTab).get();
+            // Also fetch from transactions (credit + matching status) to ensure compatibility
+            let snap2 = await db.collection('transactions').where('type', '==', 'credit').where('status', '==', currentDepositTab).get();
             
+            let depositsMap = new Map();
+
             let usersSnap = await db.collection('users').get();
             let usersMap = new Map();
             usersSnap.forEach(uDoc => {
                 usersMap.set(uDoc.id, uDoc.data());
             });
 
-            snap.forEach(d => {    
-                let t = d.data();
-                let userData = usersMap.get(t.userId);
-                let dateObj = t.date?.toDate ? t.date.toDate() : (t.date?.seconds ? new Date(t.date.seconds * 1000) : new Date());
-                
-                deposits.push({
-                    id: d.id,
-                    userId: t.userId,
-                    amount: t.amount,
-                    utr: t.utr || t.transactionId || 'N/A',
-                    date: dateObj,
-                    userName: userData ? (userData.name || 'Unknown') : 'Unknown',
-                    userPhone: userData ? (userData.phone || 'N/A') : 'N/A',
-                    status: t.status
+            let processDocs = (snap) => {
+                snap.forEach(d => {    
+                    let t = d.data();
+                    let targetUid = t.userId || t.userid;
+                    let userData = targetUid ? usersMap.get(targetUid) : null;
+                    let dateObj = t.date?.toDate ? t.date.toDate() : (t.date?.seconds ? new Date(t.date.seconds * 1000) : (t.timestamp?.toDate ? t.timestamp.toDate() : (t.timestamp?.seconds ? new Date(t.timestamp.seconds * 1000) : new Date())));
+                    
+                    depositsMap.set(d.id, {
+                        id: d.id,
+                        userId: targetUid,
+                        amount: t.amount,
+                        utr: t.utr || t.transactionId || t.userUTR || 'N/A',
+                        date: dateObj,
+                        userName: userData ? (userData.name || 'Unknown') : 'Unknown',
+                        userPhone: userData ? (userData.phone || 'N/A') : 'N/A',
+                        status: t.status,
+                        sourceCollection: d.ref.parent.id
+                    });
                 });
-            });    
-            
+            };
+
+            processDocs(snap1);
+            processDocs(snap2);
+
+            let deposits = Array.from(depositsMap.values());
             deposits.sort((a, b) => b.date - a.date);
             let html = '';    
             if(deposits.length === 0) {
@@ -1232,7 +1244,7 @@
                                 <div style="text-align:right;">
                                     <div class="deposit-amount">+ ₹${d.amount}</div>
                                     <div style="margin-top:8px;">
-                                        ${isPending ? `<button onclick="approveDeposit('${d.id}', ${d.amount}, '${d.userId}')" class="btn-success" style="padding:6px 10px; font-size:10px;">Approve</button><button onclick="rejectDeposit('${d.id}')" class="btn-danger" style="padding:6px 10px; font-size:10px;">Reject</button>` : `<button onclick="deleteDepositRecord('${d.id}')" class="btn-delete" style="padding:6px 10px; font-size:10px;">Delete</button>`}
+                                        ${isPending ? `<button onclick="approveDeposit('${d.id}', ${d.amount}, '${d.userId}', '${d.sourceCollection}')" class="btn-success" style="padding:6px 10px; font-size:10px;">Approve</button><button onclick="rejectDeposit('${d.id}', '${d.sourceCollection}')" class="btn-danger" style="padding:6px 10px; font-size:10px;">Reject</button>` : `<button onclick="deleteDepositRecord('${d.id}', '${d.sourceCollection}')" class="btn-delete" style="padding:6px 10px; font-size:10px;">Delete</button>`}
                                     </div>
                                 </div>
                             </div>`;    
@@ -1244,7 +1256,7 @@
         }
    }
 
-   async function approveDeposit(id, amount, userId) {
+   async function approveDeposit(id, amount, userId, sourceCollection = 'depositRequests') {
         if(confirm(`Approve deposit request of ₹${amount}?`)) {
             try {
                 let userRef = db.collection('users').doc(userId);
@@ -1259,18 +1271,20 @@
                 // Update user balance
                 await userRef.update({ balance: newBal });
 
-                // Update deposit request status
-                await db.collection('depositRequests').doc(id).update({ status: 'Completed' });
+                // Update status in whichever collection it came from
+                await db.collection(sourceCollection).doc(id).update({ status: 'Completed' });
 
-                // Add to user transaction history passbook
-                await db.collection('transactions').add({
-                    userId: userId,
-                    type: 'credit',
-                    amount: parseFloat(amount),
-                    status: 'Completed',
-                    description: `Manual Deposit Approved`,
-                    date: new Date()
-                });
+                // Add to user transaction history passbook if not already there
+                if (sourceCollection !== 'transactions') {
+                    await db.collection('transactions').add({
+                        userId: userId,
+                        type: 'credit',
+                        amount: parseFloat(amount),
+                        status: 'Completed',
+                        description: `Manual Deposit Approved`,
+                        date: new Date()
+                    });
+                }
 
                 alert("✅ Deposit approved and balance added successfully!");
                 loadDeposits();
@@ -1280,17 +1294,17 @@
         }
    }
 
-   async function rejectDeposit(id) {
+   async function rejectDeposit(id, sourceCollection = 'depositRequests') {
         if(confirm("Reject this deposit request?")) {
-            await db.collection('depositRequests').doc(id).update({ status: 'Rejected' });
+            await db.collection(sourceCollection).doc(id).update({ status: 'Rejected' });
             alert("❌ Deposit rejected!");
             loadDeposits();
         }
    }
 
-   async function deleteDepositRecord(id) {
+   async function deleteDepositRecord(id, sourceCollection = 'depositRequests') {
         if(confirm("Delete this deposit record?")) {
-            await db.collection('depositRequests').doc(id).delete();
+            await db.collection(sourceCollection).doc(id).delete();
             loadDeposits();
         }
    }
@@ -1408,7 +1422,7 @@
         if(section==='livechat') markAllChatsAsRead(); 
    }
 
-   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
+   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.get.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
    function logout(){ 
         localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
@@ -1434,7 +1448,7 @@
    }
 
    async function clearAllUsersTransactionHistory(){
-       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for all users?")){
+       if(confirm("⚠️ DAPPED: Are you sure you want to delete ALL transaction history for all users?")){
            if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
                try {
                    let trans = await db.collection('transactions').get();
