@@ -655,7 +655,7 @@
     
     let dbPassword = "Gani99@@", allUsers = [], currentSearchTerm = "", currentSortType = "todayBidders", todayBidMap = new Map(), userLastBidTime = new Map();
     let withdrawalCount = 0, depositCount = 0, chatUnreadCount = 0;
-    let withdrawalListener = null, depositListener = null, chatListener = null, openMarketId = null;
+    let withdrawalListener = null, depositListener = null, depositListenerTxn = null, chatListener = null, openMarketId = null;
     let userLastActive = new Map();
     let onlineStatusListener = null;
     let openTotalBidsMarketId = null;
@@ -749,20 +749,45 @@
     
     function startNotificationListeners(){ 
         if(withdrawalListener) withdrawalListener(); 
-        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ withdrawalCount=s.size; updateWithdrawalBadge(); updateMenuDot(); if(currentWithdrawalTab==='pending') loadWithdrawals(); }); 
+        withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ 
+            withdrawalCount = s.size; 
+            updateBadges(); 
+            if(currentWithdrawalTab==='pending') loadWithdrawals(); 
+        }); 
         
         if(depositListener) depositListener();
-        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s=>{ depositCount=s.size; updateDepositBadge(); updateMenuDot(); if(currentDepositTab==='Pending') loadDeposits(); });
+        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s1 => {
+            let count1 = s1.size;
+            // Also check transactions collection for pending credits
+            db.collection('transactions').where('type','==','credit').where('status','==','Pending').get().then(s2 => {
+                let count2 = s2.size;
+                depositCount = count1 + count2;
+                updateBadges();
+                if(currentDepositTab==='Pending') loadDeposits();
+            }).catch(() => {
+                depositCount = count1;
+                updateBadges();
+                if(currentDepositTab==='Pending') loadDeposits();
+            });
+        });
 
         if(chatListener) chatListener(); 
-        chatListener = db.collection('chats').where('unread','==','true').onSnapshot(s=>{ chatUnreadCount=s.size; updateChatBadge(); updateMenuDot(); }); 
+        chatListener = db.collection('chats').where('unread','==','true').onSnapshot(s=>{ 
+            chatUnreadCount = s.size; 
+            updateBadges(); 
+        }); 
     }
 
-    function updateWithdrawalBadge(){ let b=document.getElementById('withdrawalBadge'); if(withdrawalCount>0){ b.style.display='inline-block'; b.innerText=withdrawalCount>99?'99+':withdrawalCount; } else b.style.display='none'; }
-    function updateDepositBadge(){ let b=document.getElementById('depositBadge'); if(depositCount>0){ b.style.display='inline-block'; b.innerText=depositCount>99?'99+':depositCount; } else b.style.display='none'; }
-    function updateChatBadge(){ let b=document.getElementById('chatBadge'); if(chatUnreadCount>0){ b.style.display='inline-block'; b.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else b.style.display='none'; }
+    function updateBadges(){ 
+        let wb = document.getElementById('withdrawalBadge'); 
+        if(withdrawalCount > 0){ wb.style.display='inline-block'; wb.innerText=withdrawalCount>99?'99+':withdrawalCount; } else wb.style.display='none'; 
 
-    function updateMenuDot() {
+        let dbg = document.getElementById('depositBadge'); 
+        if(depositCount > 0){ dbg.style.display='inline-block'; dbg.innerText=depositCount>99?'99+':depositCount; } else dbg.style.display='none'; 
+
+        let cb = document.getElementById('chatBadge'); 
+        if(chatUnreadCount > 0){ cb.style.display='inline-block'; cb.innerText=chatUnreadCount>99?'99+':chatUnreadCount; } else cb.style.display='none'; 
+
         const dot = document.getElementById('menuNotificationDot');
         if (withdrawalCount > 0 || depositCount > 0 || chatUnreadCount > 0) {
             dot.style.display = 'block';
