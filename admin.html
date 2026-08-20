@@ -1184,14 +1184,12 @@
    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
   
-   // 🚀 Load Manual Deposit Requests (Fixed to check both depositRequests and transactions collection for 100% compatibility)
+   // 🚀 Load Manual Deposit Requests (Fixed to check both depositRequests and transactions collection with pending badge support)
    async function loadDeposits(){    
         let container = document.getElementById('depositsList');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading deposit requests...</div>';
         try {
-            // Fetch from depositRequests
             let snap1 = await db.collection('depositRequests').where('status', '==', currentDepositTab).get();
-            // Also fetch from transactions (credit + matching status) to ensure compatibility
             let snap2 = await db.collection('transactions').where('type', '==', 'credit').where('status', '==', currentDepositTab).get();
             
             let depositsMap = new Map();
@@ -1268,13 +1266,9 @@
                 let currentBal = userDoc.data().balance || 0;
                 let newBal = currentBal + parseFloat(amount);
 
-                // Update user balance
                 await userRef.update({ balance: newBal });
-
-                // Update status in whichever collection it came from
                 await db.collection(sourceCollection).doc(id).update({ status: 'Completed' });
 
-                // Add to user transaction history passbook if not already there
                 if (sourceCollection !== 'transactions') {
                     await db.collection('transactions').add({
                         userId: userId,
@@ -1422,7 +1416,7 @@
         if(section==='livechat') markAllChatsAsRead(); 
    }
 
-   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.get.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
+   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
    function logout(){ 
         localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
@@ -1448,7 +1442,7 @@
    }
 
    async function clearAllUsersTransactionHistory(){
-       if(confirm("⚠️ DAPPED: Are you sure you want to delete ALL transaction history for all users?")){
+       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for all users?")){
            if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
                try {
                    let trans = await db.collection('transactions').get();
