@@ -755,10 +755,10 @@
             if(currentWithdrawalTab==='pending') loadWithdrawals(); 
         }); 
         
+        // 🚀 Real-time Live Listener for depositRequests (Triggers instantly when a new deposit request is made)
         if(depositListener) depositListener();
-        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s1 => {
-            let count1 = s1.size;
-            // Also check transactions collection for pending credits
+        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s => {
+            let count1 = s.size;
             db.collection('transactions').where('type','==','credit').where('status','==','Pending').get().then(s2 => {
                 let count2 = s2.size;
                 depositCount = count1 + count2;
@@ -766,6 +766,21 @@
                 if(currentDepositTab==='Pending') loadDeposits();
             }).catch(() => {
                 depositCount = count1;
+                updateBadges();
+                if(currentDepositTab==='Pending') loadDeposits();
+            });
+        });
+
+        // 🚀 Real-time Live Listener for transactions pending deposits as well
+        if(depositListenerTxn) depositListenerTxn();
+        depositListenerTxn = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s => {
+            db.collection('depositRequests').where('status','==','Pending').get().then(s1 => {
+                let count1 = s1.size;
+                depositCount = count1 + s.size;
+                updateBadges();
+                if(currentDepositTab==='Pending') loadDeposits();
+            }).catch(() => {
+                depositCount = s.size;
                 updateBadges();
                 if(currentDepositTab==='Pending') loadDeposits();
             });
