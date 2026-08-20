@@ -439,6 +439,11 @@
 </head>
 <body>
 
+<!-- 🔔 Alarm Ringtone Audio Element (Loud & Clear) -->
+<audio id="alertRingtone" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+</audio>
+
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
         <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
@@ -661,6 +666,19 @@
     let openTotalBidsMarketId = null;
     let currentWithdrawalTab = 'pending';
     let currentDepositTab = 'Pending';
+    let previousDepositCount = -1;
+    let previousWithdrawalCount = -1;
+
+    // 🔔 Play Alarm Ringtone
+    function playAlarmRingtone() {
+        const ringtone = document.getElementById('alertRingtone');
+        if (ringtone) {
+            ringtone.currentTime = 0;
+            ringtone.play().catch(e => {
+                console.log("Audio autoplay restricted by browser until user interaction.");
+            });
+        }
+    }
     
     const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
     
@@ -750,37 +768,59 @@
     function startNotificationListeners(){ 
         if(withdrawalListener) withdrawalListener(); 
         withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ 
-            withdrawalCount = s.size; 
+            let newSize = s.size;
+            if (previousWithdrawalCount !== -1 && newSize > previousWithdrawalCount) {
+                playAlarmRingtone();
+            }
+            previousWithdrawalCount = newSize;
+            withdrawalCount = newSize; 
             updateBadges(); 
             if(currentWithdrawalTab==='pending') loadWithdrawals(); 
         }); 
         
-        // 🚀 Real-time Live Listener for depositRequests (Triggers instantly when a new deposit request is made)
         if(depositListener) depositListener();
-        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s => {
-            let count1 = s.size;
+        depositListener = db.collection('depositRequests').where('status','==','Pending').onSnapshot(s1 => {
+            let count1 = s1.size;
             db.collection('transactions').where('type','==','credit').where('status','==','Pending').get().then(s2 => {
                 let count2 = s2.size;
-                depositCount = count1 + count2;
+                let totalDep = count1 + count2;
+                if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
+                    playAlarmRingtone();
+                }
+                previousDepositCount = totalDep;
+                depositCount = totalDep;
                 updateBadges();
                 if(currentDepositTab==='Pending') loadDeposits();
             }).catch(() => {
+                if (previousDepositCount !== -1 && count1 > previousDepositCount) {
+                    playAlarmRingtone();
+                }
+                previousDepositCount = count1;
                 depositCount = count1;
                 updateBadges();
                 if(currentDepositTab==='Pending') loadDeposits();
             });
         });
 
-        // 🚀 Real-time Live Listener for transactions pending deposits as well
         if(depositListenerTxn) depositListenerTxn();
         depositListenerTxn = db.collection('transactions').where('type','==','credit').where('status','==','Pending').onSnapshot(s => {
             db.collection('depositRequests').where('status','==','Pending').get().then(s1 => {
                 let count1 = s1.size;
-                depositCount = count1 + s.size;
+                let totalDep = count1 + s.size;
+                if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
+                    playAlarmRingtone();
+                }
+                previousDepositCount = totalDep;
+                depositCount = totalDep;
                 updateBadges();
                 if(currentDepositTab==='Pending') loadDeposits();
             }).catch(() => {
-                depositCount = s.size;
+                let totalDep = s.size;
+                if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
+                    playAlarmRingtone();
+                }
+                previousDepositCount = totalDep;
+                depositCount = totalDep;
                 updateBadges();
                 if(currentDepositTab==='Pending') loadDeposits();
             });
