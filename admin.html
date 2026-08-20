@@ -439,11 +439,6 @@
 </head>
 <body>
 
-<!-- 🔔 Alarm Ringtone Audio Element (Loud & Clear) -->
-<audio id="alertRingtone" preload="auto">
-    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
-</audio>
-
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
         <img src="https://i.imgur.com/DEFyMFt.png" alt="GOGAMI Logo">
@@ -669,15 +664,15 @@
     let previousDepositCount = -1;
     let previousWithdrawalCount = -1;
 
-    // 🔔 Play Alarm Ringtone
-    function playAlarmRingtone() {
-        const ringtone = document.getElementById('alertRingtone');
-        if (ringtone) {
-            ringtone.currentTime = 0;
-            ringtone.play().catch(e => {
-                console.log("Audio autoplay restricted by browser until user interaction.");
-            });
-        }
+    // 🚀 Telegram Bot Configuration
+    const TELEGRAM_BOT_TOKEN = "8764177779:AAEtl1MUj3CicpBbgq0sNItBeJrk5jB-AAs";
+    const TELEGRAM_CHAT_ID = "7050101662";
+
+    function sendTelegramAlert(title, details) {
+        const message = `🚨 *${title}* \n\n${details}`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+        
+        fetch(url).catch(err => console.log("Telegram alert failed:", err));
     }
     
     const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
@@ -770,7 +765,7 @@
         withdrawalListener = db.collection('withdrawRequests').where('status','==','Pending').onSnapshot(s=>{ 
             let newSize = s.size;
             if (previousWithdrawalCount !== -1 && newSize > previousWithdrawalCount) {
-                playAlarmRingtone();
+                sendTelegramAlert("New Withdrawal Request!", `A user has requested a withdrawal.`);
             }
             previousWithdrawalCount = newSize;
             withdrawalCount = newSize; 
@@ -785,7 +780,7 @@
                 let count2 = s2.size;
                 let totalDep = count1 + count2;
                 if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
-                    playAlarmRingtone();
+                    sendTelegramAlert("New Deposit Request!", `A user has submitted a manual deposit request.`);
                 }
                 previousDepositCount = totalDep;
                 depositCount = totalDep;
@@ -793,7 +788,7 @@
                 if(currentDepositTab==='Pending') loadDeposits();
             }).catch(() => {
                 if (previousDepositCount !== -1 && count1 > previousDepositCount) {
-                    playAlarmRingtone();
+                    sendTelegramAlert("New Deposit Request!", `A user has submitted a manual deposit request.`);
                 }
                 previousDepositCount = count1;
                 depositCount = count1;
@@ -808,7 +803,7 @@
                 let count1 = s1.size;
                 let totalDep = count1 + s.size;
                 if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
-                    playAlarmRingtone();
+                    sendTelegramAlert("New Deposit Request!", `A user has submitted a manual deposit request.`);
                 }
                 previousDepositCount = totalDep;
                 depositCount = totalDep;
@@ -817,7 +812,7 @@
             }).catch(() => {
                 let totalDep = s.size;
                 if (previousDepositCount !== -1 && totalDep > previousDepositCount) {
-                    playAlarmRingtone();
+                    sendTelegramAlert("New Deposit Request!", `A user has submitted a manual deposit request.`);
                 }
                 previousDepositCount = totalDep;
                 depositCount = totalDep;
@@ -1474,7 +1469,7 @@
    async function changePassword(){ 
         let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
         if(old===dbPassword){ 
-            await db.collection('settings').doc('admin').set({ password: newP.trim() }); 
+            await db.collection('settings').doc('admin').set({ password: newP.trim() : newP }); 
             dbPassword=newP.trim(); 
             localStorage.removeItem('adminLoggedIn');
             alert('✅ Password updated successfully! Please login again.'); 
