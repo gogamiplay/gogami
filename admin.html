@@ -672,7 +672,11 @@
         const message = `🚨 *${title}* \n\n${details}`;
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
         
-        fetch(url).catch(err => console.log("Telegram alert failed:", err));
+        fetch(url)
+            .then(res => {
+                if(!res.ok) console.error("Telegram notification failed status:", res.status);
+            })
+            .catch(err => console.log("Telegram alert network error:", err));
     }
     
     const gameRates = { 'Single Digit':10, 'Jodi':100, 'Single Pana':160, 'Double Pana':320, 'Triple Pana':1000, 'Half Sangam A':1000, 'Half Sangam B':1000, 'Full Sangam':10000 };
@@ -1259,7 +1263,6 @@
    async function editMarket(id,oldName,oldNumbers){ let newName=prompt('New name',oldName); if(newName) await db.collection('markets').doc(id).update({name:newName}); }
    async function deleteMarket(id){ if(confirm('Delete market?')) await db.collection('markets').doc(id).delete(); }
   
-   // 🚀 Load Manual Deposit Requests (Fixed to check both depositRequests and transactions collection with pending badge support)
    async function loadDeposits(){    
         let container = document.getElementById('depositsList');
         container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Loading deposit requests...</div>';
@@ -1308,19 +1311,19 @@
                 for(let d of deposits){    
                     let isPending = currentDepositTab === 'Pending';
                     html += `<div class="deposit-item">
-                                <div class="deposit-meta">
-                                    <span class="deposit-user">👤 ${escapeHtml(d.userName)} (${d.userPhone})</span>
-                                    <span class="deposit-info">🆔 UTR: ${d.utr}</span>
-                                    <span class="deposit-info">📅 ${d.date.toLocaleString()}</span>
-                                    <span class="deposit-status">${d.status.toUpperCase()}</span>
+                            <div class="deposit-meta">
+                                <span class="deposit-user">👤 ${escapeHtml(d.userName)} (${d.userPhone})</span>
+                                <span class="deposit-info">🆔 UTR: ${d.utr}</span>
+                                <span class="deposit-info">📅 ${d.date.toLocaleString()}</span>
+                                <span class="deposit-status">${d.status.toUpperCase()}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div class="deposit-amount">+ ₹${d.amount}</div>
+                                <div style="margin-top:8px;">
+                                    ${isPending ? `<button onclick="approveDeposit('${d.id}', ${d.amount}, '${d.userId}', '${d.sourceCollection}')" class="btn-success" style="padding:6px 10px; font-size:10px;">Approve</button><button onclick="rejectDeposit('${d.id}', '${d.sourceCollection}')" class="btn-danger" style="padding:6px 10px; font-size:10px;">Reject</button>` : `<button onclick="deleteDepositRecord('${d.id}', '${d.sourceCollection}')" class="btn-delete" style="padding:6px 10px; font-size:10px;">Delete</button>`}
                                 </div>
-                                <div style="text-align:right;">
-                                    <div class="deposit-amount">+ ₹${d.amount}</div>
-                                    <div style="margin-top:8px;">
-                                        ${isPending ? `<button onclick="approveDeposit('${d.id}', ${d.amount}, '${d.userId}', '${d.sourceCollection}')" class="btn-success" style="padding:6px 10px; font-size:10px;">Approve</button><button onclick="rejectDeposit('${d.id}', '${d.sourceCollection}')" class="btn-danger" style="padding:6px 10px; font-size:10px;">Reject</button>` : `<button onclick="deleteDepositRecord('${d.id}', '${d.sourceCollection}')" class="btn-delete" style="padding:6px 10px; font-size:10px;">Delete</button>`}
-                                    </div>
-                                </div>
-                            </div>`;    
+                            </div>
+                        </div>`;    
                 }
             }
             container.innerHTML = html;
@@ -1469,7 +1472,7 @@
    async function changePassword(){ 
         let old=document.getElementById('oldPass').value, newP=document.getElementById('newPass').value; 
         if(old===dbPassword){ 
-            await db.collection('settings').doc('admin').set({ password: newP.trim() : newP }); 
+            await db.collection('settings').doc('admin').set({ password: newP.trim() }); 
             dbPassword=newP.trim(); 
             localStorage.removeItem('adminLoggedIn');
             alert('✅ Password updated successfully! Please login again.'); 
@@ -1491,7 +1494,7 @@
         if(section==='livechat') markAllChatsAsRead(); 
    }
 
-   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateChatBadge(); updateMenuDot(); }
+   async function markAllChatsAsRead(){ let unread=await db.collection('chats').where('unread','==',true).get(); unread.forEach(d=>d.ref.update({unread:false})); updateBadges(); }
    function logout(){ 
         localStorage.removeItem('adminLoggedIn');
         document.getElementById('loginScreen').style.display='flex'; 
@@ -1499,39 +1502,39 @@
    }
 
    async function clearAllUsersBidHistory(){
-       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL bid history for all users?")){
-           if(prompt('Type "CLEAR ALL BIDS" to confirm:') === 'CLEAR ALL BIDS'){
-               try {
-                   let bids = await db.collection('bids').get();
-                   let count = 0;
-                   bids.forEach(d => {
-                       d.ref.delete();
-                       count++;
-                   });
-                   alert(`✅ Successfully cleared ${count} bid records from all users!`);
-               } catch(e) {
-                   alert("❌ Error: " + e.message);
-               }
-           }
-       }
+        if(confirm("⚠️ DANGER: Are you sure you want to delete ALL bid history for all users?")){
+            if(prompt('Type "CLEAR ALL BIDS" to confirm:') === 'CLEAR ALL BIDS'){
+                try {
+                    let bids = await db.collection('bids').get();
+                    let count = 0;
+                    bids.forEach(d => {
+                        d.ref.delete();
+                        count++;
+                    });
+                    alert(`✅ Successfully cleared ${count} bid records from all users!`);
+                } catch(e) {
+                    alert("❌ Error: " + e.message);
+                }
+            }
+        }
    }
 
    async function clearAllUsersTransactionHistory(){
-       if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for all users?")){
-           if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
-               try {
-                   let trans = await db.collection('transactions').get();
-                   let count = 0;
-                   trans.forEach(d => {
-                       d.ref.delete();
-                       count++;
-                   });
-                   alert(`✅ Successfully cleared ${count} transaction records from all users!`);
-               } catch(e) {
-                   alert("❌ Error: " + e.message);
-               }
-           }
-       }
+        if(confirm("⚠️ DANGER: Are you sure you want to delete ALL transaction history for all users?")){
+            if(prompt('Type "CLEAR ALL TRANSACTIONS" to confirm:') === 'CLEAR ALL TRANSACTIONS'){
+                try {
+                    let trans = await db.collection('transactions').get();
+                    let count = 0;
+                    trans.forEach(d => {
+                        d.ref.delete();
+                        count++;
+                    });
+                    alert(`✅ Successfully cleared ${count} transaction records from all users!`);
+                } catch(e) {
+                    alert("❌ Error: " + e.message);
+                }
+            }
+        }
    }
 </script>
 </body>
